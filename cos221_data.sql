@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 13, 2025 at 09:20 PM
+-- Generation Time: May 14, 2025 at 07:45 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -76,54 +76,55 @@ CREATE TABLE `product` (
   `launch_date` date DEFAULT NULL,
   `product_link` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `store_id` int(11) DEFAULT NULL
+  `store_id` int(11) DEFAULT NULL,
+  `price` double DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `product`
 --
 
-INSERT INTO `product` (`id`, `title`, `thumbnail`, `launch_date`, `product_link`, `description`, `store_id`) VALUES
-(1, 'Smartphone Model A', 'https://example.com/thumb1.jpg', '2025-01-15', 'https://example.com/product1', 'The latest model with a stunning display and fast processor.', 2),
-(2, 'Laptop Model B', 'https://example.com/thumb2.jpg', '2025-02-20', 'https://example.com/product2', 'High-performance laptop with a sleek design and powerful specs.', 3),
-(3, 'Wireless Headphones', 'https://example.com/thumb3.jpg', '2025-03-10', 'https://example.com/product3', 'Noise-cancelling headphones with superior sound quality.', 4),
-(4, 'Gaming Console Z', 'https://example.com/thumb4.jpg', '2025-04-01', 'https://example.com/product4', 'Next-gen gaming console with 4K resolution support.', 5),
-(5, 'Smartwatch X', 'https://example.com/thumb5.jpg', '2025-05-05', 'https://example.com/product5', 'Track your fitness and stay connected with this smartwatch.', 6),
-(6, 'Bluetooth Speaker', 'https://example.com/thumb6.jpg', '2025-06-12', 'https://example.com/product6', 'Portable Bluetooth speaker with deep bass and clear audio.', 7),
-(7, 'Smart TV Ultra', 'https://example.com/thumb7.jpg', '2025-07-20', 'https://example.com/product7', 'Smart TV with 8K resolution and integrated streaming apps.', 8),
-(8, 'Tablet Pro', 'https://example.com/thumb8.jpg', '2025-08-15', 'https://example.com/product8', 'Powerful tablet with a large screen and fast performance.', 9),
-(9, '4K Camera', 'https://example.com/thumb9.jpg', '2025-09-01', 'https://example.com/product9', 'Capture stunning 4K videos with ease using this camera.', 10),
-(10, 'Electric Scooter', 'https://example.com/thumb10.jpg', '2025-10-10', 'https://example.com/product10', 'Eco-friendly electric scooter with long battery life.', 11),
-(11, 'Portable Charger', 'https://example.com/thumb11.jpg', '2025-11-05', 'https://example.com/product11', 'Compact portable charger for your devices on the go.', 12),
-(12, 'VR Headset', 'https://example.com/thumb12.jpg', '2025-12-01', 'https://example.com/product12', 'Experience immersive VR gaming with this advanced headset.', 13),
-(13, 'Digital Camera', 'https://example.com/thumb13.jpg', '2025-01-10', 'https://example.com/product13', 'High-quality camera for professional photography and videos.', 14),
-(14, 'Smart Home Hub', 'https://example.com/thumb14.jpg', '2025-02-01', 'https://example.com/product14', 'Control your smart home devices with this easy-to-use hub.', 15),
-(15, 'Electric Car Charger', 'https://example.com/thumb15.jpg', '2025-03-25', 'https://example.com/product15', 'Fast-charging station for electric vehicles at home.', 16),
-(16, 'LED Projector', 'https://example.com/thumb16.jpg', '2025-04-05', 'https://example.com/product16', 'Project movies in 4K quality anywhere with this portable projector.', 17),
-(17, 'Wireless Keyboard', 'https://example.com/thumb17.jpg', '2025-05-25', 'https://example.com/product17', 'Ergonomic wireless keyboard with long battery life.', 18),
-(18, 'Gaming Mouse', 'https://example.com/thumb18.jpg', '2025-06-10', 'https://example.com/product18', 'Precise gaming mouse with customizable buttons and RGB lighting.', 19),
-(19, 'Smart Thermostat', 'https://example.com/thumb19.jpg', '2025-07-15', 'https://example.com/product19', 'Smart thermostat that adjusts temperature based on your preferences.', 20),
-(20, 'Electric Bike', 'https://example.com/thumb20.jpg', '2025-08-20', 'https://example.com/product20', 'Eco-friendly electric bike with fast charging and long range.', 21),
-(21, 'Smartphone Model A', 'https://example.com/thumb1.jpg', '2025-01-15', 'https://example.com/product1', 'The latest model with a stunning display and fast processor.', 2),
-(22, 'Laptop Model B', 'https://example.com/thumb2.jpg', '2025-02-20', 'https://example.com/product2', 'High-performance laptop with a sleek design and powerful specs.', 3),
-(23, 'Wireless Headphones', 'https://example.com/thumb3.jpg', '2025-03-10', 'https://example.com/product3', 'Noise-cancelling headphones with superior sound quality.', 4),
-(24, 'Gaming Console Z', 'https://example.com/thumb4.jpg', '2025-04-01', 'https://example.com/product4', 'Next-gen gaming console with 4K resolution support.', 5),
-(25, 'Smartwatch X', 'https://example.com/thumb5.jpg', '2025-05-05', 'https://example.com/product5', 'Track your fitness and stay connected with this smartwatch.', 6),
-(26, 'Bluetooth Speaker', 'https://example.com/thumb6.jpg', '2025-06-12', 'https://example.com/product6', 'Portable Bluetooth speaker with deep bass and clear audio.', 7),
-(27, 'Smart TV Ultra', 'https://example.com/thumb7.jpg', '2025-07-20', 'https://example.com/product7', 'Smart TV with 8K resolution and integrated streaming apps.', 8),
-(28, 'Tablet Pro', 'https://example.com/thumb8.jpg', '2025-08-15', 'https://example.com/product8', 'Powerful tablet with a large screen and fast performance.', 9),
-(29, '4K Camera', 'https://example.com/thumb9.jpg', '2025-09-01', 'https://example.com/product9', 'Capture stunning 4K videos with ease using this camera.', 10),
-(30, 'Electric Scooter', 'https://example.com/thumb10.jpg', '2025-10-10', 'https://example.com/product10', 'Eco-friendly electric scooter with long battery life.', 11),
-(31, 'Portable Charger', 'https://example.com/thumb11.jpg', '2025-11-05', 'https://example.com/product11', 'Compact portable charger for your devices on the go.', 12),
-(32, 'VR Headset', 'https://example.com/thumb12.jpg', '2025-12-01', 'https://example.com/product12', 'Experience immersive VR gaming with this advanced headset.', 13),
-(33, 'Digital Camera', 'https://example.com/thumb13.jpg', '2025-01-10', 'https://example.com/product13', 'High-quality camera for professional photography and videos.', 14),
-(34, 'Smart Home Hub', 'https://example.com/thumb14.jpg', '2025-02-01', 'https://example.com/product14', 'Control your smart home devices with this easy-to-use hub.', 15),
-(35, 'Electric Car Charger', 'https://example.com/thumb15.jpg', '2025-03-25', 'https://example.com/product15', 'Fast-charging station for electric vehicles at home.', 16),
-(36, 'LED Projector', 'https://example.com/thumb16.jpg', '2025-04-05', 'https://example.com/product16', 'Project movies in 4K quality anywhere with this portable projector.', 17),
-(37, 'Wireless Keyboard', 'https://example.com/thumb17.jpg', '2025-05-25', 'https://example.com/product17', 'Ergonomic wireless keyboard with long battery life.', 18),
-(38, 'Gaming Mouse', 'https://example.com/thumb18.jpg', '2025-06-10', 'https://example.com/product18', 'Precise gaming mouse with customizable buttons and RGB lighting.', 19),
-(39, 'Smart Thermostat', 'https://example.com/thumb19.jpg', '2025-07-15', 'https://example.com/product19', 'Smart thermostat that adjusts temperature based on your preferences.', 20),
-(40, 'Electric Bike', 'https://example.com/thumb20.jpg', '2025-08-20', 'https://example.com/product20', 'Eco-friendly electric bike with fast charging and long range.', 21);
+INSERT INTO `product` (`id`, `title`, `thumbnail`, `launch_date`, `product_link`, `description`, `store_id`, `price`) VALUES
+(1, 'Smartphone Model A', 'https://example.com/thumb1.jpg', '2025-01-15', 'https://example.com/product1', 'The latest model with a stunning display and fast processor.', 2, 34.67),
+(2, 'Laptop Model B', 'https://example.com/thumb2.jpg', '2025-02-20', 'https://example.com/product2', 'High-performance laptop with a sleek design and powerful specs.', 3, 45.78),
+(3, 'Wireless Headphones', 'https://example.com/thumb3.jpg', '2025-03-10', 'https://example.com/product3', 'Noise-cancelling headphones with superior sound quality.', 4, 56.89),
+(4, 'Gaming Console Z', 'https://example.com/thumb4.jpg', '2025-04-01', 'https://example.com/product4', 'Next-gen gaming console with 4K resolution support.', 5, 45.78),
+(5, 'Smartwatch X', 'https://example.com/thumb5.jpg', '2025-05-05', 'https://example.com/product5', 'Track your fitness and stay connected with this smartwatch.', 6, 18990.9),
+(6, 'Bluetooth Speaker', 'https://example.com/thumb6.jpg', '2025-06-12', 'https://example.com/product6', 'Portable Bluetooth speaker with deep bass and clear audio.', 7, 101.67),
+(7, 'Smart TV Ultra', 'https://example.com/thumb7.jpg', '2025-07-20', 'https://example.com/product7', 'Smart TV with 8K resolution and integrated streaming apps.', 8, 18990.9),
+(8, 'Tablet Pro', 'https://example.com/thumb8.jpg', '2025-08-15', 'https://example.com/product8', 'Powerful tablet with a large screen and fast performance.', 9, 101.67),
+(9, '4K Camera', 'https://example.com/thumb9.jpg', '2025-09-01', 'https://example.com/product9', 'Capture stunning 4K videos with ease using this camera.', 10, 18990.9),
+(10, 'Electric Scooter', 'https://example.com/thumb10.jpg', '2025-10-10', 'https://example.com/product10', 'Eco-friendly electric scooter with long battery life.', 11, 56.89),
+(11, 'Portable Charger', 'https://example.com/thumb11.jpg', '2025-11-05', 'https://example.com/product11', 'Compact portable charger for your devices on the go.', 12, 18990.9),
+(12, 'VR Headset', 'https://example.com/thumb12.jpg', '2025-12-01', 'https://example.com/product12', 'Experience immersive VR gaming with this advanced headset.', 13, 16789.89),
+(13, 'Digital Camera', 'https://example.com/thumb13.jpg', '2025-01-10', 'https://example.com/product13', 'High-quality camera for professional photography and videos.', 14, 45.78),
+(14, 'Smart Home Hub', 'https://example.com/thumb14.jpg', '2025-02-01', 'https://example.com/product14', 'Control your smart home devices with this easy-to-use hub.', 15, 56.89),
+(15, 'Electric Car Charger', 'https://example.com/thumb15.jpg', '2025-03-25', 'https://example.com/product15', 'Fast-charging station for electric vehicles at home.', 16, 1897),
+(16, 'LED Projector', 'https://example.com/thumb16.jpg', '2025-04-05', 'https://example.com/product16', 'Project movies in 4K quality anywhere with this portable projector.', 17, 16789.89),
+(17, 'Wireless Keyboard', 'https://example.com/thumb17.jpg', '2025-05-25', 'https://example.com/product17', 'Ergonomic wireless keyboard with long battery life.', 18, 16789.89),
+(18, 'Gaming Mouse', 'https://example.com/thumb18.jpg', '2025-06-10', 'https://example.com/product18', 'Precise gaming mouse with customizable buttons and RGB lighting.', 19, 16789.89),
+(19, 'Smart Thermostat', 'https://example.com/thumb19.jpg', '2025-07-15', 'https://example.com/product19', 'Smart thermostat that adjusts temperature based on your preferences.', 20, 56.89),
+(20, 'Electric Bike', 'https://example.com/thumb20.jpg', '2025-08-20', 'https://example.com/product20', 'Eco-friendly electric bike with fast charging and long range.', 21, 101.67),
+(21, 'Smartphone Model A', 'https://example.com/thumb1.jpg', '2025-01-15', 'https://example.com/product1', 'The latest model with a stunning display and fast processor.', 2, 101.67),
+(22, 'Laptop Model B', 'https://example.com/thumb2.jpg', '2025-02-20', 'https://example.com/product2', 'High-performance laptop with a sleek design and powerful specs.', 3, 101.67),
+(23, 'Wireless Headphones', 'https://example.com/thumb3.jpg', '2025-03-10', 'https://example.com/product3', 'Noise-cancelling headphones with superior sound quality.', 4, 18990.9),
+(24, 'Gaming Console Z', 'https://example.com/thumb4.jpg', '2025-04-01', 'https://example.com/product4', 'Next-gen gaming console with 4K resolution support.', 5, 56.89),
+(25, 'Smartwatch X', 'https://example.com/thumb5.jpg', '2025-05-05', 'https://example.com/product5', 'Track your fitness and stay connected with this smartwatch.', 6, 101.67),
+(26, 'Bluetooth Speaker', 'https://example.com/thumb6.jpg', '2025-06-12', 'https://example.com/product6', 'Portable Bluetooth speaker with deep bass and clear audio.', 7, NULL),
+(27, 'Smart TV Ultra', 'https://example.com/thumb7.jpg', '2025-07-20', 'https://example.com/product7', 'Smart TV with 8K resolution and integrated streaming apps.', 8, NULL),
+(28, 'Tablet Pro', 'https://example.com/thumb8.jpg', '2025-08-15', 'https://example.com/product8', 'Powerful tablet with a large screen and fast performance.', 9, NULL),
+(29, '4K Camera', 'https://example.com/thumb9.jpg', '2025-09-01', 'https://example.com/product9', 'Capture stunning 4K videos with ease using this camera.', 10, NULL),
+(30, 'Electric Scooter', 'https://example.com/thumb10.jpg', '2025-10-10', 'https://example.com/product10', 'Eco-friendly electric scooter with long battery life.', 11, NULL),
+(31, 'Portable Charger', 'https://example.com/thumb11.jpg', '2025-11-05', 'https://example.com/product11', 'Compact portable charger for your devices on the go.', 12, NULL),
+(32, 'VR Headset', 'https://example.com/thumb12.jpg', '2025-12-01', 'https://example.com/product12', 'Experience immersive VR gaming with this advanced headset.', 13, NULL),
+(33, 'Digital Camera', 'https://example.com/thumb13.jpg', '2025-01-10', 'https://example.com/product13', 'High-quality camera for professional photography and videos.', 14, NULL),
+(34, 'Smart Home Hub', 'https://example.com/thumb14.jpg', '2025-02-01', 'https://example.com/product14', 'Control your smart home devices with this easy-to-use hub.', 15, NULL),
+(35, 'Electric Car Charger', 'https://example.com/thumb15.jpg', '2025-03-25', 'https://example.com/product15', 'Fast-charging station for electric vehicles at home.', 16, NULL),
+(36, 'LED Projector', 'https://example.com/thumb16.jpg', '2025-04-05', 'https://example.com/product16', 'Project movies in 4K quality anywhere with this portable projector.', 17, NULL),
+(37, 'Wireless Keyboard', 'https://example.com/thumb17.jpg', '2025-05-25', 'https://example.com/product17', 'Ergonomic wireless keyboard with long battery life.', 18, NULL),
+(38, 'Gaming Mouse', 'https://example.com/thumb18.jpg', '2025-06-10', 'https://example.com/product18', 'Precise gaming mouse with customizable buttons and RGB lighting.', 19, NULL),
+(39, 'Smart Thermostat', 'https://example.com/thumb19.jpg', '2025-07-15', 'https://example.com/product19', 'Smart thermostat that adjusts temperature based on your preferences.', 20, NULL),
+(40, 'Electric Bike', 'https://example.com/thumb20.jpg', '2025-08-20', 'https://example.com/product20', 'Eco-friendly electric bike with fast charging and long range.', 21, NULL);
 
 -- --------------------------------------------------------
 
