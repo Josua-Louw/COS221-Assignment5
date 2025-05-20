@@ -199,8 +199,6 @@ if ($_POST['type'] == 'EditProduct')
     exit();
 }
 
-
-
 //filter products
 if ($_POST['type'] == 'GetFilteredProducts') 
 {
@@ -360,8 +358,301 @@ if ($_POST['type'] == 'EditRating') {
     exit();
 }
 
+//Fetch all the available stores. I made apiKey required but I can change it to only need the type
+if ($_POST['type'] == "GetStores"){
+    global $conn;
 
+    // Validate API key exists
+    if (!isset($_POST['apiKey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
 
+    $apiKey = $_POST['apiKey'];
 
+    // Retrieve user
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    // Check if user exists
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+    //Fetch stores
+    $storeStmt = $conn->prepare("SELECT * FROM store");
+    $storeStmt->execute();
+    $storeResult = $storeStmt->get_result();
+
+    if ($storeResult->num_rows == 0){
+        http_response_code(204);
+        echo json_encode([
+            "status" => "success",
+            "message" => "There are currently no stores available",
+            "data" => []
+        ]);
+        $storeStmt->close();
+        exit();
+    }
+
+    $stores = [];
+    while ($row = $storeResult->fetch_assoc()) {
+        $stores[] = $row;
+    }
+    $storeStmt->close();
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "All stores available, retrieved successfully.",
+        "data" => $stores
+    ]);
+}
+
+//Follow a store
+if ($_POST['type'] == 'Follow') {
+
+    //Set connection variable [Might need to change depending on the config file]
+    global $conn;
+
+    //I used store_name but we can change it to store_is
+    if (!isset($_POST['apiKey']) || !isset($_POST['store_name'])){
+        http_response_code(400);
+        echo json_encode(["status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $store_name = $_POST['store_name'];
+    $apiKey = $_POST['apiKey'];
+
+    //retrieve user
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    //Checks if user is in database
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+    //retrieves store
+    $query = $conn->prepare("SELECT store_id FROM store WHERE store_name = ?");
+    $query->bind_param("s", $store_name);
+    $query->execute();
+    $queryResult = $query->get_result();
+
+    //Check if store is in database
+    if ($queryResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid store name."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+    $store = $queryResult->fetch_assoc();
+    $query->close();
+
+    //Add to the follows table
+    try {
+        $followStmt = $conn->prepare("INSERT INTO follows (store_id, user_id) VALUES (?, ?)");
+        if (!$followStmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+
+        $followStmt->bind_param("ii", $user["id"], $store["id"]);
+        if (!$followStmt->execute()) {
+            throw new Exception("Execute failed: " . $followStmt->error);
+        }
+        $followStmt->close();
+    }catch (Exception $e) {
+        error_log("Database error: " . $e->getMessage());
+        http_response_code(500);
+        die(json_encode([
+            "status" => "error",
+            "message" => "Failed to follow store"
+        ]));
+    }
+
+    $conn->commit();
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Successfully followed store: {$store_name}",
+        "data" => $store['id']
+    ]);
+}
+
+//Retrieve stores that user follows
+if ($_POST['type'] == 'GetFollowing') {
+
+    //Set connection variable [Might need to change depending on the config file]
+    global $conn;
+
+    if (!isset($_POST['apiKey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $apiKey = $_POST['apiKey'];
+
+    //retrieve user
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    //Checks if user is in database
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+    //Get the stores
+    try {
+        $followStmt = $conn->prepare("SELECT store_id FROM follows WHERE user_id = ?");
+        if (!$followStmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+
+        $followStmt->bind_param("i", $user['id']);
+        if (!$followStmt->execute()) {
+            throw new Exception("Execute failed: " . $followStmt->error);
+        }
+
+        $followResult = $followStmt->get_result();
+        $followedStoreIds = [];
+        while ($id = $followResult->fetch_assoc()) {
+            $followedStoreIds[] = $id['store_id'];
+        }
+
+        $followStmt->close();
+
+        if (empty($followedStoreIds)) {
+            http_response_code(200);
+            echo json_encode([
+                "status" => "success",
+                "message" => "User is not following any stores",
+                "data" => []
+            ]);
+            exit();
+        }
+
+        $stores = [];
+        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id = ?");
+        if (!$storeStmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+
+        foreach ($followedStoreIds as $storeId) {
+            $storeStmt->bind_param("i", $storeId);
+            if (!$storeStmt->execute()) {
+                throw new Exception("Execute failed for store_id {$storeId}: " . $storeStmt->error);
+            }
+
+            $storeResult = $storeStmt->get_result();
+            if ($store = $storeResult->fetch_assoc()) {
+                $stores[] = $store;
+            }
+            $storeStmt->reset();
+        }
+        $storeStmt->close();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully retrieved followed stores",
+            "data" => $stores
+        ]);
+
+    } catch (Exception $e) {
+        error_log("Database error: " . $e->getMessage());
+        http_response_code(500);
+        die(json_encode([
+            "status" => "error",
+            "message" => "Failed to retrieve followed stores"
+        ]));
+    }
+}
+
+/***********************************************************************************/
+
+TODO:
+//Remove a follow
+if ($_POST['type'] == 'RemoveFollow') {
+
+    //Set connection variable [Might need to change depending on the config file]
+    global $conn;
+
+    if (!isset($_POST['apiKey']) || !isset($_POST['store_id'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+    }
+
+    $store_name = $_POST['store_id'];
+    $apiKey = $_POST['apiKey'];
+
+    //retrieve user
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    //Checks if user is in database
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit;
+    }
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+}
 
 ?>
