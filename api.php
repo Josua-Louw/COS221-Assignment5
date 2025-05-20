@@ -26,13 +26,13 @@
 
 */
 
-include 'config.php';
+require_once 'config.php';
 
 header('Content-Type: application/json'); 
 
 $_POST = json_decode(file_get_contents("php://input"), true);
 
-
+$conn = Database::instance()->getConnection(); //created the connection to have global scope. Not sure if local scope would be safer?
 
 //For user we have the following login and registartion
 //login
@@ -91,7 +91,7 @@ if ($_POST['type'] == 'Register')
     }
 
 
-    //$hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
     $apiKey = bin2hex(random_bytes(16));
 
     $stmt = $conn->prepare("
