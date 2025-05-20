@@ -29,7 +29,8 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `brand` (
   `brand_id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `name` varchar(255) NOT NULL,
+  `store_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -136,7 +137,8 @@ CREATE TABLE `users` (
 -- Indexes for table `brand`
 --
 ALTER TABLE `brand`
-  ADD PRIMARY KEY (`brand_id`);
+  ADD PRIMARY KEY (`brand_id`),
+  ADD KEY `store_ibfk_1` (`store_id`);
 
 --
 -- Indexes for table `customers`
