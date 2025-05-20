@@ -96,8 +96,6 @@ if ($_POST['type'] == 'Register')
     exit();
 }
 
-
-
 //now we have the following for products(add/delete/edit/remove)
 //add product
 if ($_POST['type'] == 'AddProduct') 
