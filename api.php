@@ -27,10 +27,6 @@
 
 */
 
-TODO:   //Rework Login
-        //Fix errors
-        //Think of other types
-
 include 'config.php';
 
 header('Content-Type: application/json'); 
@@ -79,7 +75,6 @@ if ($_POST['type'] == 'Register') {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $user_type = $_POST['user_type'];
-    $registrationNo = $_POST['registrationNo'] ?? null;
 
     $check = $conn->prepare("SELECT * FROM User WHERE email = ?");
     $check->bind_param("s", $email);
@@ -96,19 +91,23 @@ if ($_POST['type'] == 'Register') {
     $apiKey = bin2hex(random_bytes(16));
 
     $stmt = $conn->prepare("
-        INSERT INTO User (name, email, password, user_type, apiKey, registrationNo)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO User (name, email, password, user_type, apiKey)
+        VALUES (?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sssssi", $name, $email, $hashedPassword, $user_type, $apiKey, $registrationNo);
+    $stmt->bind_param("sssss", $name, $email, $hashedPassword, $user_type, $apiKey);
     
     if ($stmt->execute()) {
         $user_id = $stmt->insert_id;
 
-        if ($user_type === "Store Owner" && $registrationNo) {
-            $ownerStmt = $conn->prepare("INSERT INTO StoreOwner (user_id, registrationNo) VALUES (?, ?)");
-            $ownerStmt->bind_param("is", $user_id, $registrationNo);
-            $ownerStmt->execute();
+        $customerStmt = $conn->prepare("INSERT INTO Customers (user_id) VALUES (?)");
+        $customerStmt->bind_param("i", $user_id);
+        if (!$customerStmt->execute()) {
+            http_response_code(500);
+            echo json_encode(["status" => "error", "message" => "Failed to register user."]);
+            $customerStmt->close();
+            exit();
         }
+        $customerStmt->close();
 
         echo json_encode([
             "status" => "success",
@@ -116,6 +115,7 @@ if ($_POST['type'] == 'Register') {
             "user_id" => $user_id
         ]);
     } else {
+        http_response_code(500);
         echo json_encode(["status" => "error", "message" => "Failed to register user."]);
     }
 
@@ -772,11 +772,11 @@ if ($_POST['type'] == 'Unfollow') {
 }
 
 //Add a store
-if ($_POST['type'] == 'AddStore') {
+if ($_POST['type'] == 'RegisterStoreOwner') {
     global $conn;
 
     //Check if all fields are present
-    if (!isset($_POST['apiKey']) || !isset($_POST['registration_no']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['type'])){
+    if (!isset($_POST['apiKey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['type'])){
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -789,7 +789,6 @@ if ($_POST['type'] == 'AddStore') {
     $store_url = $_POST['store_url'];
     $apiKey = $_POST['apiKey'];
     $type = $_POST['type'];
-    $registration_no = $_POST['registration_no'];
 
     //Check if user exists
     $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
@@ -810,25 +809,6 @@ if ($_POST['type'] == 'AddStore') {
     $user = $authResult->fetch_assoc();
     $authQuery->close();
 
-    //Check if user is a store owner
-    $ownerQuery = $conn->prepare("SELECT user_id FROM store_owner WHERE registration_no = ?");
-    $ownerQuery->bind_param("s", $registration_no);
-    $ownerQuery->execute();
-    $ownerResult = $ownerQuery->get_result();
-
-    if ($ownerResult->num_rows > 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "User is not registered as a store owner"
-        ]);
-        $ownerQuery->close();
-        exit();
-    }
-
-    $owner = $ownerResult->fetch_assoc();
-    $ownerQuery->close();
-
     //Add store to database
     $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, type) VALUES (?, ?, ?)");
     $storeStmt->bind_param("sss", $store_name, $store_url, $type);
@@ -840,12 +820,44 @@ if ($_POST['type'] == 'AddStore') {
         ]);
         exit();
     }
+    $store_id = $storeStmt->insert_id;
     $storeStmt->close();
+
+    $storeQuery = $conn->prepare("SELECT store_id FROM store WHERE store_id = ?");
+    $storeQuery->bind_param("s", $store_id);
+    $storeQuery->execute();
+    $storeResult = $storeQuery->get_result();
+
+    if ($storeResult->num_rows === 0) {
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add store"
+        ]);
+        $storeQuery->close();
+        exit();
+    }
+
+    $store = $storeResult->fetch_assoc();
+    $storeQuery->close();
+
+    $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
+    $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
+    if (!$ownerStmt->execute()) {
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add owner to the created store"
+        ]);
+        $ownerStmt->close();
+        exit();
+    }
+    $ownerStmt->close();
 
     http_response_code(200);
     echo json_encode([
         "status" => "success",
-        "message" => "Successfully added store"
+        "message" => "Successfully added store and assigned owner"
     ]);
 }
 
