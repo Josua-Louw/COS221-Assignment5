@@ -36,7 +36,8 @@ $conn = Database::instance()->getConnection(); //created the connection to have 
 
 //For user we have the following login and registartion
 //login
-if ($_POST['type'] == 'Login') {
+if ($_POST['type'] == 'Login') 
+{
 
 
     $email = $_POST['email'];
