@@ -124,7 +124,8 @@ if ($_POST['type'] == 'Register')
 
 //now we have the following for products(add/delete/edit/remove)
 //getallproducts
-if ($_POST['type'] == 'GetAllProducts') {
+if ($_POST['type'] == 'GetAllProducts') 
+{
 
     $stmt = $conn->prepare("SELECT * FROM Product");
 
@@ -163,8 +164,8 @@ if ($_POST['type'] == 'GetAllProducts') {
 
 
 //add product
-if ($_POST['type'] == 'AddProduct') 
-{
+if ($_POST['type'] == 'AddProduct') {
+
 
     $title = $_POST['title'];
     $price = $_POST['price'];
@@ -174,20 +175,33 @@ if ($_POST['type'] == 'AddProduct')
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
     $brand_id = $_POST['brand_id'];
-    $Store_id = $_POST['store_id'];
+    $store_id = $_POST['store_id'];
+    $user_id = $_POST['user_id'];  
+
+    $stmt = $conn->prepare("SELECT userID,store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+    $stmt->bind_param("ii", $user_id,$store_id); 
+    $stmt->execute();
+    $stmt->store_result();
+    
+    if ($stmt->num_rows === 0) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Sorry, You are not a store owner of this product"
+        ]);
+        exit();
+    }
 
 
     $stmt = $conn->prepare("
         INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sdsssssii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id,$Store_id);
+    $stmt->bind_param("sdssssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id);
 
-    if ($stmt->execute()) 
-    {
+    if ($stmt->execute()) {
         echo json_encode([
             "status" => "success",
-            "message" => "Product added successfully to the database",
+            "message" => "Product added successfully to the database."
         ]);
     } else {
         echo json_encode([
