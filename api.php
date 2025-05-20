@@ -43,8 +43,6 @@ if ($_POST['type'] == 'Login') {
     exit();
 }
 
-
-
 //registartion
 if ($_POST['type'] == 'Register') 
 {
@@ -278,15 +276,13 @@ if ($_POST['type'] == 'GetFilteredProducts')
 
 //now we have the follwing for rating
 //Submit Rating
-if ($_POST['type'] == 'SubmitRating') {
-    header('Content-Type: application/json');
-
-    $user_id = $_POST['user_id'];
+if ($_POST['type'] == 'SubmitRating') 
+{
     $prod_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
-    $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO Rating (prod_id, rating, comment) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
 
     if ($stmt->execute()) {
@@ -295,6 +291,7 @@ if ($_POST['type'] == 'SubmitRating') {
         echo json_encode(["status" => "error", "message" => "Failed to submit rating."]);
     }
     exit();
+
 }
 
 // Get All Ratings for a Product
