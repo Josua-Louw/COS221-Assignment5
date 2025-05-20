@@ -1,5 +1,31 @@
-
 <?php
+
+/* The Null Pointers - COS221 Assignment 5
+
+    Progress:   [0] - Untested
+                [1] - Main functionality tested
+                [2] - Edge cases tested
+                [3] - Edge cases tested + secure
+
+    Types Handled:
+
+    Login               [0]
+    Register            [0]
+    AddProduct          [0]
+    DeleteProduct       [0]
+    EditProduct         [0]
+    GetFilteredProducts [0]
+    SubmitRating        [0]
+    GetRatings          [0]
+    DeleteRating        [0]
+    EditRating          [0]
+    GetStores           [0]
+    Follow              [0]
+    GetFollowing        [0]
+    Unfollow            [0]
+
+*/
+
 include 'config.php';
 
 header('Content-Type: application/json'); 
@@ -431,7 +457,7 @@ if ($_POST['type'] == 'Follow') {
     global $conn;
 
     //I used store_name but we can change it to store_is
-    if (!isset($_POST['apiKey']) || !isset($_POST['store_name'])){
+    if (!isset($_POST['apiKey']) || !isset($_POST['store_id'])){
         http_response_code(400);
         echo json_encode(["status" => "error",
             "message" => "Missing required fields"
@@ -439,7 +465,7 @@ if ($_POST['type'] == 'Follow') {
         exit();
     }
 
-    $store_name = $_POST['store_name'];
+    $store_id = $_POST['store_id'];
     $apiKey = $_POST['apiKey'];
 
     //retrieve user
@@ -461,25 +487,6 @@ if ($_POST['type'] == 'Follow') {
     $user = $authResult->fetch_assoc();
     $authQuery->close();
 
-    //retrieves store
-    $query = $conn->prepare("SELECT store_id FROM store WHERE store_name = ?");
-    $query->bind_param("s", $store_name);
-    $query->execute();
-    $queryResult = $query->get_result();
-
-    //Check if store is in database
-    if ($queryResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Invalid store name."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-    $store = $queryResult->fetch_assoc();
-    $query->close();
-
     //Add to the follows table
     try {
         $followStmt = $conn->prepare("INSERT INTO follows (store_id, user_id) VALUES (?, ?)");
@@ -487,7 +494,7 @@ if ($_POST['type'] == 'Follow') {
             throw new Exception("Prepare failed: " . $conn->error);
         }
 
-        $followStmt->bind_param("ii", $user["id"], $store["id"]);
+        $followStmt->bind_param("ii", $user["id"], $store_id);
         if (!$followStmt->execute()) {
             throw new Exception("Execute failed: " . $followStmt->error);
         }
@@ -506,8 +513,8 @@ if ($_POST['type'] == 'Follow') {
     http_response_code(200);
     echo json_encode([
         "status" => "success",
-        "message" => "Successfully followed store: {$store_name}",
-        "data" => $store['id']
+        "message" => "Successfully followed store",
+        "data" => $store_id
     ]);
 }
 
@@ -614,11 +621,8 @@ if ($_POST['type'] == 'GetFollowing') {
     }
 }
 
-/***********************************************************************************/
-
-TODO:
 //Remove a follow
-if ($_POST['type'] == 'RemoveFollow') {
+if ($_POST['type'] == 'Unfollow') {
 
     //Set connection variable [Might need to change depending on the config file]
     global $conn;
@@ -631,7 +635,7 @@ if ($_POST['type'] == 'RemoveFollow') {
         ]);
     }
 
-    $store_name = $_POST['store_id'];
+    $store_id = $_POST['store_id'];
     $apiKey = $_POST['apiKey'];
 
     //retrieve user
@@ -653,6 +657,34 @@ if ($_POST['type'] == 'RemoveFollow') {
     $user = $authResult->fetch_assoc();
     $authQuery->close();
 
+    //Remove from the follows table
+    try{
+        $followStmt = $conn->prepare("DELETE FROM follows WHERE store_id = ? AND user_id = ?");
+        if (!$followStmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        $followStmt->bind_param("ii", $store_id, $user['id']);
+        if (!$followStmt->execute()) {
+            throw new Exception("Execute failed: " . $followStmt->error);
+        }
+        $followStmt->close();
+    }catch (Exception $e) {
+        error_log("Database error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to remove follow"
+        ]);
+        exit();
+    }
+    $conn->commit();
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Successfully removed follow",
+        "data" => $store_id
+    ]);
 }
 
 ?>
