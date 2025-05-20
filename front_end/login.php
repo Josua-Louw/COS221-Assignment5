@@ -83,7 +83,7 @@
             <div id="errorMessage" class="error-message"></div>
         </form>
         <div class="register-link">
-            Don't have an account? <a href="register.html">Register here</a>
+            Don't have an account? <a href="register.php">Register here</a>
         </div>
     </div>
 
@@ -109,7 +109,7 @@
                 if (data.status === 'success') {
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
-                    window.location.href = 'index.html';
+                    window.location.href = 'index.php';
                 } else {
                     errorMessage.textContent = data.message || 'Login failed';
                 }
