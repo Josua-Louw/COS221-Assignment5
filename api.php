@@ -331,11 +331,13 @@ if ($_POST['type'] == 'GetFilteredProducts')
 //Submit Rating
 if ($_POST['type'] == 'SubmitRating') 
 {
+    $user_id = $_POST['user_id'];
     $prod_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
-    $stmt = $conn->prepare("INSERT INTO Rating (prod_id, rating, comment) VALUES (?, ?, ?, ?)");
+    
+    $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
 
     if ($stmt->execute()) {
@@ -344,11 +346,12 @@ if ($_POST['type'] == 'SubmitRating')
         echo json_encode(["status" => "error", "message" => "Failed to submit rating."]);
     }
     exit();
-
 }
 
+
 // Get All Ratings for a Product
-if ($_POST['type'] == 'GetRatings') {
+if ($_POST['type'] == 'GetRatings') 
+{
 
     $prod_id = $_POST['prod_id'];
 
@@ -372,7 +375,8 @@ if ($_POST['type'] == 'GetRatings') {
 }
 
 //Delete Rating
-if ($_POST['type'] == 'DeleteRating') {
+if ($_POST['type'] == 'DeleteRating') 
+{
   
 
     $rating_id = $_POST['rating_id'];
@@ -389,12 +393,22 @@ if ($_POST['type'] == 'DeleteRating') {
 }
 
 //Edit Rating
-if ($_POST['type'] == 'EditRating') {
-   
-
+if ($_POST['type'] == 'EditRating') 
+{
+    $user_id = $_POST['user_id'];      
     $rating_id = $_POST['rating_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
+
+    $checkStmt = $conn->prepare("SELECT * FROM Rating WHERE rating_id = ? AND user_id = ?");
+    $checkStmt->bind_param("ii", $rating_id, $user_id);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo json_encode(["status" => "error", "message" => "Unauthorized: You can only edit your own rating."]);
+        exit();
+    }
 
     $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
     $stmt->bind_param("isi", $rating, $comment, $rating_id);
@@ -406,6 +420,7 @@ if ($_POST['type'] == 'EditRating') {
     }
     exit();
 }
+
 
 
 
