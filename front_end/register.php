@@ -44,3 +44,4 @@
     </div>
 </body>
 </html>
+<script src="scripts/register.js"></script>

@@ -53,7 +53,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     showError('Unable to connect to the server. Please try again later.');
   }
 
-  login.open("POST", "localhost/COS221-Assignment5/api/api.php", true);
+  login.open("POST", "http://localhost/COS221-Assignment5/api/api.php", true);
   login.setRequestHeader("Content-Type","application/json");
   login.send(JSON.stringify(loginBody));
 });

@@ -66,7 +66,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     showError('Unable to connect to the server. Please try again later.');
   }
 
-  register.open("POST", "localhost/COS221-Assignment5/api/api.php", true);
+  register.open("POST", "http://localhost/COS221-Assignment5/api/api.php", true);
   register.setRequestHeader("Content-Type","application/json");
   register.send(JSON.stringify(registerBody));
 });
