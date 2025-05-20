@@ -713,6 +713,95 @@ if ($_POST['type'] == 'Unfollow') {
         "message" => "Successfully removed follow",
         "data" => $store_id
     ]);
+
+    if ($_POST['type'] == 'RegisterStoreOwner') {
+     
+
+    //Check if all fields are present
+    if (!isset($_POST['apiKey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['type'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $store_name = $_POST['store_name'];
+    $store_url = $_POST['store_url'];
+    $apiKey = $_POST['apiKey'];
+    $type = $_POST['type'];
+
+    //Check if user exists
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+    //Add store to database
+    $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, type) VALUES (?, ?, ?)");
+    $storeStmt->bind_param("sss", $store_name, $store_url, $type);
+    if (!$storeStmt->execute()) {
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add store"
+        ]);
+        exit();
+    }
+    $store_id = $storeStmt->insert_id;
+    $storeStmt->close();
+
+    $storeQuery = $conn->prepare("SELECT store_id FROM store WHERE store_id = ?");
+    $storeQuery->bind_param("s", $store_id);
+    $storeQuery->execute();
+    $storeResult = $storeQuery->get_result();
+
+    if ($storeResult->num_rows === 0) {
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add store"
+        ]);
+        $storeQuery->close();
+        exit();
+    }
+
+    $store = $storeResult->fetch_assoc();
+    $storeQuery->close();
+
+    $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
+    $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
+    if (!$ownerStmt->execute()) {
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add owner to the created store"
+        ]);
+        $ownerStmt->close();
+        exit();
+    }
+    $ownerStmt->close();
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Successfully added store and assigned owner"
+    ]);
+}
 }
 
 ?>
