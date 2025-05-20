@@ -173,13 +173,14 @@ if ($_POST['type'] == 'AddProduct')
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
     $brand_id = $_POST['brand_id'];
+    $Store_id = $_POST['store_id'];
 
 
     $stmt = $conn->prepare("
-        INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id)
+        INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sdsssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id);
+    $stmt->bind_param("sdsssssii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id,$Store_id);
 
     if ($stmt->execute()) 
     {
@@ -237,14 +238,15 @@ if ($_POST['type'] == 'EditProduct')
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
     $brand_id = $_POST['brand_id'];
+    $Store_id = $_POST['store_id'];
 
     $stmt = $conn->prepare("
         UPDATE Product 
-        SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?
+        SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?, store_id = ?
         WHERE prod_id = ?
     ");
 
-    $stmt->bind_param("sdsssssii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $prod_id);
+    $stmt->bind_param("sdsssssiii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $prod_id,$store_id);
 
     if ($stmt->execute()) {
         echo json_encode([
@@ -264,22 +266,16 @@ if ($_POST['type'] == 'EditProduct')
 //filter products
 if ($_POST['type'] == 'GetFilteredProducts') 
 {
-
-
-    
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
     $min_price = $_POST['min_price'] ?? null;
     $max_price = $_POST['max_price'] ?? null;
     $search = $_POST['search'] ?? null;
-    $sort_by = $_POST['sort_by'] ?? 'launch_date';
-    $order = $_POST['order'] ?? 'desc';
 
     $sql = "SELECT * FROM Product WHERE 1=1";
     $params = [];
     $types = "";
 
-  
     if (!empty($brand_id)) {
         $sql .= " AND brand_id = ?";
         $params[] = $brand_id;
@@ -309,14 +305,6 @@ if ($_POST['type'] == 'GetFilteredProducts')
         $params[] = '%' . $search . '%';
         $types .= "s";
     }
-
-    $allowedSort = ['price', 'title', 'launch_date'];
-    $allowedOrder = ['asc', 'desc'];
-
-    if (in_array($sort_by, $allowedSort) && in_array(strtolower($order), $allowedOrder)) {
-        $sql .= " ORDER BY $sort_by " . strtoupper($order);
-    }
-
 
     $stmt = $conn->prepare($sql);
     if (!empty($params)) {
@@ -360,12 +348,11 @@ if ($_POST['type'] == 'SubmitRating')
 
 // Get All Ratings for a Product
 if ($_POST['type'] == 'GetRatings') {
-    header('Content-Type: application/json');
 
     $prod_id = $_POST['prod_id'];
 
     $stmt = $conn->prepare("
-        SELECT u.name, r.rating, r.comment, r.date
+        SELECT u.name, r.rating, r.comment
         FROM Rating r
         JOIN User u ON r.user_id = u.user_id
         WHERE r.prod_id = ?
@@ -424,7 +411,7 @@ if ($_POST['type'] == 'EditRating') {
 //Fetch all the available stores. I made apiKey required but I can change it to only need the type
 if ($_POST['type'] == "GetStores")
 {
-    
+
     global $conn;
 
     // Validate API key exists
