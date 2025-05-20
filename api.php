@@ -23,7 +23,7 @@
     Follow              [0]
     GetFollowing        [0]
     Unfollow            [0]
-    AddStore            [0]
+    RegisterStoreOwner  [0]
 
 */
 
