@@ -419,6 +419,11 @@ ALTER TABLE `usersettings`
   ADD CONSTRAINT `usersettings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 COMMIT;
 
+--adding role to user just to simplify managing 
+
+ALTER TABLE `user` 
+  ADD COLUMN `role` ENUM('customer', 'store_owner', 'admin') DEFAULT 'customer';
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
