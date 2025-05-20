@@ -69,6 +69,7 @@ if ($_POST['type'] == 'Login') {
     exit();
 }
 
+
 //registartion
 if ($_POST['type'] == 'Register') 
 {
@@ -121,6 +122,45 @@ if ($_POST['type'] == 'Register')
 }
 
 //now we have the following for products(add/delete/edit/remove)
+//getallproducts
+if ($_POST['type'] == 'GetAllProducts') {
+
+    $stmt = $conn->prepare("SELECT * FROM Product");
+
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+        $products = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $products[] = [
+                'id' => $row['id'],
+                'title' => $row['title'],
+                'price' => $row['price'],
+                'product_link' => $row['product_link'],
+                'description' => $row['description'],
+                'launch_date' => $row['launch_date'],
+                'thumbnail' => $row['thumbnail'],
+                'category' => $row['category'],
+                'brand_id' => $row['brand_id'],
+            ];
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Products fetched successfully",
+            "data" => $products
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to fetch products from the database."
+        ]);
+    }
+
+    exit();
+}
+
+
 //add product
 if ($_POST['type'] == 'AddProduct') 
 {
@@ -345,7 +385,7 @@ if ($_POST['type'] == 'GetRatings') {
 
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating') {
-    header('Content-Type: application/json');
+  
 
     $rating_id = $_POST['rating_id'];
 
@@ -362,7 +402,7 @@ if ($_POST['type'] == 'DeleteRating') {
 
 //Edit Rating
 if ($_POST['type'] == 'EditRating') {
-    header('Content-Type: application/json');
+   
 
     $rating_id = $_POST['rating_id'];
     $rating = $_POST['rating'];
@@ -379,8 +419,12 @@ if ($_POST['type'] == 'EditRating') {
     exit();
 }
 
+
+
 //Fetch all the available stores. I made apiKey required but I can change it to only need the type
-if ($_POST['type'] == "GetStores"){
+if ($_POST['type'] == "GetStores")
+{
+    
     global $conn;
 
     // Validate API key exists
@@ -446,7 +490,9 @@ if ($_POST['type'] == "GetStores"){
 }
 
 //Follow a store
-if ($_POST['type'] == 'Follow') {
+if ($_POST['type'] == 'Follow') 
+{
+
 
     //Set connection variable [Might need to change depending on the config file]
     global $conn;
