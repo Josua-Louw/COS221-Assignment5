@@ -1,16 +1,137 @@
-.button-container{
-   display: flex;
-   position: relative;
-   justify-content: center;
-    align-items: center;
-    gap: 200px;
+
+header {
+    position: relative;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 1rem 0;
+    z-index: 1000;
 }
-.login-container{
+
+.main-nav {
     display: flex;
-   position: relative;
-   justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 100px;
-    left: 700px;
-    bottom:25px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #0066cc;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background: none;
+    border: none;
+    color: #333;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    z-index: 1;
+    padding: 0.5rem 0;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-content a:hover {
+    background-color: #f5f5f5;
+}
+
+.dropdown.open .dropdown-content {
+    display: block;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.auth-link {
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#login-btn {
+    color: #0066cc;
+    border: 1px solid #0066cc;
+}
+
+#login-btn:hover {
+    background-color: #e6f0fa;
+}
+
+#register-btn {
+    background-color: #0066cc;
+    color: white;
+    border: 1px solid #0066cc;
+}
+
+#register-btn:hover {
+    background-color: #0052a3;
+}
+
+@media (max-width: 768px) {
+    .main-nav {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+    
+    .auth-buttons {
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        width: 100%;
+    }
 }
