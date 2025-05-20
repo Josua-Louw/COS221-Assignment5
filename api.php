@@ -729,8 +729,9 @@ if ($_POST['type'] == 'Unfollow') {
         "message" => "Successfully removed follow",
         "data" => $store_id
     ]);
+}
 
-    if ($_POST['type'] == 'RegisterStoreOwner') {
+if ($_POST['type'] == 'RegisterStoreOwner') {
      
 
     //Check if all fields are present
@@ -817,7 +818,6 @@ if ($_POST['type'] == 'Unfollow') {
         "status" => "success",
         "message" => "Successfully added store and assigned owner"
     ]);
-}
 }
 
 ?>
