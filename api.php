@@ -219,6 +219,36 @@ if ($_POST['type'] == 'DeleteProduct')
 {
 
     $prod_id = $_POST['prod_id'];
+    $user_id = $_POST['store_id'];
+    $store_id = $_POST['userID'];
+
+    $stmt = $conn->prepare("SELECT userID,store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+    $stmt->bind_param("ii", $user_id,$store_id); 
+    $stmt->execute();
+    $stmt->store_result();
+    
+    if ($stmt->num_rows === 0) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Sorry, You are not a store owner of this product"
+        ]);
+        exit();
+    }
+
+    $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
+    $productCheck->bind_param("ii", $prod_id, $store_id);
+    $productCheck->execute();
+    $productCheck->store_result();
+
+    if ($productCheck->num_rows === 0) 
+    {
+    echo json_encode([
+        "status" => "error",
+        "message" => "This product does not belong to your store."
+    ]);
+    exit();
+    }
+
 
     $stmt = $conn->prepare("DELETE FROM Product WHERE prod_id = ?");
     $stmt->bind_param("i", $prod_id);
@@ -243,8 +273,39 @@ if ($_POST['type'] == 'DeleteProduct')
 if ($_POST['type'] == 'EditProduct') 
 {
 
-
     $prod_id = $_POST['prod_id'];
+    $user_id = $_POST['store_id'];
+    $store_id = $_POST['userID'];
+
+    $stmt = $conn->prepare("SELECT userID,store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+    $stmt->bind_param("ii", $user_id,$store_id); 
+    $stmt->execute();
+    $stmt->store_result();
+    
+    if ($stmt->num_rows === 0) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Sorry, You are not a store owner of this product"
+        ]);
+        exit();
+    }
+
+    
+    $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
+    $productCheck->bind_param("ii", $prod_id, $store_id);
+    $productCheck->execute();
+    $productCheck->store_result();
+
+    if ($productCheck->num_rows === 0) 
+    {
+    echo json_encode([
+        "status" => "error",
+        "message" => "This product does not belong to your store."
+    ]);
+    exit();
+    }
+    
+    
     $title = $_POST['title'];
     $price = $_POST['price'];
     $product_link = $_POST['product_link'];
