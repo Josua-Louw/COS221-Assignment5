@@ -27,16 +27,17 @@
 
 */
 
-include 'config.php';
+require_once 'config.php';
 
-header('Content-Type: application/json'); 
+header('Content-Type: application/json');
 
 $_POST = json_decode(file_get_contents("php://input"), true);
 
+$conn = Database::instance()->getConnection();
 //For user we have the following login and registration
 //login
 if ($_POST['type'] == 'Login') {
-    global $conn;
+     
     $email = $_POST['email'];
     $password = $_POST['password'];
 
@@ -69,7 +70,7 @@ if ($_POST['type'] == 'Login') {
 
 //registration
 if ($_POST['type'] == 'Register') {
-    global $conn;
+     
 
     $name = $_POST['name'];
     $email = $_POST['email'];
@@ -87,7 +88,7 @@ if ($_POST['type'] == 'Register') {
         exit();
     }
 
-    //$hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
     $apiKey = bin2hex(random_bytes(16));
 
     $stmt = $conn->prepare("
@@ -187,7 +188,7 @@ if ($_POST['type'] == 'DeleteProduct')
 
 //edit product
 if ($_POST['type'] == 'EditProduct') {
-    global $conn;
+     
 
     $prod_id = $_POST['prod_id'];
     $title = $_POST['title'];
@@ -224,7 +225,7 @@ if ($_POST['type'] == 'EditProduct') {
 
 //filter products
 if ($_POST['type'] == 'GetFilteredProducts') {
-    global $conn;
+     
 
     if (!isset($_POST['apiKey'])) {
         http_response_code(400);
@@ -332,7 +333,7 @@ if ($_POST['type'] == 'GetFilteredProducts') {
 //now we have the following for rating
 //Submit Rating
 if ($_POST['type'] == 'SubmitRating') {
-    global $conn;
+     
 
     if (!isset($_POST['apiKey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])){
         http_response_code(400);
@@ -368,7 +369,7 @@ if ($_POST['type'] == 'SubmitRating') {
     $authQuery->close();
 
     $stmt = $conn->prepare("INSERT INTO Rating (prod_id, rating, comment, date) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("iiiss", $user_id, $prod_id, $rating, $comment, $date);
+    $stmt->bind_param("iiiss", $user['id'], $prod_id, $rating, $comment, $date);
 
     if ($stmt->execute()) {
         http_response_code(200);
@@ -383,7 +384,7 @@ if ($_POST['type'] == 'SubmitRating') {
 
 // Get All Ratings for a Product
 if ($_POST['type'] == 'GetRatings') {
-    global $conn;
+     
 
     if (!isset($_POST['prod_id'])){
         http_response_code(400);
@@ -419,7 +420,7 @@ if ($_POST['type'] == 'GetRatings') {
 
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating') {
-    global $conn;
+     
 
     if (!isset($_POST['apiKey']) || !isset($_POST['rating_id'])){
         http_response_code(400);
@@ -453,7 +454,7 @@ if ($_POST['type'] == 'DeleteRating') {
 
 //Edit Rating
 if ($_POST['type'] == 'EditRating') {
-    global $conn;
+     
 
     if (!isset($_POST['apiKey']) || !isset($_POST['rating_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])){
         http_response_code(400);
@@ -502,7 +503,7 @@ if ($_POST['type'] == 'EditRating') {
 
 //Fetch all the available stores. I made apiKey required but I can change it to only need the type
 if ($_POST['type'] == "GetStores"){
-    global $conn;
+     
 
     //No api needed since non-users are allowed to view stores
 
@@ -540,7 +541,7 @@ if ($_POST['type'] == "GetStores"){
 if ($_POST['type'] == 'Follow') {
 
     //Set connection variable [Might need to change depending on the config file]
-    global $conn;
+     
 
     //I used store_name but we can change it to store_is
     if (!isset($_POST['apiKey']) || !isset($_POST['store_id'])){
@@ -607,7 +608,7 @@ if ($_POST['type'] == 'Follow') {
 if ($_POST['type'] == 'GetFollowing') {
 
     //Set connection variable [Might need to change depending on the config file]
-    global $conn;
+     
 
     if (!isset($_POST['apiKey'])) {
         http_response_code(400);
@@ -710,7 +711,7 @@ if ($_POST['type'] == 'GetFollowing') {
 if ($_POST['type'] == 'Unfollow') {
 
     //Set connection variable [Might need to change depending on the config file]
-    global $conn;
+     
 
     if (!isset($_POST['apiKey']) || !isset($_POST['store_id'])){
         http_response_code(400);
@@ -773,7 +774,7 @@ if ($_POST['type'] == 'Unfollow') {
 
 //Add a store
 if ($_POST['type'] == 'RegisterStoreOwner') {
-    global $conn;
+     
 
     //Check if all fields are present
     if (!isset($_POST['apiKey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['type'])){
