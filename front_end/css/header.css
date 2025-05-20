@@ -1,0 +1,16 @@
+.button-container{
+   display: flex;
+   position: relative;
+   justify-content: center;
+    align-items: center;
+    gap: 200px;
+}
+.login-container{
+    display: flex;
+   position: relative;
+   justify-content: center;
+    align-items: center;
+    gap: 100px;
+    left: 700px;
+    bottom:25px;
+}
