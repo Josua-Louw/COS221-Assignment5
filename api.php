@@ -11,7 +11,7 @@ $_POST = json_decode(file_get_contents("php://input"), true);
 //For user we have the following login and registartion
 //login
 if ($_POST['type'] == 'Login') {
-=
+
 
     $email = $_POST['email'];
     $password = $_POST['password'];
