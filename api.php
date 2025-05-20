@@ -23,8 +23,13 @@
     Follow              [0]
     GetFollowing        [0]
     Unfollow            [0]
+    AddStore            [0]
 
 */
+
+TODO:   //Rework Login
+        //Fix errors
+        //Think of other types
 
 include 'config.php';
 
@@ -32,13 +37,10 @@ header('Content-Type: application/json');
 
 $_POST = json_decode(file_get_contents("php://input"), true);
 
-
-
-//For user we have the following login and registartion
+//For user we have the following login and registration
 //login
 if ($_POST['type'] == 'Login') {
-=
-
+    global $conn;
     $email = $_POST['email'];
     $password = $_POST['password'];
 
@@ -69,9 +71,9 @@ if ($_POST['type'] == 'Login') {
     exit();
 }
 
-//registartion
-if ($_POST['type'] == 'Register') 
-{
+//registration
+if ($_POST['type'] == 'Register') {
+    global $conn;
 
     $name = $_POST['name'];
     $email = $_POST['email'];
@@ -85,19 +87,19 @@ if ($_POST['type'] == 'Register')
     $checkResult = $check->get_result();
 
     if ($checkResult->num_rows > 0) {
+        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Email already exists."]);
         exit();
     }
-
 
     //$hashedPassword = password_hash($password, PASSWORD_BCRYPT);
     $apiKey = bin2hex(random_bytes(16));
 
     $stmt = $conn->prepare("
-        INSERT INTO User (name, email, password, user_type, apiKey)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO User (name, email, password, user_type, apiKey, registrationNo)
+        VALUES (?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sssss", $name, $email, $hashedPassword, $user_type, $apiKey);
+    $stmt->bind_param("sssssi", $name, $email, $hashedPassword, $user_type, $apiKey, $registrationNo);
     
     if ($stmt->execute()) {
         $user_id = $stmt->insert_id;
@@ -184,9 +186,8 @@ if ($_POST['type'] == 'DeleteProduct')
 
 
 //edit product
-if ($_POST['type'] == 'EditProduct') 
-{
-
+if ($_POST['type'] == 'EditProduct') {
+    global $conn;
 
     $prod_id = $_POST['prod_id'];
     $title = $_POST['title'];
@@ -222,11 +223,19 @@ if ($_POST['type'] == 'EditProduct')
 }
 
 //filter products
-if ($_POST['type'] == 'GetFilteredProducts') 
-{
+if ($_POST['type'] == 'GetFilteredProducts') {
+    global $conn;
 
+    if (!isset($_POST['apiKey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
 
-    
+    $apiKey = $_POST['apiKey'];
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
     $min_price = $_POST['min_price'] ?? null;
@@ -234,6 +243,25 @@ if ($_POST['type'] == 'GetFilteredProducts')
     $search = $_POST['search'] ?? null;
     $sort_by = $_POST['sort_by'] ?? 'launch_date';
     $order = $_POST['order'] ?? 'desc';
+
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
 
     $sql = "SELECT * FROM Product WHERE 1=1";
     $params = [];
@@ -291,6 +319,9 @@ if ($_POST['type'] == 'GetFilteredProducts')
         $products[] = $row;
     }
 
+    $stmt->close();
+
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "data" => $products
@@ -298,29 +329,70 @@ if ($_POST['type'] == 'GetFilteredProducts')
     exit();
 }
 
-//now we have the follwing for rating
+//now we have the following for rating
 //Submit Rating
-if ($_POST['type'] == 'SubmitRating') 
-{
+if ($_POST['type'] == 'SubmitRating') {
+    global $conn;
+
+    if (!isset($_POST['apiKey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $apiKey = $_POST['apiKey'];
     $prod_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
+    $date = date("Y-m-d H:i:s");
 
-    $stmt = $conn->prepare("INSERT INTO Rating (prod_id, rating, comment) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+    $stmt = $conn->prepare("INSERT INTO Rating (prod_id, rating, comment, date) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("iiiss", $user_id, $prod_id, $rating, $comment, $date);
 
     if ($stmt->execute()) {
+        http_response_code(200);
         echo json_encode(["status" => "success", "message" => "Rating submitted successfully."]);
     } else {
+        http_response_code(500);
         echo json_encode(["status" => "error", "message" => "Failed to submit rating."]);
     }
+    $stmt->close();
     exit();
-
 }
 
 // Get All Ratings for a Product
 if ($_POST['type'] == 'GetRatings') {
-    header('Content-Type: application/json');
+    global $conn;
+
+    if (!isset($_POST['prod_id'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
 
     $prod_id = $_POST['prod_id'];
 
@@ -338,53 +410,18 @@ if ($_POST['type'] == 'GetRatings') {
     while ($row = $result->fetch_assoc()) {
         $ratings[] = $row;
     }
+    $stmt->close();
 
+    http_response_code(200);
     echo json_encode(["status" => "success", "data" => $ratings]);
     exit();
 }
 
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating') {
-    header('Content-Type: application/json');
-
-    $rating_id = $_POST['rating_id'];
-
-    $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
-    $stmt->bind_param("i", $rating_id);
-
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Rating deleted successfully."]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Failed to delete rating."]);
-    }
-    exit();
-}
-
-//Edit Rating
-if ($_POST['type'] == 'EditRating') {
-    header('Content-Type: application/json');
-
-    $rating_id = $_POST['rating_id'];
-    $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
-
-    $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
-    $stmt->bind_param("isi", $rating, $comment, $rating_id);
-
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Rating updated successfully."]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Failed to update rating."]);
-    }
-    exit();
-}
-
-//Fetch all the available stores. I made apiKey required but I can change it to only need the type
-if ($_POST['type'] == "GetStores"){
     global $conn;
 
-    // Validate API key exists
-    if (!isset($_POST['apiKey'])) {
+    if (!isset($_POST['apiKey']) || !isset($_POST['rating_id'])){
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -394,14 +431,50 @@ if ($_POST['type'] == "GetStores"){
     }
 
     $apiKey = $_POST['apiKey'];
+    $rating_id = $_POST['rating_id'];
 
-    // Retrieve user
     $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
     $authQuery->bind_param("s", $apiKey);
     $authQuery->execute();
     $authResult = $authQuery->get_result();
 
-    // Check if user exists
+    $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
+    $stmt->bind_param("i", $rating_id);
+
+    if ($stmt->execute()) {
+        http_response_code(200);
+        echo json_encode(["status" => "success", "message" => "Rating deleted successfully."]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => "Failed to delete rating."]);
+    }
+    exit();
+}
+
+//Edit Rating
+if ($_POST['type'] == 'EditRating') {
+    global $conn;
+
+    if (!isset($_POST['apiKey']) || !isset($_POST['rating_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $apiKey = $_POST['apiKey'];
+    $rating_id = $_POST['rating_id'];
+    $rating = $_POST['rating'];
+    $comment = $_POST['comment'];
+    $date = date("Y-m-d H:i:s");
+
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
     if ($authResult->num_rows === 0) {
         http_response_code(401);
         echo json_encode([
@@ -411,9 +484,27 @@ if ($_POST['type'] == "GetStores"){
         $authQuery->close();
         exit();
     }
-
     $user = $authResult->fetch_assoc();
     $authQuery->close();
+
+    $stmt = $conn->prepare("UPDATE ratings SET rating = ?, comment = ?, date = ? WHERE rating_id = ?");
+    $stmt->bind_param("issi", $rating, $comment, $date, $rating_id);
+
+    if ($stmt->execute()) {
+        http_response_code(200);
+        echo json_encode(["status" => "success", "message" => "Rating updated successfully."]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => "Failed to update rating."]);
+    }
+    exit();
+}
+
+//Fetch all the available stores. I made apiKey required but I can change it to only need the type
+if ($_POST['type'] == "GetStores"){
+    global $conn;
+
+    //No api needed since non-users are allowed to view stores
 
     //Fetch stores
     $storeStmt = $conn->prepare("SELECT * FROM store");
@@ -503,7 +594,6 @@ if ($_POST['type'] == 'Follow') {
         ]));
     }
 
-    $conn->commit();
 
     http_response_code(200);
     echo json_encode([
@@ -672,13 +762,90 @@ if ($_POST['type'] == 'Unfollow') {
         ]);
         exit();
     }
-    $conn->commit();
 
     http_response_code(200);
     echo json_encode([
         "status" => "success",
         "message" => "Successfully removed follow",
         "data" => $store_id
+    ]);
+}
+
+//Add a store
+if ($_POST['type'] == 'AddStore') {
+    global $conn;
+
+    //Check if all fields are present
+    if (!isset($_POST['apiKey']) || !isset($_POST['registration_no']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['type'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $store_name = $_POST['store_name'];
+    $store_url = $_POST['store_url'];
+    $apiKey = $_POST['apiKey'];
+    $type = $_POST['type'];
+    $registration_no = $_POST['registration_no'];
+
+    //Check if user exists
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE apiKey = ?");
+    $authQuery->bind_param("s", $apiKey);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    if ($authResult->num_rows === 0) {
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+
+    $user = $authResult->fetch_assoc();
+    $authQuery->close();
+
+    //Check if user is a store owner
+    $ownerQuery = $conn->prepare("SELECT user_id FROM store_owner WHERE registration_no = ?");
+    $ownerQuery->bind_param("s", $registration_no);
+    $ownerQuery->execute();
+    $ownerResult = $ownerQuery->get_result();
+
+    if ($ownerResult->num_rows > 0) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "User is not registered as a store owner"
+        ]);
+        $ownerQuery->close();
+        exit();
+    }
+
+    $owner = $ownerResult->fetch_assoc();
+    $ownerQuery->close();
+
+    //Add store to database
+    $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, type) VALUES (?, ?, ?)");
+    $storeStmt->bind_param("sss", $store_name, $store_url, $type);
+    if (!$storeStmt->execute()) {
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add store"
+        ]);
+        exit();
+    }
+    $storeStmt->close();
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Successfully added store"
     ]);
 }
 
