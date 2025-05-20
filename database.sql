@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `database`
+-- Database: `COS221_data`
 --
 
 -- --------------------------------------------------------
@@ -29,7 +29,8 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `brand` (
   `brand_id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `name` varchar(255) NOT NULL,
+  `store_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -107,7 +108,8 @@ CREATE TABLE `store` (
 
 CREATE TABLE `store_owner` (
   `user_id` int(11) NOT NULL,
-  `registration_no` varchar(255) DEFAULT NULL
+  `registration_no` varchar(255) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -193,7 +195,8 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `brand`
 --
 ALTER TABLE `brand`
-  MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT,
+  ADD CONSTRAINT `store_ibfk_1` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`);
 
 --
 -- AUTO_INCREMENT for table `products`

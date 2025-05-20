@@ -128,18 +128,25 @@ if ($_POST['type'] == 'AddProduct')
     $title = $_POST['title'];
     $price = $_POST['price'];
     $product_link = $_POST['product_link'];
-    $description = $_POST['description'];
-    $launch_date = $_POST['launch_date'];
+    $launch_date = "2025/05/20";
     $thumbnail = $_POST['thumbnail'];
-    $category = $_POST['category'];
-    $brand_id = $_POST['brand_id'];
+    $storeName = $_POST["storeName"];
 
+    $stmt = $conn->prepare("SELECT store_id FROM store WHERE name = ?;");
+    $stmt->bind_param("s", $storeName);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $storeID = $row["store_id"];
+
+    //$category = $_POST['category'];
+   // $brand_id = $_POST['brand_id'];
 
     $stmt = $conn->prepare("
-        INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Products (title, price, product_link, launch_date, thumbnail, store_id)
+        VALUES (?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sdsssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id);
+    $stmt->bind_param("sdsssi", $title, $price, $product_link, $launch_date, $thumbnail, $storeID);
 
     if ($stmt->execute()) 
     {
@@ -381,7 +388,6 @@ if ($_POST['type'] == 'EditRating') {
 
 //Fetch all the available stores. I made apiKey required but I can change it to only need the type
 if ($_POST['type'] == "GetStores"){
-    global $conn;
 
     // Validate API key exists
     if (!isset($_POST['apiKey'])) {
@@ -447,10 +453,6 @@ if ($_POST['type'] == "GetStores"){
 
 //Follow a store
 if ($_POST['type'] == 'Follow') {
-
-    //Set connection variable [Might need to change depending on the config file]
-    global $conn;
-
     //I used store_name but we can change it to store_is
     if (!isset($_POST['apiKey']) || !isset($_POST['store_id'])){
         http_response_code(400);
@@ -515,10 +517,6 @@ if ($_POST['type'] == 'Follow') {
 
 //Retrieve stores that user follows
 if ($_POST['type'] == 'GetFollowing') {
-
-    //Set connection variable [Might need to change depending on the config file]
-    global $conn;
-
     if (!isset($_POST['apiKey'])) {
         http_response_code(400);
         echo json_encode([
@@ -618,10 +616,6 @@ if ($_POST['type'] == 'GetFollowing') {
 
 //Remove a follow
 if ($_POST['type'] == 'Unfollow') {
-
-    //Set connection variable [Might need to change depending on the config file]
-    global $conn;
-
     if (!isset($_POST['apiKey']) || !isset($_POST['store_id'])){
         http_response_code(400);
         echo json_encode([
@@ -680,6 +674,42 @@ if ($_POST['type'] == 'Unfollow') {
         "message" => "Successfully removed follow",
         "data" => $store_id
     ]);
+}
+
+if ($_POST['type'] == 'CreateStore') {
+    $name = $_POST['name'];
+
+    $stmt = $conn->prepare("SELECT * FROM store WHERE name = ?;");
+    $stmt->bind_param("s", $name);
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Store is in the database",
+        ]);
+        return;
+    }
+
+    $stmt = $conn->prepare("
+        INSERT INTO store (name)
+        VALUES (?)
+    ");
+    $stmt->bind_param("s", $name);
+
+    if ($stmt->execute()) 
+    {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Store added successfully to the database",
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to add product to the database."
+        ]);
+    }
 }
 
 ?>
