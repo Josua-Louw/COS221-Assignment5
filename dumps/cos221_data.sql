@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 20, 2025 at 08:25 PM
+-- Generation Time: May 21, 2025 at 10:43 AM
 -- Server version: 11.7.2-MariaDB
 -- PHP Version: 8.2.12
 
@@ -392,7 +392,8 @@ CREATE TABLE `users` (
   `theme` enum('light','dark') NOT NULL DEFAULT 'light',
   `min_price` decimal(10,2) DEFAULT NULL,
   `max_price` decimal(10,2) DEFAULT NULL,
-  `apiKey` varchar(255) DEFAULT NULL
+  `apiKey` varchar(255) DEFAULT NULL,
+  `user_type` enum('customer','store_owner','admin','') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
