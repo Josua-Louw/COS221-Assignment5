@@ -199,19 +199,16 @@ if ($_POST['type'] == 'EditProduct')
     $title = $_POST['title'];
     $price = $_POST['price'];
     $product_link = $_POST['product_link'];
-    $description = $_POST['description'];
-    $launch_date = $_POST['launch_date'];
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
-    $brand_id = $_POST['brand_id'];
 
     $stmt = $conn->prepare("
-        UPDATE Product 
-        SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?
-        WHERE prod_id = ?
+        UPDATE Products 
+        SET title = ?, price = ?, product_link = ?, thumbnail = ?, category = ?
+        WHERE product_id = ?
     ");
 
-    $stmt->bind_param("sdsssssii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $prod_id);
+    $stmt->bind_param("sdsssi", $title, $price, $product_link, $thumbnail, $category, $prod_id);
 
     if ($stmt->execute()) {
         echo json_encode([
