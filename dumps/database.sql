@@ -126,7 +126,8 @@ CREATE TABLE `users` (
   `theme` enum('light','dark') NOT NULL DEFAULT 'light',
   `min_price` decimal(10,2) DEFAULT NULL,
   `max_price` decimal(10,2) DEFAULT NULL,
-  `apiKey` varchar(255) DEFAULT NULL
+  `apiKey` varchar(255) DEFAULT NULL,
+  `user_type` enum('customer','store_owner','admin','') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

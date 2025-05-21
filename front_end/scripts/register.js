@@ -50,7 +50,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     if (this.readyState == 4) {
       if (this.status == 200) {
         alert('Registration successful! Please login.');
-        window.location.href = 'login.php';
+       // window.location.href = 'login.php';
       } else {
         try {
           const repsonse = JSON.parse(this.responseText)

@@ -34,7 +34,7 @@ $_POST = json_decode(file_get_contents("php://input"), true);
 
 $conn = Database::instance()->getConnection(); //created the connection to have global scope. Not sure if local scope would be safer?
 
-if (isset($_POST['type'])) {
+if (!isset($_POST['type'])) {
     http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Bad Request"]);
     exit();
@@ -58,7 +58,8 @@ if ($_POST['type'] == 'Login')
     $result = $stmt->get_result();
 
     if ($user = $result->fetch_assoc()) {
-        if (password_verify($password, $user['password'])) {
+        $password = hash_pbkdf2("sha256", $password, $user['salt'], 10000, 127);
+        if ($password == $user['password']) {
             http_response_code(200);
             echo json_encode([
                 "status" => "success",
@@ -92,7 +93,7 @@ if ($_POST['type'] == 'Register') {
     $password = $_POST['password'];
     $user_type = $_POST['user_type'];
 
-    $check = $conn->prepare("SELECT * FROM User WHERE email = ?");
+    $check = $conn->prepare("SELECT * FROM users WHERE email = ?");
     $check->bind_param("s", $email);
     $check->execute();
     $checkResult = $check->get_result();
@@ -103,14 +104,16 @@ if ($_POST['type'] == 'Register') {
         exit();
     }
 
-    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    $salt = bin2hex(random_bytes(127));
+    $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
     $apiKey = bin2hex(random_bytes(16));
+    
 
     $stmt = $conn->prepare("
-        INSERT INTO User (name, email, password, user_type, apiKey)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO Users (name, email, password, salt, user_type, apiKey)
+        VALUES (?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sssss", $name, $email, $hashedPassword, $user_type, $apiKey);
+    $stmt->bind_param("ssssss", $name, $email, $hashedPassword, $salt, $user_type, $apiKey);
 
     if ($stmt->execute()) {
         $user_id = $stmt->insert_id;
