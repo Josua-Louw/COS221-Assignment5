@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2025 at 11:33 AM
+-- Generation Time: May 21, 2025 at 10:43 AM
 -- Server version: 11.7.2-MariaDB
 -- PHP Version: 8.2.12
 
@@ -50,8 +50,6 @@ CREATE TABLE `customers` (
 INSERT INTO `customers` (`user_id`) VALUES
 (1);
 
--- --------------------------------------------------------
-
 --
 -- Table structure for table `follows`
 --
@@ -83,8 +81,6 @@ CREATE TABLE `products` (
 --
 -- Dumping data for table `products`
 --
-
-INSERT INTO `products` (`product_id`, `title`, `thumbnail`, `launch_date`, `product_link`, `price`, `description`, `category`, `store_id`, `brand_id`) VALUES
 (2, 'To-Daisies A6 Notepad', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3061ba65dc1453a1eefe635b3d87a1df74e.webp', '2025-05-20', 'https://www.google.com/shopping/product/16577154852900363281?gl=za', 55.00, NULL, 'stationery', 4, NULL),
 (3, 'Stationery Essentials Premium Mystery Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306b5bcc998321af599e3614de2757a9d32.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:10573723084953798893', 700.00, NULL, 'stationery', 1, NULL),
 (4, 'Staedtler Small Stationery Kit', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3067cea55d352795120a183ad30d6522bbb.webp', '2025-05-20', 'https://www.google.com/shopping/product/4520565260507008483?gl=za', 59.99, NULL, 'stationery', 1, NULL),
@@ -403,7 +399,7 @@ CREATE TABLE `users` (
   `user_type` enum('customer','store_owner','admin','') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
+
 -- Dumping data for table `users`
 --
 
@@ -411,6 +407,7 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `m
 (1, 'John Nathan', '5766c9fd4b34aec7a9a7cd84a5e42ab0510d244c1176a99520d822cef60ef187518984281e20b8d9552de7608d2a89a7cfdac73545242a7829ad01c27ced191', '48088c4dbe281c415db5bf2bc72117dcaeb99c289b2ac66c926e1334cc02b88078c44db679176d04dd9e22cb7f491e422bd6b7e6d89cd8c904abc0fb10b3de857c090e54e3969754c3f9e2c98273626b4263ca55ba2f6919b0c6dc332608cdae654867ca6e48b44ee3b445c8f8e9ee432b940959b4ced09aa34f353d62dbae', 'johnnathan@gmail.com', 'light', NULL, NULL, '36cf8d0b74a40ef80d4dad5817770faf', 'customer');
 
 --
+
 -- Indexes for dumped tables
 --
 
@@ -499,8 +496,7 @@ ALTER TABLE `store`
 --
 -- AUTO_INCREMENT for table `users`
 --
-ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables

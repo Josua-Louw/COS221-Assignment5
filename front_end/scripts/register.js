@@ -32,31 +32,41 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     return;
   }
 
-  const formData = new FormData();
-  formData.append('type', 'Register');
-  formData.append('name', name);
-  formData.append('email', email);
-  formData.append('password', password);
-  formData.append('user_type', user_type);
-  if (user_type === 'Store Owner') {
-    formData.append('registrationNo', registrationNo);
+  const registerBody = {
+    'type': 'Register',
+    'name': name,
+    'email': email,
+    'password': password,
+    'user_type': user_type
   }
 
-  try {
-    const res = await fetch('api.php', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
+  if (user_type === 'Store Owner') {
+    registerBody.registrationNo = registrationNo;
+  }
 
-    if (data.status === 'success') {
-      alert('Registration successful! Please login.');
-      window.location.href = 'login.php';
-    } else {
-      showError(data.message || 'Registration failed');
+  const register = new XMLHttpRequest;
+
+  register.onload = function () {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        alert('Registration successful! Please login.');
+        window.location.href = 'login.php';
+      } else {
+        try {
+          const repsonse = JSON.parse(this.responseText)
+          showError(repsonse.message || 'Registration failed');
+        } catch {
+          showError('Registration failed');
+        }
+      }
     }
-  } catch (err) {
-    console.error(err);
+  }
+
+  register.onerror = function () {
     showError('Unable to connect to the server. Please try again later.');
   }
+
+  register.open("POST", "http://localhost/COS221-Assignment5/api/api.php", true);
+  register.setRequestHeader("Content-Type","application/json");
+  register.send(JSON.stringify(registerBody));
 });
