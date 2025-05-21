@@ -34,6 +34,12 @@ $_POST = json_decode(file_get_contents("php://input"), true);
 
 $conn = Database::instance()->getConnection(); //created the connection to have global scope. Not sure if local scope would be safer?
 
+if (isset($_POST['type'])) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Bad Request"]);
+    exit();
+}
+
 //For user we have the following login and registration
 if ($_POST['type'] == 'Login') 
 {
