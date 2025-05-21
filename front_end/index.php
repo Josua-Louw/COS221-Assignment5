@@ -9,7 +9,7 @@ require_once 'header.php';
     <link rel = "stylesheet" href = "css/index.css">
 </head>
 <body>
-    <?php include "header.php"?><div class = "logo-container">
+    <div class = "logo-container">
         <!--Need logo-->
         <img src = "img/..." alt = "Logo">
     </div>
