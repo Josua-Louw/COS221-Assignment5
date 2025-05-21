@@ -34,8 +34,7 @@ $_POST = json_decode(file_get_contents("php://input"), true);
 
 $conn = Database::instance()->getConnection(); //created the connection to have global scope. Not sure if local scope would be safer?
 
-//For user we have the following login and registartion
-//login
+//For user we have the following login and registration
 if ($_POST['type'] == 'Login') 
 {
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
@@ -67,11 +66,12 @@ if ($_POST['type'] == 'Login')
             ]);
             exit();
         } else {
-            http_response_code(401);
+            http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Invalid email or password"]);
         }
+        $stmt->close();
     } else {
-        http_response_code(401);
+        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Invalid email or password"]);
     }
 
@@ -130,6 +130,7 @@ if ($_POST['type'] == 'Register') {
         echo json_encode(["status" => "error", "message" => "Failed to register user."]);
     }
 
+    $stmt->close();
     exit();
 }
 
@@ -495,7 +496,6 @@ if ($_POST['type'] == 'GetFilteredProducts')
 }
 
 //now we have the following for rating
-//Submit Rating
 if ($_POST['type'] == 'SubmitRating') 
 {
     if (!isset($_POST['user_id']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
@@ -546,6 +546,14 @@ if ($_POST['type'] == 'SubmitRating')
 // Get All Ratings for a Product
 if ($_POST['type'] == 'GetRatings') 
 {
+    if (!isset($_POST['prod_id'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "prod_id is required"
+        ]);
+        exit();
+    }
 
     $prod_id = $_POST['prod_id'];
 
@@ -563,7 +571,9 @@ if ($_POST['type'] == 'GetRatings')
     while ($row = $result->fetch_assoc()) {
         $ratings[] = $row;
     }
+    $stmt->close();
 
+    http_response_code(200);
     echo json_encode(["status" => "success", "data" => $ratings]);
     exit();
 }
@@ -571,18 +581,46 @@ if ($_POST['type'] == 'GetRatings')
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating') 
 {
-  
+    if (!isset($_POST['rating_id']) || !isset($_POST['user_id'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
 
+    $user_id = $_POST['user_id'];
     $rating_id = $_POST['rating_id'];
+
+    $authQuery = $conn->prepare("SELECT id FROM user WHERE id = ?");
+    $authQuery->bind_param("i", $user_id);
+    $authQuery->execute();
+    $authResult = $authQuery->get_result();
+
+    if ($authResult->num_rows === 0) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Authentication failed. Invalid credentials."
+        ]);
+        $authQuery->close();
+        exit();
+    }
+
+    $authQuery->close();
 
     $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
     $stmt->bind_param("i", $rating_id);
 
     if ($stmt->execute()) {
+        http_response_code(200);
         echo json_encode(["status" => "success", "message" => "Rating deleted successfully."]);
     } else {
+        http_response_code(500);
         echo json_encode(["status" => "error", "message" => "Failed to delete rating."]);
     }
+    $stmt->close();
     exit();
 }
 
@@ -600,6 +638,7 @@ if ($_POST['type'] == 'EditRating')
     $result = $checkStmt->get_result();
 
     if ($result->num_rows === 0) {
+        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Unauthorized: You can only edit your own rating."]);
         exit();
     }
@@ -608,10 +647,13 @@ if ($_POST['type'] == 'EditRating')
     $stmt->bind_param("isi", $rating, $comment, $rating_id);
 
     if ($stmt->execute()) {
+        http_response_code(200);
         echo json_encode(["status" => "success", "message" => "Rating updated successfully."]);
     } else {
+        http_response_code(500);
         echo json_encode(["status" => "error", "message" => "Failed to update rating."]);
     }
+    $stmt->close();
     exit();
 }
 
@@ -648,7 +690,6 @@ if ($_POST['type'] == "GetStores")
         exit();
     }
 
-    $user = $authResult->fetch_assoc();
     $authQuery->close();
 
     //Fetch stores
@@ -910,6 +951,7 @@ if ($_POST['type'] == 'Unfollow') {
     ]);
 }
 
+//Registers user as a store owner
 if ($_POST['type'] == 'RegisterStoreOwner') {
 
     //Check if all fields are present
@@ -997,4 +1039,5 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         "message" => "Successfully added store and assigned owner"
     ]);
 }
+
 ?>
