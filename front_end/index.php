@@ -1,3 +1,6 @@
+<?php
+require_once 'header.php';
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,8 +9,7 @@
     <link rel = "stylesheet" href = "css/index.css">
 </head>
 <body>
-    
-    <div class = "logo-container">
+    <?php include "header.php"?><div class = "logo-container">
         <!--Need logo-->
         <img src = "img/..." alt = "Logo">
     </div>
@@ -18,6 +20,8 @@
             <input type = "text" placeholder="Search 🔍" id = "search-container" onkeyup="">
         </label>
     </div>
-
+    <?php
+require_once 'footer.php';
+?>
 </body>
 </html>
