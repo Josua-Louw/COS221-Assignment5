@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="css/register.css">
-    <script src="js/register.js"></script>
 </head>
 <body>
     <div class="register-container">
@@ -44,3 +43,4 @@
     </div>
 </body>
 </html>
+<script src="scripts/register.js"></script>
