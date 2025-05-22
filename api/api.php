@@ -258,7 +258,9 @@ if ($_POST['type'] == 'GetAllProducts')
         $stmt->close();
         $products = [];
 
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) 
+        {
+
             $brandQuery = $conn->prepare("SELECT name FROM Brand where brand_id = ?");
             $brandQuery->bind_param("i", $row['brand_id']);
             $brandQuery->execute();
@@ -1182,7 +1184,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     ]);
 }
 
-if ($_POST['type'] == 'update_settings') 
+if ($_POST['type'] == ' SavePrefrences') 
 {
 
     if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
@@ -1208,7 +1210,7 @@ if ($_POST['type'] == 'update_settings')
         echo json_encode(["status" => "error", "message" => "Error updating the user settings"]);
     }
     exit();
-    
+
 }
 
 
