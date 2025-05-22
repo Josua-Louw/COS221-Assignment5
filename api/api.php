@@ -131,6 +131,7 @@ if ($_POST['type'] == 'AddProduct')
     $launch_date = "2025/05/20";
     $thumbnail = $_POST['thumbnail'];
     $storeName = $_POST["storeName"];
+    $category = $_POST["category"];
 
     $stmt = $conn->prepare("SELECT store_id FROM store WHERE name = ?;");
     $stmt->bind_param("s", $storeName);
@@ -143,10 +144,10 @@ if ($_POST['type'] == 'AddProduct')
    // $brand_id = $_POST['brand_id'];
 
     $stmt = $conn->prepare("
-        INSERT INTO Products (title, price, product_link, launch_date, thumbnail, store_id)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO Products (title, price, product_link, launch_date, thumbnail, store_id, category)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("sdsssi", $title, $price, $product_link, $launch_date, $thumbnail, $storeID);
+    $stmt->bind_param("sdsssis", $title, $price, $product_link, $launch_date, $thumbnail, $storeID, $category);
 
     if ($stmt->execute()) 
     {
@@ -674,7 +675,7 @@ if ($_POST['type'] == 'Unfollow') {
 }
 
 if ($_POST['type'] == 'CreateStore') {
-    $name = $_POST['name'];
+    $name = $_POST['storeName'];
 
     $stmt = $conn->prepare("SELECT * FROM store WHERE name = ?;");
     $stmt->bind_param("s", $name);

@@ -11,9 +11,9 @@ const response = fetch('stationarySearch.json').then(response => response.json()
     }
 
     var addDataBody = {
-        "type": "EditProduct",
+        "type": "AddProduct",
         "prod_id": i,
-        "category": "stationery",
+        "category": "electronics",
         "title": result.title,
         "price": result.extracted_price,
         "product_link": result.product_link,
@@ -23,7 +23,7 @@ const response = fetch('stationarySearch.json').then(response => response.json()
 
     i++;
     
-    addData.open("POST", "api.php");
+    addData.open("POST", "api/api.php");
     addData.setRequestHeader("Content-Type","application/json");
     addData.send(JSON.stringify(addDataBody));
 
