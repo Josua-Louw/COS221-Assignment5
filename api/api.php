@@ -2,7 +2,8 @@
 
 /* The Null Pointers - COS221 Assignment 5
 
-    Progress:   [0] - Untested
+    Progress:   [-1] - Unfinished
+                [0] - Untested
                 [1] - Main functionality tested
                 [2] - Edge cases tested
                 [3] - Edge cases tested + secure
@@ -10,21 +11,31 @@
     Types Handled:
 
     Login               [0]
-    Register            [0]
-    AddProduct          [0]
-    DeleteProduct       [0]
-    EditProduct         [0]
-    GetFilteredProducts [0]
-    SubmitRating        [0]
-    GetRatings          [0]
-    DeleteRating        [0]
-    EditRating          [0]
-    GetStores           [0]
-    Follow              [0]
-    GetFollowing        [0]
-    Unfollow            [0]
+    Register            [-1]
+    AddProduct          [-1]
+    DeleteProduct       [-1]
+    EditProduct         [-1]
+    GetFilteredProducts [-1]
+    SubmitRating        [-1]
+    GetRatings          [-1]
+    DeleteRating        [-1]
+    EditRating          [-1]
+    GetStores           [-1]
+    Follow              [-1]
+    GetFollowing        [-1]
+    Unfollow            [-1]
+    RegisterStoreOwner  [-1]
 
 */
+
+//TODO:
+//  Improve Errors
+//  Test All Types
+//  Create Types:
+//      - AddBrand
+//      - RemoveBrand
+//      - GetBrands
+
 
 require_once 'config.php';
 
@@ -32,61 +43,103 @@ header('Content-Type: application/json');
 
 $_POST = json_decode(file_get_contents("php://input"), true);
 
-$conn = Database::instance()->getConnection(); //created the connection to have global scope. Not sure if local scope would be safer?
+//created the connection to have global scope
+$conn = Database::instance()->getConnection();
 
+//Checks if input has type field
 if (!isset($_POST['type'])) {
     http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Bad Request"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Bad Request - 'type' field is missing",
+        "API Line" => __LINE__
+    ]);
     exit();
 }
 
 //For user we have the following login and registration
-if ($_POST['type'] == 'Login') 
-{
+if ($_POST['type'] == 'Login') {
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Missing required fields"]);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing 'email' or 'password' field",
+            "Type Handler" => "Login",
+            "API Line" => __LINE__
+        ]);
         exit();
     }
 
     $email = $_POST['email'];
     $password = $_POST['password'];
+    try {
+        $userStmt = $conn->prepare("SELECT * FROM Users WHERE email = ?");
+        $userStmt->bind_param("s", $email);
+        $userStmt->execute();
+        $userResult = $userStmt->get_result();
 
-    $stmt = $conn->prepare("SELECT * FROM Users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($user = $result->fetch_assoc()) {
-        $password = hash_pbkdf2("sha256", $password, $user['salt'], 10000, 127);
-        if ($password == $user['password']) {
-            http_response_code(200);
+        if ($userResult->num_rows === 0) {
+            http_response_code(401);
             echo json_encode([
-                "status" => "success",
-                "message" => "Login successful",
-                "user" => [
-                    "user_id" => $user['user_id'],
-                    "name" => $user['name'],
-                    "email" => $user['email'],
-                    "user_type" => $user['user_type']
-                ]
+                "status" => "error",
+                "message" => "Invalid email or password",
+                "Type Handler" => "Login"
+            ]);
+            $userStmt->close();
+            exit();
+        }
+
+        $user = $userResult->fetch_assoc();
+        $userStmt->close();
+
+        $hashedPassword = hash_pbkdf2("sha256", $password, $user['salt'], 10000, 127);
+        if (!hash_equals($user['password'], $hashedPassword)) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Invalid email or password",
+                "Type Handler" => "Login"
             ]);
             exit();
-        } else {
-            http_response_code(400);
-            echo json_encode(["status" => "error", "message" => "Invalid email or password"]);
         }
-        $stmt->close();
-    } else {
-        http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Invalid email or password"]);
-    }
 
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Login successful",
+            "user" => [
+                "user_id" => $user['user_id'],
+                "name" => $user['name'],
+                "email" => $user['email'],
+                "user_type" => $user['user_type']
+            ]
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        error_log("Login error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Database error",
+            "Type Handler" => "Login",
+            "API Line" => __LINE__
+        ]);
+    } catch (Exception $e) {
+        error_log("Login error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Unknown error",
+            "Type Handler" => "Login",
+            "API Line" => __LINE__
+        ]);
+    }
     exit();
 }
 
 //registration
 if ($_POST['type'] == 'Register') {
+
+
 
     $name = $_POST['name'];
     $email = $_POST['email'];
@@ -151,9 +204,30 @@ if ($_POST['type'] == 'GetAllProducts')
 
     if ($stmt->execute()) {
         $result = $stmt->get_result();
-        $products = [];
+        $stmt->close();
 
+
+
+        $products = [];
         while ($row = $result->fetch_assoc()) {
+
+            $brandQuery = $conn->prepare("SELECT name FROM Brand where brand_id = ?");
+            $brandQuery->bind_param("i", $row['brand_id']);
+            $brandQuery->execute();
+            $brandResult = $brandQuery->get_result();
+
+            if ($brandResult->num_rows === 0) {
+                http_response_code(400);
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "Brand does not exist."
+                ]);
+                $brandQuery->close();
+            }
+
+            $brand = $brandResult->fetch_assoc();
+            $brandQuery->close();
+
             $products[] = [
                 'id' => $row['id'],
                 'title' => $row['title'],
@@ -163,7 +237,7 @@ if ($_POST['type'] == 'GetAllProducts')
                 'launch_date' => $row['launch_date'],
                 'thumbnail' => $row['thumbnail'],
                 'category' => $row['category'],
-                'brand_id' => $row['brand_id'],
+                'brand_name' => $brand
             ];
         }
         http_response_code(200);
