@@ -9,21 +9,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.getElementById('theme').value = savedTheme;
   document.body.classList.toggle('dark-theme', savedTheme === 'dark');
-  
-  // maybe also pre‐select stores based on saved prefs??
+  const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+  if (prefs.price_min != null && prefs.price_max != null) {
+    document.getElementById('price-filter').value =
+      `${parseFloat(prefs.price_min)}-${parseFloat(prefs.price_max)}`;
+  }
 });
 
 document.getElementById('settingsForm').addEventListener('submit', async e => {
   e.preventDefault();
-
+  const apiKey = localStorage.getItem('apikey');
+  if (!apiKey) {
+    showMessage('You must be logged in to alter user settings.', true);
+    return;
+  }
   const theme = document.getElementById('theme').value;
-  const storeOptions = Array.from(document.getElementById('stores').selectedOptions);
-  const stores = storeOptions.map(o => o.value);
+  const priceRange= document.getElementById('price-filter').value;
+  let priceMin = null, priceMax = null;
+  if (priceRange && priceRange !== 'all') {
+    const [min, max] = priceRange.split('-').map(parseFloat);
+    priceMin = min; priceMax = max;
+  }
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  const payload = {
+    type:             'SaveSettings',
+    apikey:           apiKey,
+    preferred_theme:  theme,
+    price_min:        priceMin,
+    price_max:        priceMax,
+  };
+
+  if (email) payload.new_email = email;
+  if (password) payload.new_password = password;
 
   localStorage.setItem('theme', theme);
+  localStorage.setItem('preferences', JSON.stringify({
+    price_min: priceMin, price_max: priceMax
+  }));
   document.body.classList.toggle('dark-theme', theme === 'dark');
-
-  const payload = { type: 'SaveSettings', theme, stores };
+  
   try {
     const res = await fetch('api.php', {
       method: 'POST',
