@@ -4,7 +4,7 @@ require_once 'header.php';
 
 <link rel="stylesheet" href="css/user_settings.css">
 
-<div class="settings-container"
+<div class="settings-container">
   <h2>Your Settings</h2>
   <form id="settingsForm">
     <div class="form-group theme-toggle">

@@ -59,7 +59,16 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
     const data = await res.json();
 
     if (data.status === 'success') {
-      showMessage('Settings saved!');
+        showMessage('Settings saved!');
+        if (data.data && data.data.preferences) {
+            const p = data.data.preferences;
+            if (p.price_min != null && p.price_max != null) {
+                p.price_min = parseFloat(p.price_min).toFixed(2);
+                p.price_max = parseFloat(p.price_max).toFixed(2);
+            }
+            Cookies.set('preferences', JSON.stringify(p), { expires: 7, path: '/' });
+            console.log('Updated preferences in cookies:', p);
+        }
     } else {
       showMessage(data.message || 'Save failed', true);
     }
