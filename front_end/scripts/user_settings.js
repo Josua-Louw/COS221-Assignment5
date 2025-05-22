@@ -34,7 +34,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
   const password = document.getElementById('password').value;
 
   const payload = {
-    type:             'SaveSettings',
+    type:             'update_settings',
     apikey:           apiKey,
     preferred_theme:  theme,
     price_min:        priceMin,
