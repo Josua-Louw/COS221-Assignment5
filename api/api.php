@@ -1182,4 +1182,34 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     ]);
 }
 
+if ($_POST['type'] == 'update_settings') 
+{
+
+    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $theme = $_POST['theme'];
+    $min_price = $_POST['min_price'];
+    $max_price = $_POST['max_price'];
+    $api_key = $_POST['apikey'];
+
+    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE api_key = ?");
+    $stmt->bind_param("iiii", $theme, $min_price, $api_key);
+
+    if ($stmt->execute()) {
+        echo json_encode(["status" => "success", "message" => "Updated user settings"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Error updating the user settings"]);
+    }
+    exit();
+    
+}
+
+
 ?>
