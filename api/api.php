@@ -12,7 +12,8 @@
 
     Login               [0]
     Register            [0]
-    AddProduct          [-1]
+    GetAllProducts      [0]
+    AddProduct          [0]
     DeleteProduct       [-1]
     EditProduct         [-1]
     GetFilteredProducts [-1]
@@ -25,6 +26,7 @@
     GetFollowing        [-1]
     Unfollow            [-1]
     RegisterStoreOwner  [-1]
+    SavePreference      [-1]
 
 */
 
@@ -308,7 +310,7 @@ if ($_POST['type'] == 'AddProduct') {
         $brandResult = $brandStmt->get_result();
 
         if ($brandResult->num_rows === 0) {
-            createBrand($conn, $brand_name);
+           $brand_id = createBrand($conn, $brand_name);
         }
 
         $brandStmt->close();
@@ -1158,49 +1160,8 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     ]);
 }
 
-function createBrand($conn, $brand_name)
-{
-    $conn->begin_transaction();
-
-    $stmt = $conn->prepare("INSERT INTO brand (brand_name) VALUES (?)");
-    $stmt->bind_param("s", $brand_name);
-    $stmt->execute();
-    $stmt->close();
-
-    $conn->commit();
-}
-
-function catchErrorSQL($conn, $error, $line, $type , $rollback = false){
-    if ($rollback) {
-        $conn->rollback();
-    }
-    error_log("Register error: " . $error);
-    http_response_code(500);
-    echo json_encode([
-        "status" => "error",
-        "message" => "Database error",
-        "Type Handler" => $type,
-        "API Line" => $line
-    ]);
-    exit();
-}
-
-function catchError($conn, $error, $line, $type, $rollback = false){
-    if ($rollback) {
-        $conn->rollback();
-    }
-    error_log("Register error: " . $error);
-    http_response_code(500);
-    echo json_encode([
-        "status" => "error",
-        "message" => "Database error",
-        "Type Handler" => $type,
-        "API Line" => $line
-    ]);
-    exit();
-}
-
-if ($_POST['type'] == ' SavePrefrences')
+//Saves user's preference: filtering, theme, ens.
+if ($_POST['type'] == 'SavePreference')
 {
 
     if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
@@ -1227,6 +1188,84 @@ if ($_POST['type'] == ' SavePrefrences')
     }
     exit();
 
+}
+
+//Add a brand. Admin use only
+if ($_POST['type'] == 'AddBrand'){
+
+    if (!isset($_POST['apikey']) || !isset($_POST['brand_name'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing apikey or brand_name field",
+            "Type Handler" => "AddBrand",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $brand_name = $_POST['brand_name'];
+
+    //************************************** admin ************************************//
+
+    try {
+        $conn->begin_transaction();
+        $brand_id = createBrand($conn, $brand_name);
+    } catch (Exception $e) {
+        catchErrorSQL($conn, $e, "AddBrand", __LINE__, true);
+    } catch (Error $e) {
+        catchError($conn, $e, "AddBrand", __LINE__, true);
+    }
+    exit();
+}
+
+//creates a new brand
+function createBrand($conn, $brand_name)
+{
+    $conn->begin_transaction();
+
+    $stmt = $conn->prepare("INSERT INTO brand (brand_name) VALUES (?)");
+    $stmt->bind_param("s", $brand_name);
+    $stmt->execute();
+
+    $brand_id = $stmt->insert_id;
+    $stmt->close();
+
+    $conn->commit();
+    return $brand_id;
+}
+
+//Catches SQL errors
+function catchErrorSQL($conn, $error, $line, $type , $rollback = false){
+    if ($rollback) {
+        $conn->rollback();
+    }
+    error_log("Register error: " . $error);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error",
+        "Type Handler" => $type,
+        "API Line" => $line
+    ]);
+    exit();
+}
+
+//Catches errors
+function catchError($conn, $error, $line, $type, $rollback = false){
+    if ($rollback) {
+        $conn->rollback();
+    }
+    error_log("Register error: " . $error);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error",
+        "Type Handler" => $type,
+        "API Line" => $line
+    ]);
+    exit();
 }
 
 ?>
