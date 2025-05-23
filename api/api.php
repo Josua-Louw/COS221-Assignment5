@@ -550,10 +550,11 @@ if ($_POST['type'] == 'GetFilteredProducts')
         ]);
         exit();
     }
-    $apikey = $_POST['apikey'];
+
+    $product_id = $_POST['product_id'];
 
     $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
+    $authQuery->bind_param("s", $product_id);
     $authQuery->execute();
     $authResult = $authQuery->get_result();
 
