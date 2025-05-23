@@ -46,8 +46,19 @@ header('Content-Type: application/json');
 
 $_POST = json_decode(file_get_contents("php://input"), true);
 
-//created the connection to have global scope
-$conn = Database::instance()->getConnection();
+//creates the connection
+try {
+    $conn = Database::instance()->getConnection();
+} catch (Exception $e) {
+    error_log("Register error: " . $e);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error",
+        "Type Handler" => "creating connection",
+        "API Line" => __LINE__
+    ]);
+}
 
 //Checks if input has type field
 if (!isset($_POST['type'])) {
@@ -170,7 +181,11 @@ if ($_POST['type'] == 'Register') {
 
     $salt = bin2hex(random_bytes(127));
     $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
-    $apikey = bin2hex(random_bytes(16));
+    try {
+        $apikey = generateApikey();
+    } catch (Exception $e) {
+
+    }
 
     try {
 
@@ -1266,6 +1281,66 @@ function catchError($conn, $error, $line, $type, $rollback = false){
         "API Line" => $line
     ]);
     exit();
+}
+
+/*
+    This function generates an apikey that is unique.
+*/
+function generateApikey() {
+    $apikey = "";
+    $conn = Database::instance()->getConnection();
+    do {
+        try {
+            $apikey = bin2hex(random_bytes(16));
+            $stmt = $conn->prepare("SELECT apikey FROM users WHERE apikey = ?;");
+            $stmt->bind_param("s", $apikey);
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+        } catch (mysqli_sql_exception $e) {
+            catchErrorSQL($conn, $e, __LINE__, "generate apikey", false);
+        } catch (Exception $e) {
+            catchError($conn, $e, __LINE__, "generate apikey", false);
+        }
+
+    } while ($result->num_rows != 0);
+
+    return $apikey;
+}
+
+/*
+    This function uses the apikey to see if the user is actually logged in by checking the session variable
+    and then returns the user_id if successfull
+    otherwise it catches errors or sends back an unauthorised message.
+*/
+function authenticate($conn, $apikey) {
+    session_start();
+    if (!isset($_SESSION["apikey"]) || $_SESSION["apikey"] != $apikey) {
+        http_response_code(401);
+        echo json_encode(["status" => "error", "message" => "user not signed in"]);
+        die;
+    }
+
+    try {
+        $stmt = $conn->prepare("SELECT user_id FROM users WHERE apikey = ?;");
+        $stmt->bind_param("s", $apikey);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows == 0) {
+            $row = $result->fetch_assoc();
+            $user_id = $row['user_id'];
+            return $user_id;
+        } else {
+            http_response_code(401);
+            echo json_encode(["status" => "error", "message" => "user not signed in"]);
+            die;
+        }
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, __LINE__, "authentication", false);
+    } catch (Exception $e) {
+        catchError($conn, $e, __LINE__, "authentication", false);
+    }
 }
 
 ?>

@@ -28,7 +28,11 @@ class Database {
         $password = $env['password'];
         $DBname = $env['DBname'];
         // Create connection
-        $this->conn = new mysqli($servername, $username, $password, $DBname);
+        try {
+            $this->conn = new mysqli($servername, $username, $password, $DBname);
+        } catch (Exception $e) {
+            throw $e;
+        }
         // Check connection
         if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);
