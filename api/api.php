@@ -1214,4 +1214,35 @@ if ($_POST['type'] == ' SavePrefrences')
 }
 
 
+if ($_POST['type'] == 'getFilteredStores') 
+{
+
+    if (!isset($_POST['store_id']))
+    {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $store_id = $_POST['store_id'];
+
+    $stmt = $conn->prepare("SELECT p.title, p.thumbnail, p.launch_date, p.product_link, p.price, p.description, p.category, b.name AS brand_name FROM Product p JOIN Brand b ON p.brand_id = b.brand_id WHERE p.store_id = ?");
+    $stmt->bind_param("i", $store_id);
+
+    if ($stmt->execute()) 
+    {
+        echo json_encode(["status" => "success", "message" => "Products filtered by store"]);
+    } 
+    else 
+    {
+        echo json_encode(["status" => "error", "message" => "Error retrieving products"]);
+    }
+
+    exit();
+
+}
+
 ?>
