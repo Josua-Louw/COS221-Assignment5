@@ -40,12 +40,23 @@
 
 require_once 'config.php';
 
-header('Content-Type: application/json'); 
+header('Content-Type: application/json');
 
 $_POST = json_decode(file_get_contents("php://input"), true);
 
-//created the connection to have global scope
-$conn = Database::instance()->getConnection();
+//creates the connection
+try {
+    $conn = Database::instance()->getConnection();
+} catch (Exception $e) {
+    error_log("Register error: " . $error);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error",
+        "Type Handler" => "creating connection",
+        "API Line" => __LINE__
+    ]);
+}
 
 //Checks if input has type field
 if (!isset($_POST['type'])) {
@@ -104,6 +115,9 @@ if ($_POST['type'] == 'Login') {
             exit();
         }
 
+        session_start();
+        $_SESSION["apikey"] = $user['apikey'];
+        
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -117,23 +131,9 @@ if ($_POST['type'] == 'Login') {
             ]
         ]);
     } catch (mysqli_sql_exception $e) {
-        error_log("Login error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Database error",
-            "Type Handler" => "Login",
-            "API Line" => __LINE__
-        ]);
+        catchErrorSQL($conn, $e, "Login", __LINE__);
     } catch (Exception $e) {
-        error_log("Login error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Unknown error",
-            "Type Handler" => "Login",
-            "API Line" => __LINE__
-        ]);
+        catchError($conn, $e, "Login", __LINE__);
     }
     exit();
 }
@@ -175,30 +175,19 @@ if ($_POST['type'] == 'Register') {
         }
         $check->close();
     } catch (mysqli_sql_exception $e) {
-        error_log("Register error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Database error",
-            "Type Handler" => "Register",
-            "API Line" => __LINE__
-        ]);
-        exit();
+        catchErrorSQL($conn, $e, "Register", __LINE__);
     } catch (Exception $e) {
-        error_log("Register error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Unknown error",
-            "Type Handler" => "Register",
-            "API Line" => __LINE__
-        ]);
-        exit();
+        catchError($conn, $e, "Register", __LINE__);
     }
 
     $salt = bin2hex(random_bytes(127));
     $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
-    $apikey = bin2hex(random_bytes(16));
+    try {
+        $apikey = generateApikey();
+    } catch (Exception $e) {
+        
+    }
+    
 
     try {
 
@@ -225,31 +214,15 @@ if ($_POST['type'] == 'Register') {
             "message" => "User registered successfully."
         ]);
     } catch (mysqli_sql_exception $e) {
-        $conn->rollback();
-        error_log("Register error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Database error",
-            "Type Handler" => "Register",
-            "API Line" => __LINE__
-        ]);
+        catchErrorSQL($conn, $e, "Register", __LINE__, true);
     } catch (Exception $e) {
-        $conn->rollback();
-        error_log("Register error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Unknown error",
-            "Type Handler" => "Register",
-            "API Line" => __LINE__
-        ]);
+        catchError($conn, $e, "Register", __LINE__, true);
     }
     exit();
 }
 
 //now we have the following for products(add/delete/edit/remove)
-if ($_POST['type'] == 'GetAllProducts') 
+if ($_POST['type'] == 'GetAllProducts')
 {
     try {
         $stmt = $conn->prepare("SELECT * FROM Product");
@@ -258,9 +231,7 @@ if ($_POST['type'] == 'GetAllProducts')
         $stmt->close();
         $products = [];
 
-        while ($row = $result->fetch_assoc()) 
-        {
-
+        while ($row = $result->fetch_assoc()) {
             $brandQuery = $conn->prepare("SELECT name FROM Brand where brand_id = ?");
             $brandQuery->bind_param("i", $row['brand_id']);
             $brandQuery->execute();
@@ -297,23 +268,9 @@ if ($_POST['type'] == 'GetAllProducts')
             "data" => $products
         ]);
     } catch (mysqli_sql_exception $e) {
-        error_log("Register error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Database error",
-            "Type Handler" => "GetAllProducts",
-            "API Line" => __LINE__
-        ]);
+        catchErrorSQL($conn, $e, "GetAllProducts", __LINE__);
     } catch (Exception $e) {
-        error_log("Register error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Unknown error",
-            "Type Handler" => "GetAllProducts",
-            "API Line" => __LINE__
-        ]);
+        catchError($conn, $e, "GetAllProducts", __LINE__);
     }
     exit();
 }
@@ -321,10 +278,10 @@ if ($_POST['type'] == 'GetAllProducts')
 //add product
 if ($_POST['type'] == 'AddProduct') {
 
-    $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'brand_id', 'store_id', 'user_id'];
+    $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'store_id', 'user_id', 'type'];
 
     foreach ($_POST as $key => $value) {
-        if (!in_array($key, $validFields)) {
+        if (!in_array($key, $validFields) && $key !== 'brand_name') {
             http_response_code(400);
             echo json_encode([
                 "status" => "error",
@@ -352,49 +309,85 @@ if ($_POST['type'] == 'AddProduct') {
     $launch_date = $_POST['launch_date'];
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
-    $brand_id = $_POST['brand_id'];
     $store_id = $_POST['store_id'];
-    $user_id = $_POST['user_id'];  
+    $user_id = $_POST['user_id'];
 
-    $stmt = $conn->prepare("SELECT userID,store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
-    $stmt->bind_param("ii", $user_id,$store_id); 
-    $stmt->execute();
-    $stmt->store_result();
-    
-    if ($stmt->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Sorry, You are not a store owner of this product"
-        ]);
-        exit();
+    if (!isset($_POST['brand_name'])) {
+        $brand_name = $_POST['title'];
+    } else {
+        $brand_name = $_POST['brand_name'];
     }
 
+    try {
+        $conn->begin_transaction();
 
-    $stmt = $conn->prepare("
+        $brandStmt = $conn->prepare("SELECT * FROM Brand WHERE name = ?");
+        $brandStmt->bind_param("s", $brand_name);
+        $brandStmt->execute();
+        $brandResult = $brandStmt->get_result();
+
+        if ($brandResult->num_rows === 0) {
+            createBrand($conn, $brand_name);
+        }
+
+        $brandStmt->close();
+
+        $conn->commit();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "AddProduct", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "AddProduct", __LINE__, true);
+    }
+
+    try {
+        $ownerStmt = $conn->prepare("SELECT userID,store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+        $ownerStmt->bind_param("ii", $user_id,$store_id);
+        $ownerStmt->execute();
+        $ownerStmt->store_result();
+
+        if ($ownerStmt->num_rows === 0) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "User is not a store owner",
+                "Type Handler" => "AddProduct",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+        $ownerStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "AddProduct", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"AddProduct", __LINE__);
+    }
+
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("
         INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param("sdssssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id);
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sdssssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id);
+        $stmt->execute();
+        $stmt->close();
 
-    if ($stmt->execute()) {
+        $conn->commit();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "message" => "Product added successfully to the database."
+            "message" => "Product successfully added to the database."
         ]);
-    } else {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add product to the database."
-        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "AddProduct", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "AddProduct", __LINE__, true);
     }
     exit();
 }
 
 //delete product
-if ($_POST['type'] == 'DeleteProduct') 
+if ($_POST['type'] == 'DeleteProduct')
 {
 
     if (!isset($_POST['prod_id']) || !isset($_POST['store_id']) || !isset($_POST['user_id'])) {
@@ -411,10 +404,10 @@ if ($_POST['type'] == 'DeleteProduct')
     $store_id = $_POST['store_id'];
 
     $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
-    $stmt->bind_param("ii", $user_id,$store_id); 
+    $stmt->bind_param("ii", $user_id,$store_id);
     $stmt->execute();
     $stmt->store_result();
-    
+
     if ($stmt->num_rows === 0) {
         http_response_code(400);
         echo json_encode([
@@ -429,7 +422,7 @@ if ($_POST['type'] == 'DeleteProduct')
     $productCheck->execute();
     $productCheck->store_result();
 
-    if ($productCheck->num_rows === 0) 
+    if ($productCheck->num_rows === 0)
     {
         http_response_code(400);
         echo json_encode([
@@ -463,7 +456,7 @@ if ($_POST['type'] == 'DeleteProduct')
 }
 
 //edit product
-if ($_POST['type'] == 'EditProduct') 
+if ($_POST['type'] == 'EditProduct')
 {
 
     if (!isset($_POST['prod_id']) || !isset($_POST['store_id']) || !isset($_POST['user_id'])) {
@@ -480,10 +473,10 @@ if ($_POST['type'] == 'EditProduct')
     $store_id = $_POST['store_id'];;
 
     $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
-    $stmt->bind_param("ii", $user_id,$store_id); 
+    $stmt->bind_param("ii", $user_id,$store_id);
     $stmt->execute();
     $stmt->store_result();
-    
+
     if ($stmt->num_rows === 0) {
         http_response_code(400);
         echo json_encode([
@@ -493,7 +486,7 @@ if ($_POST['type'] == 'EditProduct')
         exit();
     }
 
-    
+
     $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
     $productCheck->bind_param("ii", $prod_id, $store_id);
     $productCheck->execute();
@@ -522,7 +515,7 @@ if ($_POST['type'] == 'EditProduct')
     $brand_id = !isset($_POST['brand_id']) ? $products['brand_id'] : $_POST['brand_id'];
 
     $stmt = $conn->prepare("
-        UPDATE Product 
+        UPDATE Product
         SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?, store_id = ?
         WHERE prod_id = ?
     ");
@@ -547,7 +540,7 @@ if ($_POST['type'] == 'EditProduct')
 }
 
 //filter products
-if ($_POST['type'] == 'GetFilteredProducts') 
+if ($_POST['type'] == 'GetFilteredProducts')
 {
     if (!isset($_POST['apikey'])) {
         http_response_code(400);
@@ -640,7 +633,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
 }
 
 //now we have the following for rating
-if ($_POST['type'] == 'SubmitRating') 
+if ($_POST['type'] == 'SubmitRating')
 {
     if (!isset($_POST['user_id']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         http_response_code(400);
@@ -688,7 +681,7 @@ if ($_POST['type'] == 'SubmitRating')
 }
 
 // Get All Ratings for a Product
-if ($_POST['type'] == 'GetRatings') 
+if ($_POST['type'] == 'GetRatings')
 {
     if (!isset($_POST['prod_id'])) {
         http_response_code(400);
@@ -723,7 +716,7 @@ if ($_POST['type'] == 'GetRatings')
 }
 
 //Delete Rating
-if ($_POST['type'] == 'DeleteRating') 
+if ($_POST['type'] == 'DeleteRating')
 {
     if (!isset($_POST['rating_id']) || !isset($_POST['user_id'])) {
         http_response_code(400);
@@ -769,9 +762,9 @@ if ($_POST['type'] == 'DeleteRating')
 }
 
 //Edit Rating
-if ($_POST['type'] == 'EditRating') 
+if ($_POST['type'] == 'EditRating')
 {
-    $user_id = $_POST['user_id'];      
+    $user_id = $_POST['user_id'];
     $rating_id = $_POST['rating_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
@@ -867,7 +860,7 @@ if ($_POST['type'] == "GetStores")
 }
 
 //Follow a store
-if ($_POST['type'] == 'Follow') 
+if ($_POST['type'] == 'Follow')
 {
 
     //I used store_name but we can change it to store_is
@@ -1184,7 +1177,49 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     ]);
 }
 
-if ($_POST['type'] == ' SavePrefrences') 
+function createBrand($conn, $brand_name)
+{
+    $conn->begin_transaction();
+
+    $stmt = $conn->prepare("INSERT INTO brand (brand_name) VALUES (?)");
+    $stmt->bind_param("s", $brand_name);
+    $stmt->execute();
+    $stmt->close();
+
+    $conn->commit();
+}
+
+function catchErrorSQL($conn, $error, $line, $type , $rollback = false){
+    if ($rollback) {
+        $conn->rollback();
+    }
+    error_log("Register error: " . $error);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error",
+        "Type Handler" => $type,
+        "API Line" => $line
+    ]);
+    exit();
+}
+
+function catchError($conn, $error, $line, $type, $rollback = false){
+    if ($rollback) {
+        $conn->rollback();
+    }
+    error_log("Register error: " . $error);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error",
+        "Type Handler" => $type,
+        "API Line" => $line
+    ]);
+    exit();
+}
+
+if ($_POST['type'] == ' SavePrefrences')
 {
 
     if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
@@ -1201,7 +1236,7 @@ if ($_POST['type'] == ' SavePrefrences')
     $max_price = $_POST['max_price'];
     $api_key = $_POST['apikey'];
 
-    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE api_key = ?");
+    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
     $stmt->bind_param("iiii", $theme, $min_price, $api_key);
 
     if ($stmt->execute()) {
@@ -1213,6 +1248,65 @@ if ($_POST['type'] == ' SavePrefrences')
 
 }
 
+/*
+    This function generates an apikey that is unique.
+*/
+function generateApikey() {
+    $apikey = "";
+    $conn = Database::instance()->getConnection();
+    do {
+        try {
+            $apikey = bin2hex(random_bytes(16));
+            $stmt = $conn->prepare("SELECT apikey FROM users WHERE apikey = ?;");
+            $stmt->bind_param("s", $apikey);
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+        } catch (mysqli_sql_exception $e) {
+            catchErrorSQL($conn, $e, __LINE__, "generate apikey", false);
+        } catch (Exception $e) {
+            catchError($conn, $e, __LINE__, "generate apikey", false);
+        }
+        
+    } while ($result->num_rows != 0);
+    
+    return $apikey;
+}
+
+/* 
+    This function uses the apikey to see if the user is actually logged in by checking the session variable 
+    and then returns the user_id if successfull
+    otherwise it catches errors or sends back an unauthorised message.
+*/
+function authenticate($conn, $apikey) {
+    session_start();
+    if (!isset($_SESSION["apikey"]) || $_SESSION["apikey"] != $apikey) {
+        http_response_code(401);
+        echo json_encode(["status" => "error", "message" => "user not signed in"]);
+        die;
+    }
+
+    try {
+        $stmt = $conn->prepare("SELECT user_id FROM users WHERE apikey = ?;");
+        $stmt->bind_param("s", $apikey);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows == 0) {
+            $row = $result->fetch_assoc();
+            $user_id = $row['user_id'];
+            return $user_id;
+        } else {
+            http_response_code(401);
+            echo json_encode(["status" => "error", "message" => "user not signed in"]);
+            die;
+        }
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, __LINE__, "authentication", false);
+    } catch (Exception $e) {
+        catchError($conn, $e, __LINE__, "authentication", false);
+    }
+}
 
 if ($_POST['type'] == 'getFilteredStores') 
 {
