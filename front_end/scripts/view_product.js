@@ -50,6 +50,25 @@ document.addEventListener("DOMContentLoaded", function () {
   const reviewForm = document.getElementById("review-form");
   reviewForm.addEventListener("submit", function (e) {
     e.preventDefault();
+
+    //check if user is logged in before they leave a review
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.apikey) {
+      alert("You must be logged in to review a product.");
+      return;
+    }
+
+    //stop the same user from leaving multiple reviewss
+    const existingReviews = Array.from(reviewList.children);
+    const alreadyReviewed = existingReviews.some(div =>
+      div.textContent.includes(user.name)
+    );
+
+    if (alreadyReviewed) {
+      alert("You already submitted a review for this product.");
+      return;
+    }
+
     const comment = document.getElementById("review-text").value;
     const rating = document.getElementById("rating").value;
 
