@@ -737,7 +737,7 @@ blockquote {
 	message: &#x27;Products fetched successfully&#x27;,
 	data: [
 		{
-			id: &#x27;id&#x27;,
+			product_id: 1,
 			title: &#x27;title&#x27;,
 			price: 50.00,
 			product_link: &#x27;link to products google shopping page&#x27;,
@@ -808,6 +808,7 @@ blockquote {
 	message: &#x27;some error message&#x27;
 }</code></pre><h3 id="1f9f9db8-e50d-803c-b70e-e29beb6dd93a" class="">Filter Products</h3><p id="1f9f9db8-e50d-80b0-9c92-e4595e08cbef" class="">Request Type</p><ul id="1f9f9db8-e50d-8030-8c5a-c8fbd304db1e" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1f9f9db8-e50d-8063-9ef6-f2b53e44ace4" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1f9f9db8-e50d-802c-8c76-fda560567483" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-802f-88d6-f559d3413c8f" class="code"><code class="language-JSON">{
 	type: &#x27;GetFilteredProducts&#x27;,
+	*prod_id: 1, //id of a product
 	*brand: &#x27;brand_id&#x27;,
 	*category: &#x27;category&#x27;,
 	*min_price: &#x27;min_price&#x27;,
@@ -817,7 +818,7 @@ blockquote {
 	status: &#x27;success&#x27;,
 	data: [
 		{
-			id: &#x27;id&#x27;,
+			product_id: 1,
 			title: &#x27;title&#x27;,
 			price: 50.00,
 			product_link: &#x27;link to products google shopping page&#x27;,
