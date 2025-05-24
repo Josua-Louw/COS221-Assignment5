@@ -15,7 +15,7 @@
     GetAllProducts      [0]
     AddProduct          [0]
     DeleteProduct       [0]
-    EditProduct         [-1]
+    EditProduct         [0]
     GetFilteredProducts [-1]
     SubmitRating        [-1]
     GetRatings          [-1]
@@ -28,6 +28,9 @@
     Unfollow            [-1]
     RegisterStoreOwner  [-1]
     SavePreference      [-1]
+    AddBrand            [-1]
+    RemoveBrand         [-1]
+    GetBrands           [-1]
 
 */
 
@@ -48,7 +51,7 @@ $_POST = json_decode(file_get_contents("php://input"), true);
 try {
     $conn = Database::instance()->getConnection();
 } catch (Exception $e) {
-    error_log("Register error: " . $error);
+    error_log("Register error: " . $e);
     http_response_code(500);
     echo json_encode([
         "status" => "error",
@@ -478,7 +481,7 @@ if ($_POST['type'] == 'DeleteProduct')
 //edit product
 if ($_POST['type'] == 'EditProduct')
 {
-    if (!isset($_POST['prod_id']) || !isset($_POST['store_id']) || !isset($_POST['user_id'])) {
+    if (!isset($_POST['prod_id']) || !isset($_POST['store_id']) || !isset($_POST['apikey'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -488,41 +491,59 @@ if ($_POST['type'] == 'EditProduct')
     }
 
     $prod_id = $_POST['prod_id'];
-    $user_id = $_POST['user_id'];
-    $store_id = $_POST['store_id'];;
+    $apikey = $_POST['apikey'];
+    $store_id = $_POST['store_id'];
 
-    $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
-    $stmt->bind_param("ii", $user_id,$store_id);
-    $stmt->execute();
-    $stmt->store_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($stmt->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Sorry, You are not a store owner of this product"
-        ]);
-        exit();
+    try {
+        $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+        $stmt->bind_param("ii", $user_id,$store_id);
+        $stmt->execute();
+        $stmt->store_result();
+
+        if ($stmt->num_rows === 0) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "User is not this store's owner",
+                "Type Handler" => "EditProduct",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditProduct", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"EditProduct", __LINE__);
     }
 
+    try {
+        $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
+        $productCheck->bind_param("ii", $prod_id, $store_id);
+        $productCheck->execute();
+        $productResult = $productCheck->get_result();
 
-    $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
-    $productCheck->bind_param("ii", $prod_id, $store_id);
-    $productCheck->execute();
-    $productResult = $productCheck->get_result();
+        if ($productResult->num_rows === 0)
+        {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This product does not belong to your store.",
+                "Type Handler" => "EditProduct",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
 
-    if ($productResult->num_rows === 0)
-    {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "This product does not belong to your store."
-        ]);
-        exit();
+        $products = $productResult->fetch_assoc();
+        $productCheck->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditProduct", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"EditProduct", __LINE__);
     }
-
-    $products = $productResult->fetch_assoc();
-    $productCheck->close();
 
     $title = !isset($_POST['title']) ? $products['title'] : $_POST['title'];
     $price = !isset($_POST['price']) ? $products['price'] : $_POST['price'];
@@ -533,28 +554,27 @@ if ($_POST['type'] == 'EditProduct')
     $category = !isset($_POST['category']) ? $products['category'] : $_POST['category'];
     $brand_id = !isset($_POST['brand_id']) ? $products['brand_id'] : $_POST['brand_id'];
 
-    $stmt = $conn->prepare("
-        UPDATE Product
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("UPDATE Product
         SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?, store_id = ?
-        WHERE prod_id = ?
-    ");
-
-    $stmt->bind_param("sdsssssiii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $prod_id,$store_id);
-
-    if ($stmt->execute()) {
-        http_response_code(200);
-        echo json_encode([
-            "status" => "success",
-            "message" => "Product updated successfully."
-        ]);
-    } else {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to update product."
-        ]);
+        WHERE prod_id = ?");
+        $stmt->bind_param("sdsssssiii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id, $prod_id);;
+        $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditProduct", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "EditProduct", __LINE__, true);
     }
-    $stmt->close();
+
+    $conn->commit();
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Product successfully edited in the database."
+    ]);
+
     exit();
 }
 
