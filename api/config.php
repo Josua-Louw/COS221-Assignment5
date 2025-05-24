@@ -33,6 +33,7 @@ class Database {
         } catch (Exception $e) {
             throw $e;
         }
+        
         // Check connection
         if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);
