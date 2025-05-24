@@ -14,7 +14,7 @@
     Register            [0]
     GetAllProducts      [0]
     AddProduct          [0]
-    DeleteProduct       [-1]
+    DeleteProduct       [0]
     EditProduct         [-1]
     GetFilteredProducts [-1]
     SubmitRating        [-1]
@@ -34,9 +34,6 @@
 //  Improve Errors
 //  Test All Types
 //  Create Types:
-//      - AddBrand
-//      - RemoveBrand
-//      - GetBrands
 //      - SavePreference
 
 
@@ -326,11 +323,12 @@ if ($_POST['type'] == 'AddProduct') {
 
         if ($brandResult->num_rows === 0) {
            $brand_id = createBrand($conn, $brand_name);
+        } else {
+            $brand_id = $brandResult->fetch_assoc()['brand_id'];
         }
 
         $brandStmt->close();
 
-        $conn->commit();
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "AddProduct", __LINE__, true);
     } catch (Exception $e) {
@@ -361,8 +359,6 @@ if ($_POST['type'] == 'AddProduct') {
     }
 
     try {
-        $conn->begin_transaction();
-
         $stmt = $conn->prepare("
         INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -388,66 +384,87 @@ if ($_POST['type'] == 'AddProduct') {
 if ($_POST['type'] == 'DeleteProduct')
 {
 
-    if (!isset($_POST['prod_id']) || !isset($_POST['store_id']) || !isset($_POST['user_id'])) {
+    if (!isset($_POST['prod_id']) || !isset($_POST['apikey']) || !isset($_POST['store_id'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing product id, apikey or store id.",
+            "Type Handler" => "DeleteProduct",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
     $prod_id = $_POST['prod_id'];
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
     $store_id = $_POST['store_id'];
 
-    $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
-    $stmt->bind_param("ii", $user_id,$store_id);
-    $stmt->execute();
-    $stmt->store_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($stmt->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Sorry, You are not a store owner of this product"
-        ]);
-        exit();
+    try {
+        $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+        $stmt->bind_param("ii", $user_id,$store_id);
+        $stmt->execute();
+        $stmt->store_result();
+
+        if ($stmt->num_rows === 0) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "User is not this store's owner",
+                "Type Handler" => "DeleteProduct",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "DeleteProduct", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"DeleteProduct", __LINE__);
     }
 
-    $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
-    $productCheck->bind_param("ii", $prod_id, $store_id);
-    $productCheck->execute();
-    $productCheck->store_result();
+    try {
+        $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
+        $productCheck->bind_param("ii", $prod_id, $store_id);
+        $productCheck->execute();
+        $productCheck->store_result();
 
-    if ($productCheck->num_rows === 0)
-    {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "This product does not belong to your store."
-        ]);
-        exit();
+        if ($productCheck->num_rows === 0)
+        {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This product does not belong to your store."
+            ]);
+            exit();
+        }
+        $productCheck->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "DeleteProduct", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"DeleteProduct", __LINE__);
     }
 
+    try {
+        $conn->begin_transaction();
 
-    $stmt = $conn->prepare("DELETE FROM Product WHERE prod_id = ?");
-    $stmt->bind_param("i", $prod_id);
+        $stmt = $conn->prepare("DELETE FROM Product WHERE prod_id = ?");
+        $stmt->bind_param("i", $prod_id);
+        $stmt->execute();
+        $stmt->close();
 
-    if ($stmt->execute()) {
+        $conn->commit();
+
         http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "message" => "Product deleted successfully in the database"
+            "message" => "Product successfully deleted from the database."
         ]);
-        $stmt->close();
-    } else {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to delete product from the database"
-        ]);
-        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "DeleteProduct", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "DeleteProduct", __LINE__, true);
     }
 
     exit();
@@ -663,6 +680,20 @@ if ($_POST['type'] == 'SubmitRating')
     }
 
     $authQuery->close();
+
+    $duplicateStmt = $conn->prepare("SELECT user_id FROM Rating WHERE user_id = ?");
+    $duplicateStmt->bind_param("i", $user_id);
+    $duplicateStmt->execute();
+    $duplicateResult = $duplicateStmt->get_result();
+
+    if ($duplicateResult->num_rows !== 0){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "This user already submitted a rating for this product"
+        ]);
+        exit();
+    }
 
     $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
@@ -1191,10 +1222,10 @@ if ($_POST['type'] == 'SavePreference')
     $theme = $_POST['theme'];
     $min_price = $_POST['min_price'];
     $max_price = $_POST['max_price'];
-    $api_key = $_POST['apikey'];
+    $apikey = $_POST['apikey'];
 
-    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE api_key = ?");
-    $stmt->bind_param("iiii", $theme, $min_price, $api_key);
+    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
+    $stmt->bind_param("iiii", $theme, $min_price, $apikey);
 
     if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "Updated user settings"]);
@@ -1231,6 +1262,88 @@ if ($_POST['type'] == 'AddBrand'){
         catchErrorSQL($conn, $e, "AddBrand", __LINE__, true);
     } catch (Error $e) {
         catchError($conn, $e, "AddBrand", __LINE__, true);
+    }
+    exit();
+}
+
+//Remove a brand. Admin use only
+if ($_POST['type'] == 'RemoveBrand'){
+
+    if (!isset($_POST['apikey']) || !isset($_POST['brand_id'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing apikey or brand_id field",
+            "Type Handler" => "RemoveBrand",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $brand_id = $_POST['brand_id'];
+
+    //************************************* Admin **********************************//
+
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("DELETE FROM Brand WHERE brand_id = ?");
+        $stmt->bind_param("i", $brand_id);
+        $stmt->execute();
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "RemoveBrand", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "RemoveBrand", __LINE__, true);
+    }
+    $conn->commit();
+    exit();
+}
+
+//Get Brands
+if ($_POST['type'] == 'GetBrands'){
+
+    if (!isset($_POST['apikey'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing apikey field",
+            "Type Handler" => "GetBrands",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    try {
+        $stmt = $conn->prepare("SELECT * FROM Brand");
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows == 0){
+            http_response_code(204);
+            echo json_encode([
+                "status" => "success",
+                "message" => "There are currently no brands available",
+                "data" => []
+            ]);
+        } else {
+            $brands = [];
+            while ($row = $result->fetch_assoc()) {
+                $brands[] = $row;
+            }
+            http_response_code(200);
+            echo json_encode([
+                "status" => "success",
+                "message" => "Brands successfully retrieved",
+                "data" => $brands
+            ]);
+        }
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetBrands", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetBrands", __LINE__);
     }
     exit();
 }
@@ -1311,7 +1424,7 @@ function generateApikey() {
 
 /*
     This function uses the apikey to see if the user is actually logged in by checking the session variable
-    and then returns the user_id if successfull
+    and then returns the user_id if successful
     otherwise it catches errors or sends back an unauthorised message.
 */
 function authenticate($conn, $apikey) {
