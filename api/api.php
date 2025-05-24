@@ -1413,17 +1413,6 @@ if ($_POST['type'] == 'RemoveBrand'){
 //Get Brands
 if ($_POST['type'] == 'GetBrands'){
 
-    if (!isset($_POST['apikey'])){
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing apikey field",
-            "Type Handler" => "GetBrands",
-            "API Line" => __LINE__
-        ]);
-        exit();
-    }
-
     try {
         $stmt = $conn->prepare("SELECT * FROM Brand");
         $stmt->execute();
