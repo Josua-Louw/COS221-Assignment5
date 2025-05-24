@@ -576,6 +576,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
     $min_price = $_POST['min_price'] ?? null;
     $max_price = $_POST['max_price'] ?? null;
     $search = $_POST['search'] ?? null;
+    $store_id = $_POST['store_id'] ?? null;
 
     $sql = "SELECT * FROM Product WHERE 1=1";
     $params = [];
@@ -609,6 +610,12 @@ if ($_POST['type'] == 'GetFilteredProducts')
         $sql .= " AND title LIKE ?";
         $params[] = '%' . $search . '%';
         $types .= "s";
+    }
+
+    if (!empty($store_id)) {
+        $sql .= " AND store_id = ?";
+        $params[] = $store_id;
+        $types .= "i";
     }
 
     $stmt = $conn->prepare($sql);
@@ -858,6 +865,7 @@ if ($_POST['type'] == "GetStores")
         "message" => "All stores available, retrieved successfully.",
         "data" => $stores
     ]);
+    exit();
 }
 
 //Follow a store
@@ -924,6 +932,7 @@ if ($_POST['type'] == 'Follow')
         "message" => "Successfully followed store",
         "data" => $store_id
     ]);
+    exit();
 }
 
 //Retrieve stores that user follows
@@ -1024,6 +1033,7 @@ if ($_POST['type'] == 'GetFollowing') {
             "message" => "Failed to retrieve followed stores"
         ]));
     }
+    exit();
 }
 
 //Remove a follow
@@ -1087,6 +1097,7 @@ if ($_POST['type'] == 'Unfollow') {
         "message" => "Successfully removed follow",
         "data" => $store_id
     ]);
+    exit();
 }
 
 //Registers user as a store owner
@@ -1176,6 +1187,40 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         "status" => "success",
         "message" => "Successfully added store and assigned owner"
     ]);
+    exit();
+}
+
+if ($_POST['type'] == 'getFilteredStores') 
+{
+    if (!isset($_POST['store_id']))
+    {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
+        exit();
+    }
+
+    $store_id = $_POST['store_id'];
+
+    $stmt = $conn->prepare("SELECT * FROM stores WHERE store_id = ?");
+    $stmt->bind_param("i", $store_id);
+
+    if ($stmt->execute()) 
+    {
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        http_response_code(200);
+        echo json_encode(["status" => "success", "data" => $row]);
+    } 
+    else 
+    {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => "Error retrieving store"]);
+    }
+
+    exit();
 }
 
 function createBrand($conn, $brand_name)
@@ -1307,37 +1352,6 @@ function authenticate($conn, $apikey) {
     } catch (Exception $e) {
         catchError($conn, $e, __LINE__, "authentication", false);
     }
-}
-
-if ($_POST['type'] == 'getFilteredStores') 
-{
-
-    if (!isset($_POST['store_id']))
-    {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields"
-        ]);
-        exit();
-    }
-
-    $store_id = $_POST['store_id'];
-
-    $stmt = $conn->prepare("SELECT p.title, p.thumbnail, p.launch_date, p.product_link, p.price, p.description, p.category, b.name AS brand_name FROM Product p JOIN Brand b ON p.brand_id = b.brand_id WHERE p.store_id = ?");
-    $stmt->bind_param("i", $store_id);
-
-    if ($stmt->execute()) 
-    {
-        echo json_encode(["status" => "success", "message" => "Products filtered by store"]);
-    } 
-    else 
-    {
-        echo json_encode(["status" => "error", "message" => "Error retrieving products"]);
-    }
-
-    exit();
-
 }
 
 ?>
