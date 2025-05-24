@@ -901,6 +901,75 @@ if ($_POST['type'] == "GetStores")
     exit();
 }
 
+//Fetch users store's
+if ($_POST['type'] == "GetUsersStores"){
+    if (!isset($_POST['apikey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "GetUsersStores",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+
+    try {
+        $ownerStmt = $conn->prepare("SELECT * FROM store_owner WHERE user_id = ?");
+        $ownerStmt->bind_param("i", $user_id);
+        $ownerStmt->execute();
+        $ownerResult = $ownerStmt->get_result();
+
+        if ($ownerResult->num_rows == 0){
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This user is not a store owner",
+                "Type Handler" => "GetUsersStores",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $storeIDs = [];
+        while ($row = $ownerResult->fetch_assoc()) {
+            $storeIDs[] = $row['store_id'];
+        }
+        $ownerStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetUsersStores", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetUsersStores", __LINE__);
+    }
+
+    try {
+        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id IN (".implode(",", $storeIDs).")");
+        $storeStmt->execute();
+        $storeResult = $storeStmt->get_result();
+
+        $stores = [];
+        while ($row = $storeResult->fetch_assoc()) {
+            $stores[] = $row;
+        }
+        $storeStmt->close();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Stores retrieved successfully",
+            "data" => $stores
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetUsersStores", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetUsersStores", __LINE__);
+    }
+    exit();
+}
+
 //Follow a store
 if ($_POST['type'] == 'Follow')
 {
@@ -1256,6 +1325,119 @@ if ($_POST['type'] == 'getFilteredStores')
     exit();
 }
 
+//Add a brand. Admin use only
+if ($_POST['type'] == 'AddBrand'){
+
+    if (!isset($_POST['apikey']) || !isset($_POST['brand_name'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing apikey or brand_name field",
+            "Type Handler" => "AddBrand",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $brand_name = $_POST['brand_name'];
+
+    //************************************** admin ************************************//
+
+    try {
+        $conn->begin_transaction();
+        $brand_id = createBrand($conn, $brand_name);
+    } catch (Exception $e) {
+        catchErrorSQL($conn, $e, "AddBrand", __LINE__, true);
+    } catch (Error $e) {
+        catchError($conn, $e, "AddBrand", __LINE__, true);
+    }
+    exit();
+}
+
+//Remove a brand. Admin use only
+if ($_POST['type'] == 'RemoveBrand'){
+
+    if (!isset($_POST['apikey']) || !isset($_POST['brand_id'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing apikey or brand_id field",
+            "Type Handler" => "RemoveBrand",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $brand_id = $_POST['brand_id'];
+
+    //************************************* Admin **********************************//
+
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("DELETE FROM Brand WHERE brand_id = ?");
+        $stmt->bind_param("i", $brand_id);
+        $stmt->execute();
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "RemoveBrand", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "RemoveBrand", __LINE__, true);
+    }
+    $conn->commit();
+    exit();
+}
+
+//Get Brands
+if ($_POST['type'] == 'GetBrands'){
+
+    if (!isset($_POST['apikey'])){
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing apikey field",
+            "Type Handler" => "GetBrands",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    try {
+        $stmt = $conn->prepare("SELECT * FROM Brand");
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows == 0){
+            http_response_code(204);
+            echo json_encode([
+                "status" => "success",
+                "message" => "There are currently no brands available",
+                "data" => []
+            ]);
+        } else {
+            $brands = [];
+            while ($row = $result->fetch_assoc()) {
+                $brands[] = $row;
+            }
+            http_response_code(200);
+            echo json_encode([
+                "status" => "success",
+                "message" => "Brands successfully retrieved",
+                "data" => $brands
+            ]);
+        }
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetBrands", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetBrands", __LINE__);
+    }
+    exit();
+}
+
+//creates a new brand
 function createBrand($conn, $brand_name)
 {
     $conn->begin_transaction();
@@ -1360,7 +1542,7 @@ function generateApikey() {
 
 /* 
     This function uses the apikey to see if the user is actually logged in by checking the session variable 
-    and then returns the user_id if successfull
+    and then returns the user_id if successful
     otherwise it catches errors or sends back an unauthorised message.
 */
 function authenticate($conn, $apikey) {
