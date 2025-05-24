@@ -620,8 +620,7 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `m
 -- Indexes for table `brand`
 --
 ALTER TABLE `brand`
-  ADD PRIMARY KEY (`brand_id`),
-  ADD KEY `store_ibfk_1` (`store_id`);
+  ADD PRIMARY KEY (`brand_id`);
 
 --
 -- Indexes for table `customers`
