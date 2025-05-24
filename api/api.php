@@ -22,6 +22,7 @@
     DeleteRating        [-1]
     EditRating          [-1]
     GetStores           [-1]
+    GetUsersStores      [0]
     Follow              [-1]
     GetFollowing        [-1]
     Unfollow            [-1]
@@ -473,7 +474,6 @@ if ($_POST['type'] == 'DeleteProduct')
 //edit product
 if ($_POST['type'] == 'EditProduct')
 {
-
     if (!isset($_POST['prod_id']) || !isset($_POST['store_id']) || !isset($_POST['user_id'])) {
         http_response_code(400);
         echo json_encode([
@@ -886,6 +886,75 @@ if ($_POST['type'] == "GetStores")
         "message" => "All stores available, retrieved successfully.",
         "data" => $stores
     ]);
+}
+
+//Fetch users store's
+if ($_POST['type'] == "GetUsersStores"){
+    if (!isset($_POST['apikey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "GetUsersStores",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+
+    try {
+        $ownerStmt = $conn->prepare("SELECT * FROM store_owner WHERE user_id = ?");
+        $ownerStmt->bind_param("i", $user_id);
+        $ownerStmt->execute();
+        $ownerResult = $ownerStmt->get_result();
+
+        if ($ownerResult->num_rows == 0){
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This user is not a store owner",
+                "Type Handler" => "GetUsersStores",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $storeIDs = [];
+        while ($row = $ownerResult->fetch_assoc()) {
+            $storeIDs[] = $row['store_id'];
+        }
+        $ownerStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetUsersStores", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetUsersStores", __LINE__);
+    }
+
+    try {
+        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id IN (".implode(",", $storeIDs).")");
+        $storeStmt->execute();
+        $storeResult = $storeStmt->get_result();
+
+        $stores = [];
+        while ($row = $storeResult->fetch_assoc()) {
+            $stores[] = $row;
+        }
+        $storeStmt->close();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Stores retrieved successfully",
+            "data" => $stores
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetUsersStores", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetUsersStores", __LINE__);
+    }
+    exit();
 }
 
 //Follow a store
