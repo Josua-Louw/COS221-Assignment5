@@ -37,6 +37,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       if (this.status == 200) {
         const data = JSON.stringify(this.responseText);
         localStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('apiKey', data.user.apiKey || data.user.apikey);
         window.location.href = 'index.php';
       } else {
         try {
