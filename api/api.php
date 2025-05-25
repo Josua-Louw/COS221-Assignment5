@@ -37,8 +37,6 @@
 //TODO:
 //  Test All Types
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 require_once 'config.php';
 
@@ -1416,7 +1414,7 @@ function catchErrorSQL($conn, $error, $type , $line , $rollback = false){
 }
 
 //Catches errors
-function catchError($conn, $error, $line, $type, $rollback = false){
+function catchError($conn, $error, $type, $line, $rollback = false){
     if ($rollback) {
         $conn->rollback();
     }
