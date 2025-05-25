@@ -23,7 +23,7 @@
     EditRating          [0]
     GetStores           [0]
     GetUsersStores      [0]
-    Follow              [-1]
+    Follow              [0]
     GetFollowing        [-1]
     Unfollow            [-1]
     RegisterStoreOwner  [-1]
@@ -721,7 +721,7 @@ if ($_POST['type'] == 'SubmitRating')
         $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
         $stmt->execute();
         $stmt->close();
-
+        $conn->commit();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -732,7 +732,7 @@ if ($_POST['type'] == 'SubmitRating')
     } catch (Exception $e) {
         catchError($conn, $e, "SubmitRating", __LINE__, true);
     }
-    $conn->commit();
+
     exit();
 }
 
@@ -865,7 +865,7 @@ if ($_POST['type'] == 'EditRating')
         $stmt->bind_param("isi", $rating, $comment, $rating_id);
         $stmt->execute();
         $stmt->close();
-
+        $conn->commit();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -876,7 +876,7 @@ if ($_POST['type'] == 'EditRating')
     } catch (Exception $e) {
         catchError($conn, $e, "EditRating", __LINE__, true);
     }
-    $conn->commit();
+
     exit();
 }
 
@@ -987,67 +987,63 @@ if ($_POST['type'] == "GetUsersStore"){
 //Follow a store
 if ($_POST['type'] == 'Follow')
 {
-
-    //I used store_name but we can change it to store_is
     if (!isset($_POST['apikey']) || !isset($_POST['store_id'])){
         http_response_code(400);
-        echo json_encode(["status" => "error",
-            "message" => "Missing required fields"
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "Follow",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
     $store_id = $_POST['store_id'];
     $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
-    //retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
+    try {
+        $duplicateStmt = $conn->prepare("SELECT store_id FROM follows WHERE store_id = ? AND user_id = ?");
+        $duplicateStmt->bind_param("ii", $store_id, $user_id);
+        $duplicateStmt->execute();
+        $duplicateResult = $duplicateStmt->get_result();
 
-    //Checks if user is in database
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
+        if ($duplicateResult->num_rows !== 0){
+            http_response_code(409);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This user already follows this store",
+                "Type Handler" => "Follow",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Follow", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"Follow", __LINE__);
     }
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
 
     //Add to the follows table
     try {
+        $conn->begin_transaction();
+
         $followStmt = $conn->prepare("INSERT INTO follows (store_id, user_id) VALUES (?, ?)");
-        if (!$followStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $followStmt->bind_param("ii", $user["id"], $store_id);
-        if (!$followStmt->execute()) {
-            throw new Exception("Execute failed: " . $followStmt->error);
-        }
+        $followStmt->bind_param("ii", $store_id, $user_id);
+        $followStmt->execute();
         $followStmt->close();
-    }catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
-        http_response_code(500);
-        die(json_encode([
-            "status" => "error",
-            "message" => "Failed to follow store"
-        ]));
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully followed store",
+            "data" => $store_id
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Follow", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "Follow", __LINE__, true);
     }
-
-    $conn->commit();
-
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Successfully followed store",
-        "data" => $store_id
-    ]);
     exit();
 }
 
