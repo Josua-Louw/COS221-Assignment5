@@ -15,11 +15,13 @@ require_once __DIR__ . '/../api/config.php';
         <h1>Available Stores</h1>
         
         <div class="search-container">
-            <input type="text" class = "search-input" id="search-input" placeholder="Search stores..." onkeyup = searchStores()>
-            <select class="search-input">
-                <option value="">All Types</option>
-                <option value="Online">Online</option>
-                <option value="Physical">Physical</option>
+            <input type="text" class = "search-input" id="filter-input" placeholder="Search stores...">
+            <select class="search-input" id = "filter-dropdown">
+                <option value="All">All Types</option>
+                <option value="Online-only">Online</option>
+                <option value="Physical-only">Physical</option>
+                <option value="Wholesale">Wholesale</option>
+                <option value="Omnichannel">Omnichannel</option>
             </select>
         </div>
 

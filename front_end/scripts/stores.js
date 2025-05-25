@@ -79,20 +79,30 @@ function attachFollowListeners() {
         });
     });
 }
+function filterStores() {
+  const query = document.getElementById("filter-input").value.toLowerCase();
+  const selectedType = document.getElementById("filter-dropdown").value;
 
-function searchStores() {
-    var query = document.getElementById("search-input").value.toLowerCase(); 
-    console.log(query);
-    var filteredStores = [];
-    for (var i = 0; i < allStores.length; i++) {
-        if (allStores[i].name.toLowerCase().includes(query)) { 
-            filteredStores.push(allStores[i]);
-        }
-    }
-
-    displayStores(filteredStores);
+  let filteredStores;
+  if (selectedType === "All") {
+    filteredStores = allStores.filter(store => {
+      const name = store.name || "";
+      return name.toLowerCase().includes(query);
+    });
+  } else {
     
+    filteredStores = allStores.filter(store => {
+      const matchesName = store.name.toLowerCase().includes(query);
+      const matchesType = store.type === selectedType;
+      return matchesName && matchesType;
+    });
+  }
+  displayStores(filteredStores);
 }
 
-// Load stores on page load
+
+
 window.addEventListener('DOMContentLoaded', getStores);
+document.getElementById("filter-dropdown").addEventListener("change", filterStores);
+document.getElementById("filter-input").addEventListener("input", filterStores);
+
