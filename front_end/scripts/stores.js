@@ -1,5 +1,6 @@
 const apiUrl = "http://localhost/COS221-Assignment5/api/api.php"; // Replace with actual API URL
 
+var allStores = [];
 
 async function getStores() {
     
@@ -21,6 +22,7 @@ async function getStores() {
         const result = await response.json();
 
         if (response.ok && result.status === 'success') {
+            allStores = result.data;
             displayStores(result.data);
         } else {
             console.error('API error:', result.message || 'Unknown error');
@@ -48,7 +50,7 @@ function displayStores(stores) {
             <div class="store-info">
                 <h2 class="store-name">${store.name}</h2>
                 <span class="store-type">${store.type}</span>
-                <p>Explore a wide range of products at ${store.name}.</p>
+                <p>Explore a wide range of Stores at ${store.name}.</p>
                 <div class="store-actions">
                     <a href="${store.url}" target="_blank" class="btn btn-visit">Visit Store</a>
                     <button class="btn btn-follow" data-store-id="${store.store_id}">Follow</button>
@@ -78,7 +80,19 @@ function attachFollowListeners() {
     });
 }
 
+function searchStores() {
+    var query = document.getElementById("search-input").value.toLowerCase(); 
+    console.log(query);
+    var filteredStores = [];
+    for (var i = 0; i < allStores.length; i++) {
+        if (allStores[i].name.toLowerCase().includes(query)) { 
+            filteredStores.push(allStores[i]);
+        }
+    }
 
+    displayStores(filteredStores);
+    
+}
 
 // Load stores on page load
 window.addEventListener('DOMContentLoaded', getStores);
