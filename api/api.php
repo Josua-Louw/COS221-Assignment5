@@ -12,7 +12,7 @@
 
     Login               [0]
     Register            [0]
-    GetAllProducts      [0]
+    GetAllProducts      [1]
     AddProduct          [0]
     DeleteProduct       [0]
     EditProduct         [0]
@@ -229,7 +229,6 @@ if ($_POST['type'] == 'GetAllProducts')
         $stmt = $conn->prepare("SELECT * FROM products");
         $stmt->execute();
         $result = $stmt->get_result();
-        $stmt->close();
         $products = [];
 
         while ($row = $result->fetch_assoc()) {
@@ -238,20 +237,14 @@ if ($_POST['type'] == 'GetAllProducts')
             $brandQuery->execute();
             $brandResult = $brandQuery->get_result();
             if ($brandResult->num_rows === 0) {
-                http_response_code(400);
-                echo json_encode([
-                    "status" => "error",
-                    "message" => "Brand does not exist.",
-                    "Type Handler" => "GetAllProducts",
-                    "API Line" => __LINE__
-                ]);
-                $brandQuery->close();
-                exit();
+                $brand = "no brand";
+            } else {
+                $brandRow = $brandResult->fetch_assoc();
+                $brand = $brandRow['name'];
             }
-            $brand = $brandResult->fetch_assoc();
             $brandQuery->close();
             $products[] = [
-                'id' => $row['id'],
+                'id' => $row['product_id'],
                 'title' => $row['title'],
                 'price' => $row['price'],
                 'product_link' => $row['product_link'],
@@ -262,6 +255,7 @@ if ($_POST['type'] == 'GetAllProducts')
                 'brand_name' => $brand
             ];
         }
+        $stmt->close();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -279,7 +273,7 @@ if ($_POST['type'] == 'GetAllProducts')
 //add product
 if ($_POST['type'] == 'AddProduct') {
 
-    $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'store_id', 'user_id', 'type'];
+    $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'store_id', 'apikey', 'type'];
 
     foreach ($_POST as $key => $value) {
         if (!in_array($key, $validFields) && $key !== 'brand_name') {
@@ -315,7 +309,8 @@ if ($_POST['type'] == 'AddProduct') {
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
     $store_id = $_POST['store_id'];
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
     if (!isset($_POST['brand_name'])) {
         $brand_name = $_POST['title'];
