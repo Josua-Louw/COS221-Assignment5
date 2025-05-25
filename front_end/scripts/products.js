@@ -185,10 +185,12 @@ document.addEventListener('DOMContentLoaded', function() {
         productsToDisplay.forEach(product => {
             const productElement = document.createElement('div');
             productElement.className = 'product';
-            
+        
             const priceNum = Number(product.price);
             const price = !isNaN(priceNum) ? priceNum.toFixed(2) : '0.00';
-            
+
+            const productID = product.product_id || product.id || product.id_product;
+
             productElement.innerHTML = `
                 ${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="${escapeHtml(product.title)}">` : ''}
                 <div class="product-info">
@@ -196,13 +198,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p class="price">R${price}</p>
                     ${product.description ? `<p class="description">${escapeHtml(product.description)}</p>` : ''}
                     ${product.category ? `<p class="category">${escapeHtml(product.category)}</p>` : ''}
-                    ${product.product_link ? `<a href="${escapeHtml(product.product_link)}" class="view-product" target="_blank">View Product</a>` : ''}
+                    <button class="view-product" data-prod-id="${productID}">View Product</button>
                 </div>
             `;
-            
+
+            const viewButton = productElement.querySelector(".view-product");
+            viewButton.addEventListener("click", () => {
+                if (!productID) {
+                    console.warn("No product ID found for:", product);
+                    return;
+                }
+
+                const productData = {
+                    prod_id: productID,
+                    title: product.title,
+                    thumbnail: product.thumbnail,
+                    price: product.price,
+                    description: product.description,
+                    product_link: product.product_link
+                };
+
+                console.log("Storing in sessionStorage:", productData);
+                sessionStorage.setItem("selectedProduct", JSON.stringify(productData));
+                window.location.href = "view_product.php";
+            });
+
             productList.appendChild(productElement);
         });
     }
+
 
     function setupPagination() {
         paginationContainer.innerHTML = '';
