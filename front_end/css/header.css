@@ -35,6 +35,12 @@ header {
     color: #0066cc;
 }
 
+.nav-link.active, .auth-link.active {
+  color: #0066cc;         
+  background-color: #e6f0fa; 
+  border-radius: 4px;
+}
+
 .dropdown {
     position: relative;
     display: inline-block;
@@ -50,6 +56,17 @@ header {
     font-family: inherit;
     font-size: inherit;
 }
+
+.dropbtn:hover {
+    color: #0066cc;         
+    background-color: transparent;
+  }
+
+  .dropdown .dropbtn.active {
+    color: #0066cc;   
+    background-color: #e6f0fa; 
+    border-radius: 4px;
+  }
 
 .dropdown-content {
     display: none;

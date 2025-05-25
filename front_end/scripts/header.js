@@ -48,4 +48,12 @@ async function sendRequest(body) {
                     dropdown.classList.remove('open');
                 }
             });
+            const currentPage = window.location.pathname.split('/').pop();
+            const links = document.querySelectorAll('.nav-link, .auth-link');
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === currentPage){
+                    link.classList.add('active');
+                }
+            });
         });
