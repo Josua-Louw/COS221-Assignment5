@@ -20,7 +20,7 @@
     SubmitRating        [0]
     GetRatings          [0]
     DeleteRating        [0]
-    EditRating          [-1]
+    EditRating          [0]
     GetStores           [-1]
     GetUsersStores      [0]
     Follow              [-1]
@@ -816,33 +816,67 @@ if ($_POST['type'] == 'DeleteRating')
 //Edit Rating
 if ($_POST['type'] == 'EditRating')
 {
-    $user_id = $_POST['user_id'];
+    if (!isset($_POST['rating_id']) || !isset($_POST['apikey']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "EditRating",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
     $rating_id = $_POST['rating_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
-    $checkStmt = $conn->prepare("SELECT * FROM Rating WHERE rating_id = ? AND user_id = ?");
-    $checkStmt->bind_param("ii", $rating_id, $user_id);
-    $checkStmt->execute();
-    $result = $checkStmt->get_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($result->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Unauthorized: You can only edit your own rating."]);
-        exit();
+    try {
+        $checkStmt = $conn->prepare("SELECT * FROM Rating WHERE rating_id = ? AND user_id = ?");
+        $checkStmt->bind_param("ii", $rating_id, $user_id);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+
+        if ($result->num_rows === 0) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Unauthorized: You can only edit your own rating.",
+                "Type Handler" => "EditRating",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $checkStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditRating", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"EditRating", __LINE__);
     }
 
-    $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
-    $stmt->bind_param("isi", $rating, $comment, $rating_id);
+    try {
+        $conn->begin_transaction();
 
-    if ($stmt->execute()) {
+        $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
+        $stmt->bind_param("isi", $rating, $comment, $rating_id);
+        $stmt->execute();
+        $stmt->close();
+
         http_response_code(200);
-        echo json_encode(["status" => "success", "message" => "Rating updated successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Failed to update rating."]);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rating successfully edited."
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditRating", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "EditRating", __LINE__, true);
     }
-    $stmt->close();
+    $conn->commit();
     exit();
 }
 
