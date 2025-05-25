@@ -26,11 +26,11 @@
     Follow              [0]
     GetFollowing        [0] *
     Unfollow            [0]
-    RegisterStoreOwner  [-1]
-    SavePreference      [-1]
+    RegisterStoreOwner  [0]
+    SavePreference      [0]
     AddBrand            [-1]
     RemoveBrand         [-1]
-    GetBrands           [-1]
+    GetBrands           [0]
 
 */
 
@@ -1173,7 +1173,9 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "RegisterStoreOwner",
+            "API Line" => __LINE__
         ]);
         exit();
     }
@@ -1182,79 +1184,46 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     $store_url = $_POST['store_url'];
     $apikey = $_POST['apikey'];
     $type = $_POST['store_type'];
-
-    //Check if user exists
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
+    $user_id = authenticate($conn, $apikey);
 
     //Add store to database
-    $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, store_type) VALUES (?, ?, ?)");
-    $storeStmt->bind_param("sss", $store_name, $store_url, $type);
-    if (!$storeStmt->execute()) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add store"
-        ]);
-        exit();
-    }
-    $store_id = $storeStmt->insert_id;
-    $storeStmt->close();
+    try {
+        $conn->begin_transaction();
 
-    $storeQuery = $conn->prepare("SELECT store_id FROM store WHERE store_id = ?");
-    $storeQuery->bind_param("s", $store_id);
-    $storeQuery->execute();
-    $storeResult = $storeQuery->get_result();
+        $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, store_type) VALUES (?, ?, ?)");
+        $storeStmt->bind_param("sss", $store_name, $store_url, $type);
+        $storeStmt->execute();
+        $store_id = $storeStmt->insert_id;
+        $storeStmt->close();
 
-    if ($storeResult->num_rows === 0) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add store"
-        ]);
-        $storeQuery->close();
-        exit();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "RegisterStoreOwner", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "RegisterStoreOwner", __LINE__, true);
     }
 
-    $store = $storeResult->fetch_assoc();
-    $storeQuery->close();
-
-    $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
-    $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
-    if (!$ownerStmt->execute()) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add owner to the created store"
-        ]);
+    try {
+        $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
+        $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
+        $ownerStmt->execute();
         $ownerStmt->close();
-        exit();
-    }
-    $ownerStmt->close();
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Successfully added store and assigned owner"
-    ]);
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully registered store owner"
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "RegisterStoreOwner", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "RegisterStoreOwner", __LINE__, true);
+    }
+
     exit();
 }
 
+//Filter stores
 if ($_POST['type'] == 'getFilteredStores') 
 {
     if (!isset($_POST['store_id']))
@@ -1304,12 +1273,20 @@ if ($_POST['type'] == 'AddBrand'){
 
     $apikey = $_POST['apikey'];
     $brand_name = $_POST['brand_name'];
-
+    $user_id = authenticate($conn, $apikey);
     //************************************** admin ************************************//
 
     try {
         $conn->begin_transaction();
         $brand_id = createBrand($conn, $brand_name);
+        $conn->commit();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Brand added successfully",
+            "data" => $brand_id
+        ]);
     } catch (Exception $e) {
         catchErrorSQL($conn, $e, "AddBrand", __LINE__, true);
     } catch (Error $e) {
@@ -1334,7 +1311,7 @@ if ($_POST['type'] == 'RemoveBrand'){
 
     $apikey = $_POST['apikey'];
     $brand_id = $_POST['brand_id'];
-
+    $user_id = authenticate($conn, $apikey);
     //************************************* Admin **********************************//
 
     try {
@@ -1344,12 +1321,18 @@ if ($_POST['type'] == 'RemoveBrand'){
         $stmt->bind_param("i", $brand_id);
         $stmt->execute();
         $stmt->close();
+        $conn->commit();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Brand removed successfully"
+        ]);
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "RemoveBrand", __LINE__, true);
     } catch (Exception $e) {
         catchError($conn, $e, "RemoveBrand", __LINE__, true);
     }
-    $conn->commit();
     exit();
 }
 
@@ -1437,7 +1420,7 @@ function catchError($conn, $error, $line, $type, $rollback = false){
     exit();
 }
 
-if ($_POST['type'] == ' SavePrefrences')
+if ($_POST['type'] == ' SavePreferences')
 {
 
     if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
@@ -1454,16 +1437,28 @@ if ($_POST['type'] == ' SavePrefrences')
     $max_price = $_POST['max_price'];
     $api_key = $_POST['apikey'];
 
-    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
-    $stmt->bind_param("iiii", $theme, $min_price, $api_key);
+    $user_id = authenticate($conn, $api_key);
 
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Updated user settings"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Error updating the user settings"]);
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
+        $stmt->bind_param("iiii", $theme, $min_price, $max_price, $api_key);
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Preferences successfully updated"
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SavePreferences", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "SavePreferences", __LINE__, true);
     }
     exit();
-
 }
 
 /*
