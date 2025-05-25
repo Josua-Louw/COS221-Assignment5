@@ -21,7 +21,7 @@
     GetRatings          [0]
     DeleteRating        [0]
     EditRating          [0]
-    GetStores           [-1]
+    GetStores           [0]
     GetUsersStores      [0]
     Follow              [-1]
     GetFollowing        [-1]
@@ -883,66 +883,40 @@ if ($_POST['type'] == 'EditRating')
 //Fetch all the available stores. I made apikey required but I can change it to only need the type
 if ($_POST['type'] == "GetStores")
 {
-
-    // Validate API key exists
-    if (!isset($_POST['apikey'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields"
-        ]);
-        exit();
-    }
-
-    $apikey = $_POST['apikey'];
-
-    // Retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    // Check if user exists
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-
-    $authQuery->close();
-
     //Fetch stores
-    $storeStmt = $conn->prepare("SELECT * FROM store");
-    $storeStmt->execute();
-    $storeResult = $storeStmt->get_result();
+    try {
+        $storeStmt = $conn->prepare("SELECT * FROM store");
+        $storeStmt->execute();
+        $storeResult = $storeStmt->get_result();
 
-    if ($storeResult->num_rows == 0){
-        http_response_code(204);
+        if ($storeResult->num_rows == 0){
+            http_response_code(204);
+            echo json_encode([
+                "status" => "success",
+                "message" => "There are currently no stores available",
+                "data" => []
+            ]);
+            $storeStmt->close();
+            exit();
+        }
+
+        $stores = [];
+        while ($row = $storeResult->fetch_assoc()) {
+            $stores[] = $row;
+        }
+        $storeStmt->close();
+
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "message" => "There are currently no stores available",
-            "data" => []
+            "message" => "All stores available, retrieved successfully.",
+            "data" => $stores
         ]);
-        $storeStmt->close();
-        exit();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetStores", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetStores", __LINE__);
     }
-
-    $stores = [];
-    while ($row = $storeResult->fetch_assoc()) {
-        $stores[] = $row;
-    }
-    $storeStmt->close();
-
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "All stores available, retrieved successfully.",
-        "data" => $stores
-    ]);
     exit();
 }
 
