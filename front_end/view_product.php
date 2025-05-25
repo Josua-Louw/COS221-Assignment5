@@ -1,93 +1,60 @@
-<?php
-session_start();
-
-// TODO: finish code to connect to database and api and remove the placeholder
-
-/*
-include '../includes/db_connect.php';
-
-// Validate product ID
-if (!isset($_GET['prod_id'])) {
-    echo "<p>Product ID not specified.</p>";
-    include '../includes/footer.php';
-    exit;
-}
-
-$prod_id = intval($_GET['prod_id']);
-$stmt = mysqli_prepare($mysqli, "SELECT * FROM product WHERE prod_id = ?");
-mysqli_stmt_bind_param($stmt, "i", $prod_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$product = mysqli_fetch_assoc($result);
-
-if (!$product) {
-    echo "<p>Product not found.</p>";
-    include '../includes/footer.php';
-    exit;
-}
-*/
-
-// Temporary placeholder
-$product = [
-    'title' => 'Test Product',
-    'thumbnail' => 'https://via.placeholder.com/300',
-    'brand_id' => 'TestBrand',
-    'store_id' => 'TestStore',
-    'price' => '49.99',
-    'description' => 'This is a test product'
-];
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>View Product</title>
-  <link rel="stylesheet" href="/front_end/css/view_product.css">
+    <meta charset="UTF-8">
+    <title>CompareIt - View Product</title>
+    <link rel="stylesheet" href="css/view_product.css">
+    <link rel="stylesheet" href="css/header.css"> 
+    <script src="scripts/header.js" defer></script> 
 </head>
 <body>
-<?php include 'header.php'; ?>
+<!--the html in header.php was not working along with the html in this php file so i did not include the header and just made it a part of my html-->
+    <header role="banner">
+        <nav class="main-nav" aria-label="Main navigation">
+            <div class="button-container">
+                <a href="products.php" class="nav-link">Products</a>
 
-<main>
-  <section id="product-title">
-    <h2><?php echo htmlspecialchars($product['title']); ?></h2>
-  </section>
+                <div class="dropdown" aria-haspopup="true">
+                    <button class="dropbtn" aria-expanded="false">Categories</button>
+                    <ul class="dropdown-content" role="menu">
+                        <?php
+                        $categories = ['Electronics', 'Clothing', 'Home & Garden', 'Books'];
+                        foreach ($categories as $category) {
+                            echo '<li role="none"><a href="products.php?category=' . urlencode($category) . '" role="menuitem">' . htmlspecialchars($category) . '</a></li>';
+                        }
+                        ?>
+                    </ul>
+                </div>
 
-  <section id="product-gallery-info" style="display: flex; gap: 2rem;">
-    <div id="product-images">
-      <img id="main-image" src="<?php echo htmlspecialchars($product['thumbnail']); ?>" alt="Product Image" width="300">
-      <div id="thumbnail-container"></div>
+                <a href="stores.php" class="nav-link">Stores</a>
+                <a href="user_settings.php" class="nav-link">Settings</a>
+            </div>
+
+            <div class="login-container" id="auth-buttons">
+                <a href="login.php" class="auth-link" id="login-btn">Login</a>
+                <a href="register.php" class="auth-link" id="register-btn">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <!--product dsplay section -->
+    <div class="product-container">
+        <h1 id="product-title">Loading...</h1>
+        <div class="image-section">
+            <img id="main-image" src="https://via.placeholder.com/300" alt="Main Product Image">
+            <div id="thumbnail-container" class="thumbnail-row"></div>
+        </div>
+        <p id="product-price" class="price">R0.00</p>
+        <p id="product-description" class="description">Loading description...</p>
+        <div id="rating-stars" class="rating">Rating: -</div>
+        <a id="external-link" href="#" target="_blank" class="external-link-btn" style="display: none;">View on Store Website</a>
+
     </div>
 
-    <div id="product-details">
-      <p><strong>Brand:</strong> <?php echo htmlspecialchars($product['brand_id']); ?></p>
-      <p><strong>Store:</strong> <?php echo htmlspecialchars($product['store_id']); ?> <button id="follow-store-btn">Follow</button></p>
-      <p><strong>Price:</strong> R<?php echo htmlspecialchars($product['price']); ?></p>
-      <p><strong>Description:</strong> <?php echo htmlspecialchars($product['description']); ?></p>
-      <p><strong>Rating:</strong> <span id="rating-stars">Loading...</span></p>
-      <button id="wishlist-btn">❤️ Add to Wishlist</button>
-    </div>
-  </section>
+    <script src="scripts/view_product.js"></script>
 
-  <section id="reviews">
-    <h3>User Reviews</h3>
-    <div id="review-list">Loading reviews</div>
+    <?php require_once '../includes/footer.php'; ?>
+</body>
+</html>
 
-    <form id="review-form">
-      <textarea id="review-text" placeholder="Write your review..." required></textarea>
-      <select id="rating" required>
-        <option value="">Rate</option>
-        <option value="5">⭐⭐⭐⭐⭐</option>
-        <option value="4">⭐⭐⭐⭐</option>
-        <option value="3">⭐⭐⭐</option>
-        <option value="2">⭐⭐</option>
-        <option value="1">⭐</option>
-      </select>
-      <button type="submit">Submit Review</button>
-    </form>
-  </section>
-</main>
 
-<script src="/front_end/scripts/view_product.js"></script>
-
-<?php include 'footer.php'; ?>
