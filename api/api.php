@@ -35,10 +35,8 @@
 */
 
 //TODO:
-//  Improve Errors
 //  Test All Types
-//  Create Types:
-//      - SavePreference
+
 
 
 require_once 'config.php';
