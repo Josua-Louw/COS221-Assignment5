@@ -51,6 +51,20 @@ function unfollowStore(apikey) {
     return sendRequest(body);
 }
 
+//searches for stores
+function getFilteredStores(store_id, name) {
+    const body = {
+      type: 'getFilteredStores'
+    }
+    if (store_id != undefined) {
+      body.store_id = store_id;
+    }
+    if (name != undefined) {
+      body.name = name;
+    }
+    return sendRequest(body);
+}
+
 //calls the api adn returns a json object of whatever the api returns
 function sendRequest(body) {
   const request = new XMLHttpRequest;
