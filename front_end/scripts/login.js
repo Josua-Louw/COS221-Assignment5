@@ -42,9 +42,10 @@ login.onload = function () {
   if (this.readyState === 4) {
     if (this.status === 200) {
       try {
-        const data = JSON.parse(this.responseText); // ← CORRECT
+        const data = JSON.parse(this.responseText);
         if (data.status === 'success' && data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user)); // ← CORRECT
+          localStorage.setItem('user', JSON.stringify(data.user));
+          sessionStorage.setItem('apiKey', data.user.apiKey || data.user.apikey);
           window.location.href = 'index.php';
         } else {
           showError(data.message || 'Login failed');
