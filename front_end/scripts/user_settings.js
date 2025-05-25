@@ -1,4 +1,3 @@
-
 function showMessage(msg, isError = false) {
   const el = document.getElementById('settingsMessage');
   el.textContent = msg;
@@ -51,12 +50,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
   document.body.classList.toggle('dark-theme', theme === 'dark');
   
   try {
-    const res = await fetch('api.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
+    const data = await sendRequest(payload);
 
     if (data.status === 'success') {
         showMessage('Settings saved!');

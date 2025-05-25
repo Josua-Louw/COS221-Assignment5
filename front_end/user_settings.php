@@ -44,7 +44,7 @@ require_once 'header.php';
   </form>
 </div>
 
-<script src="js/user_settings.js"></script>
+<script src="scripts/user_settings.js"></script>
 
 <?php
 require_once 'footer.php';

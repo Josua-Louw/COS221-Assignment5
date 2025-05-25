@@ -1,0 +1,322 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const PRODUCTS_PER_PAGE = 20;
+    let currentPage = 1;
+    let totalProducts = 0;
+    let allProducts = [];
+    const brandFilter = document.querySelector('.brand-filter');
+
+    let apiKey = sessionStorage.getItem('apiKey') || localStorage.getItem('apiKey') || 
+                 sessionStorage.getItem('apikey') || localStorage.getItem('apikey');
+    
+    if (!apiKey) {
+        const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                const userObj = JSON.parse(storedUser);
+                apiKey = userObj.apiKey || userObj.apikey;
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+    }
+
+    const productList = document.querySelector('.product-list');
+    if (!productList) {
+        console.error('Product list container not found!');
+        return;
+    }
+
+    const paginationContainer = document.createElement('div');
+    paginationContainer.className = 'pagination';
+    productList.after(paginationContainer);
+    
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = '<div class="spinner"></div><p>Loading products...</p>';
+    productList.before(loadingIndicator);
+
+    const categoryFilter = document.querySelector('.category-filter');
+    const minPriceInput = document.querySelector('.min-price');
+    const maxPriceInput = document.querySelector('.max-price');
+    const applyFiltersBtn = document.querySelector('.apply-filters');
+    const resetFiltersBtn = document.querySelector('.reset-filters');
+    const searchInput = document.querySelector('.search-input');
+
+    fetchProducts();
+    initializeBrandFilter().catch(e => console.error('Brand filter init failed:', e));
+
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            currentPage = 1;
+            fetchProductsWithFilters();
+        });
+    }
+
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+            if (categoryFilter) categoryFilter.value = '';
+            if (minPriceInput) minPriceInput.value = '';
+            if (maxPriceInput) maxPriceInput.value = '';
+            if (searchInput) searchInput.value = '';
+            currentPage = 1;
+            fetchProducts();
+        });
+    }
+
+    async function initializeBrandFilter() {
+        if (!brandFilter) return;
+        
+        try {
+            const response = await sendRequest({ type: 'GetBrands' });
+            if (response.status === 'success' && Array.isArray(response.data)) {
+                brandFilter.innerHTML = '<option value="">All Brands</option>';
+                response.data.forEach(brand => {
+                    const option = document.createElement('option');
+                    option.value = brand.brand_id || brand.id;
+                    option.textContent = brand.name || brand.brand_name || `Brand ${brand.id}`;
+                    brandFilter.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Brand filter initialization failed:', error);
+        }
+    }
+
+    async function fetchProducts() {
+        showLoading();
+        
+        try {
+            if (!apiKey) {
+                throw new Error('Please login to view products');
+            }
+
+            const response = await getAllProducts();
+            
+            if (response.status === 'success') {
+                allProducts = response.data;
+                totalProducts = allProducts.length;
+                renderProducts();
+                setupPagination();
+            } else {
+                throw new Error(response.message || 'Failed to load products');
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            showError(error.message);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function fetchProductsWithFilters() {
+        if (!apiKey) {
+            throw new Error('No API key found. Please login.');
+        }
+    
+        showLoading();
+
+        try {
+            if (!apiKey) throw new Error('Please login to view products');
+
+            const getValue = (val) => val === '' ? undefined : val;
+            
+            const filters = {
+                category: getValue(categoryFilter?.value),
+                min_price: minPriceInput?.value ? parseFloat(minPriceInput.value) : undefined,
+                max_price: maxPriceInput?.value ? parseFloat(maxPriceInput.value) : undefined,
+                search: getValue(searchInput?.value.trim()),
+                brand: getValue(brandFilter?.value)
+            };
+
+            if (filters.min_price !== undefined && isNaN(filters.min_price)) {
+                throw new Error('Minimum price must be a number');
+            }
+            if (filters.max_price !== undefined && isNaN(filters.max_price)) {
+                throw new Error('Maximum price must be a number');
+            }
+            if (filters.min_price !== undefined && filters.max_price !== undefined && 
+                filters.min_price > filters.max_price) {
+                throw new Error('Minimum price cannot be greater than maximum price');
+            }
+
+            const response = await getFilteredProducts(
+                undefined,
+                filters.brand,
+                filters.category,
+                filters.min_price,
+                filters.max_price,
+                filters.search,
+                undefined
+            );
+            
+            if (response.status === 'success') {
+                processProductData(response.data);
+            } else {
+                throw new Error(response.message || 'Failed to load filtered products');
+            }
+        } catch (error) {
+            console.error('Filter fetch error:', error);
+            showError(error.message);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function processProductData(products) {
+        allProducts = products;
+        totalProducts = allProducts.length;
+        currentPage = 1;
+        renderProducts();
+        setupPagination();
+    }
+
+    function renderProducts() {
+        const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        const endIndex = startIndex + PRODUCTS_PER_PAGE;
+        const productsToDisplay = allProducts.slice(startIndex, endIndex);
+
+        productList.innerHTML = '';
+
+        if (productsToDisplay.length === 0) {
+            productList.innerHTML = '<div class="no-products">No products found</div>';
+            return;
+        }
+
+        productsToDisplay.forEach(product => {
+            const productElement = document.createElement('div');
+            productElement.className = 'product';
+            
+            const priceNum = Number(product.price);
+            const price = !isNaN(priceNum) ? priceNum.toFixed(2) : '0.00';
+            
+            productElement.innerHTML = `
+                ${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="${escapeHtml(product.title)}">` : ''}
+                <div class="product-info">
+                    <h3>${escapeHtml(product.title || 'Untitled Product')}</h3>
+                    <p class="price">R${price}</p>
+                    ${product.description ? `<p class="description">${escapeHtml(product.description)}</p>` : ''}
+                    ${product.category ? `<p class="category">${escapeHtml(product.category)}</p>` : ''}
+                    ${product.product_link ? `<a href="${escapeHtml(product.product_link)}" class="view-product" target="_blank">View Product</a>` : ''}
+                </div>
+            `;
+            
+            productList.appendChild(productElement);
+        });
+    }
+
+    function setupPagination() {
+        paginationContainer.innerHTML = '';
+        const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+
+        if (totalPages <= 1) return;
+
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderProducts();
+                setupPagination();
+            }
+        });
+        paginationContainer.appendChild(prevButton);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.className = currentPage === i ? 'active' : '';
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderProducts();
+                setupPagination();
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderProducts();
+                setupPagination();
+            }
+        });
+        paginationContainer.appendChild(nextButton);
+    }
+
+    function showLoading() {
+        loadingIndicator.style.display = 'flex';
+        productList.style.opacity = '0.5';
+    }
+
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+        productList.style.opacity = '1';
+    }
+
+    function showError(message) {
+        productList.innerHTML = `<div class="error-message">${escapeHtml(message)}</div>`;
+    }
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    async function sendRequest(body) {
+        try {
+            if (apiKey && !body.apikey) {
+                body.apikey = apiKey;
+            }
+
+            const response = await fetch('../api/api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const text = await response.text();
+            const data = text ? JSON.parse(text) : {};
+            return data;
+        } catch (error) {
+            return {
+                status: 'error',
+                message: error.message
+            };
+        }
+    }
+
+    async function getAllProducts() {
+        const body = { type: 'GetAllProducts' };
+        return await sendRequest(body);
+    }
+
+    async function getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store_id) {
+        const body = {
+            type: 'GetFilteredProducts',
+            apikey: apiKey
+        };
+
+        if (prod_id !== undefined) body.prod_id = prod_id;
+        if (brand !== undefined) body.brand = brand;
+        if (category !== undefined) body.category = category;
+        if (min_price !== undefined) body.min_price = min_price;
+        if (max_price !== undefined) body.max_price = max_price;
+        if (search !== undefined) body.search = search;
+        if (store_id !== undefined) body.store_id = store_id;
+
+        return await sendRequest(body);
+    }
+});
