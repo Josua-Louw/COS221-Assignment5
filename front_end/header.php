@@ -16,7 +16,6 @@
                     <button class="dropbtn" aria-expanded="false">Categories</button>
                     <ul class="dropdown-content" role="menu">
                         <?php
-                        // You can replace this with dynamic categories from your database
                         $categories = ['Electronics', 'Clothing', 'Home & Garden', 'Books'];
                         foreach ($categories as $category) {
                             echo '<li role="none"><a href="products.php?category=' . urlencode($category) . '" role="menuitem">' . htmlspecialchars($category) . '</a></li>';
@@ -26,6 +25,7 @@
                 </div>
                 
                 <a href="stores.php" class="nav-link">Stores</a>
+                <a href="user_settings.php" class="nav-link">Settings</a>
             </div>
             
             <div class="login-container" id="auth-buttons">
