@@ -64,28 +64,3 @@ function getFilteredStores(store_id, name) {
     }
     return sendRequest(body);
 }
-
-//calls the api adn returns a json object of whatever the api returns
-function sendRequest(body) {
-  const request = new XMLHttpRequest;
-
-  request.onload = function () {
-    if (this.readyState == 4) {
-      if (this.status == 200) {
-        return JSON.parse(this.responseText);
-      } else {
-        try {
-          const repsonse = JSON.parse(this.responseText)
-          return repsonse;
-        } catch {
-          //only returns text if the error cannot be made into a JSON object
-          return this.responseText;
-        }
-      }
-    }
-  }
-
-  request.open("POST", process.env.API_Location, true);
-  request.setRequestHeader("Content-Type","application/json");
-  request.send(JSON.stringify(body));
-}
