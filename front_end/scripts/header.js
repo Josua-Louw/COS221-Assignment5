@@ -1,5 +1,5 @@
- //All javascipt files that use the api must be in a php file that requires header.php
- const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
+//All javascipt files that use the api must be in a php file that requires header.php
+const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
 
  //calls the api adn returns a json object of whatever the api returns
 async function sendRequest(body) {

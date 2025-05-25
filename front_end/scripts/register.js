@@ -1,3 +1,5 @@
+const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
+
 const typeEl = document.getElementById('user_type');
 const regNoField = document.getElementById('registrationNoField');
 typeEl.addEventListener('change', () => {
@@ -67,7 +69,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     showError('Unable to connect to the server. Please try again later.');
   }
 
-  register.open("POST", process.env.API_Location, true);
+  register.open("POST", API_Location, true);
   register.setRequestHeader("Content-Type","application/json");
   register.send(JSON.stringify(registerBody));
 });
