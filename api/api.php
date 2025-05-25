@@ -17,20 +17,20 @@
     DeleteProduct       [0]
     EditProduct         [0]
     GetFilteredProducts [0]
-    SubmitRating        [-1]
-    GetRatings          [-1]
-    DeleteRating        [-1]
-    EditRating          [-1]
-    GetStores           [-1]
+    SubmitRating        [0]
+    GetRatings          [0]
+    DeleteRating        [0]
+    EditRating          [0]
+    GetStores           [0]
     GetUsersStores      [0]
-    Follow              [-1]
-    GetFollowing        [-1]
-    Unfollow            [-1]
-    RegisterStoreOwner  [-1]
-    SavePreference      [-1]
+    Follow              [0]
+    GetFollowing        [0] *
+    Unfollow            [0]
+    RegisterStoreOwner  [0]
+    SavePreference      [0]
     AddBrand            [-1]
     RemoveBrand         [-1]
-    GetBrands           [-1]
+    GetBrands           [0]
 
 */
 
@@ -288,7 +288,9 @@ if ($_POST['type'] == 'AddProduct') {
             http_response_code(400);
             echo json_encode([
                 "status" => "error",
-                "message" => "Invalid field: $key"
+                "message" => "Invalid field: $key",
+                "Type Handler" => "AddProduct",
+                "API Line" => __LINE__
             ]);
             exit();
         }
@@ -299,7 +301,9 @@ if ($_POST['type'] == 'AddProduct') {
             http_response_code(400);
             echo json_encode([
                 "status" => "error",
-                "message" => "Missing required field: $field"
+                "message" => "Missing required field: $field",
+                "Type Handler" => "AddProduct",
+                "API Line" => __LINE__
             ]);
             exit();
         }
@@ -485,7 +489,9 @@ if ($_POST['type'] == 'EditProduct')
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "EditProduct",
+            "API Line" => __LINE__
         ]);
         exit();
     }
@@ -673,62 +679,66 @@ if ($_POST['type'] == 'GetFilteredProducts')
 //now we have the following for rating
 if ($_POST['type'] == 'SubmitRating')
 {
-    if (!isset($_POST['user_id']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
+    if (!isset($_POST['apikey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "SubmitRating",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
     $prod_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE id = ?");
-    $authQuery->bind_param("i", $user_id);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($authResult->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
+    try {
+        $duplicateStmt = $conn->prepare("SELECT user_id FROM Rating WHERE user_id = ?");
+        $duplicateStmt->bind_param("i", $user_id);
+        $duplicateStmt->execute();
+        $duplicateResult = $duplicateStmt->get_result();
+
+        if ($duplicateResult->num_rows !== 0){
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This user already submitted a rating for this product",
+                "Type Handler" => "SubmitRating",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+        $duplicateStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SubmitRating", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"SubmitRating", __LINE__);
     }
 
-    $authQuery->close();
+    try {
+        $conn->begin_transaction();
 
-    $duplicateStmt = $conn->prepare("SELECT user_id FROM Rating WHERE user_id = ?");
-    $duplicateStmt->bind_param("i", $user_id);
-    $duplicateStmt->execute();
-    $duplicateResult = $duplicateStmt->get_result();
-
-    if ($duplicateResult->num_rows !== 0){
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "This user already submitted a rating for this product"
-        ]);
-        exit();
-    }
-
-    $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
-
-    if ($stmt->execute()) {
+        $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
+        $stmt->execute();
+        $stmt->close();
+        $conn->commit();
         http_response_code(200);
-        echo json_encode(["status" => "success", "message" => "Rating submitted successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Failed to submit rating."]);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rating successfully submitted."
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SubmitRating", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "SubmitRating", __LINE__, true);
     }
-    $stmt->close();
+
     exit();
 }
 
@@ -739,176 +749,184 @@ if ($_POST['type'] == 'GetRatings')
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "prod_id is required"
+            "message" => "prod_id is required",
+            "Type Handler" => "GetRatings",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
     $prod_id = $_POST['prod_id'];
 
-    $stmt = $conn->prepare("
-        SELECT u.name, r.rating, r.comment
-        FROM Rating r
-        JOIN User u ON r.user_id = u.user_id
-        WHERE r.prod_id = ?
-    ");
-    $stmt->bind_param("i", $prod_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    try {
+        $stmt = $conn->prepare("SELECT u.name, r.rating, r.comment FROM Rating r JOIN User u ON r.user_id = u.user_id WHERE r.prod_id = ?");
+        $stmt->bind_param("i", $prod_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $ratings = [];
-    while ($row = $result->fetch_assoc()) {
-        $ratings[] = $row;
+        $ratings = [];
+        while ($row = $result->fetch_assoc()) {
+            $ratings[] = $row;
+        }
+        $stmt->close();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Ratings fetched successfully.",
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetRatings", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"GetRatings", __LINE__);
     }
-    $stmt->close();
 
-    http_response_code(200);
-    echo json_encode(["status" => "success", "data" => $ratings]);
     exit();
 }
 
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating')
 {
-    if (!isset($_POST['rating_id']) || !isset($_POST['user_id'])) {
+    if (!isset($_POST['rating_id']) || !isset($_POST['apikey'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "DeleteRating",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
     $rating_id = $_POST['rating_id'];
 
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE id = ?");
-    $authQuery->bind_param("i", $user_id);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($authResult->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
+    try {
+        $conn->begin_transaction();
 
-    $authQuery->close();
-
-    $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
-    $stmt->bind_param("i", $rating_id);
-
-    if ($stmt->execute()) {
+        $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
+        $stmt->bind_param("i", $rating_id);
+        $stmt->execute();
+        $stmt->close();
         http_response_code(200);
-        echo json_encode(["status" => "success", "message" => "Rating deleted successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Failed to delete rating."]);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rating deleted successfully."
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "DeleteRating", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "DeleteRating", __LINE__, true);
     }
-    $stmt->close();
+
     exit();
 }
 
 //Edit Rating
 if ($_POST['type'] == 'EditRating')
 {
-    $user_id = $_POST['user_id'];
+    if (!isset($_POST['rating_id']) || !isset($_POST['apikey']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "EditRating",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
     $rating_id = $_POST['rating_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
-    $checkStmt = $conn->prepare("SELECT * FROM Rating WHERE rating_id = ? AND user_id = ?");
-    $checkStmt->bind_param("ii", $rating_id, $user_id);
-    $checkStmt->execute();
-    $result = $checkStmt->get_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($result->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Unauthorized: You can only edit your own rating."]);
-        exit();
+    try {
+        $checkStmt = $conn->prepare("SELECT * FROM Rating WHERE rating_id = ? AND user_id = ?");
+        $checkStmt->bind_param("ii", $rating_id, $user_id);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+
+        if ($result->num_rows === 0) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Unauthorized: You can only edit your own rating.",
+                "Type Handler" => "EditRating",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $checkStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditRating", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"EditRating", __LINE__);
     }
 
-    $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
-    $stmt->bind_param("isi", $rating, $comment, $rating_id);
+    try {
+        $conn->begin_transaction();
 
-    if ($stmt->execute()) {
+        $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
+        $stmt->bind_param("isi", $rating, $comment, $rating_id);
+        $stmt->execute();
+        $stmt->close();
+        $conn->commit();
         http_response_code(200);
-        echo json_encode(["status" => "success", "message" => "Rating updated successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Failed to update rating."]);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rating successfully edited."
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "EditRating", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "EditRating", __LINE__, true);
     }
-    $stmt->close();
+
     exit();
 }
 
 //Fetch all the available stores. I made apikey required but I can change it to only need the type
 if ($_POST['type'] == "GetStores")
 {
-
-    // Validate API key exists
-    if (!isset($_POST['apikey'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields"
-        ]);
-        exit();
-    }
-
-    $apikey = $_POST['apikey'];
-
-    // Retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    // Check if user exists
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-
-    $authQuery->close();
-
     //Fetch stores
-    $storeStmt = $conn->prepare("SELECT * FROM store");
-    $storeStmt->execute();
-    $storeResult = $storeStmt->get_result();
+    try {
+        $storeStmt = $conn->prepare("SELECT * FROM store");
+        $storeStmt->execute();
+        $storeResult = $storeStmt->get_result();
 
-    if ($storeResult->num_rows == 0){
-        http_response_code(204);
+        if ($storeResult->num_rows == 0){
+            http_response_code(204);
+            echo json_encode([
+                "status" => "success",
+                "message" => "There are currently no stores available",
+                "data" => []
+            ]);
+            $storeStmt->close();
+            exit();
+        }
+
+        $stores = [];
+        while ($row = $storeResult->fetch_assoc()) {
+            $stores[] = $row;
+        }
+        $storeStmt->close();
+
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "message" => "There are currently no stores available",
-            "data" => []
+            "message" => "All stores available, retrieved successfully.",
+            "data" => $stores
         ]);
-        $storeStmt->close();
-        exit();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetStores", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetStores", __LINE__);
     }
-
-    $stores = [];
-    while ($row = $storeResult->fetch_assoc()) {
-        $stores[] = $row;
-    }
-    $storeStmt->close();
-
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "All stores available, retrieved successfully.",
-        "data" => $stores
-    ]);
     exit();
 }
 
@@ -979,67 +997,63 @@ if ($_POST['type'] == "GetUsersStore"){
 //Follow a store
 if ($_POST['type'] == 'Follow')
 {
-
-    //I used store_name but we can change it to store_is
     if (!isset($_POST['apikey']) || !isset($_POST['store_id'])){
         http_response_code(400);
-        echo json_encode(["status" => "error",
-            "message" => "Missing required fields"
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "Follow",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
     $store_id = $_POST['store_id'];
     $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
-    //retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
+    try {
+        $duplicateStmt = $conn->prepare("SELECT store_id FROM follows WHERE store_id = ? AND user_id = ?");
+        $duplicateStmt->bind_param("ii", $store_id, $user_id);
+        $duplicateStmt->execute();
+        $duplicateResult = $duplicateStmt->get_result();
 
-    //Checks if user is in database
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
+        if ($duplicateResult->num_rows !== 0){
+            http_response_code(409);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This user already follows this store",
+                "Type Handler" => "Follow",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Follow", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"Follow", __LINE__);
     }
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
 
     //Add to the follows table
     try {
+        $conn->begin_transaction();
+
         $followStmt = $conn->prepare("INSERT INTO follows (store_id, user_id) VALUES (?, ?)");
-        if (!$followStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $followStmt->bind_param("ii", $user["id"], $store_id);
-        if (!$followStmt->execute()) {
-            throw new Exception("Execute failed: " . $followStmt->error);
-        }
+        $followStmt->bind_param("ii", $store_id, $user_id);
+        $followStmt->execute();
         $followStmt->close();
-    }catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
-        http_response_code(500);
-        die(json_encode([
-            "status" => "error",
-            "message" => "Failed to follow store"
-        ]));
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully followed store",
+            "data" => $store_id
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Follow", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "Follow", __LINE__, true);
     }
-
-    $conn->commit();
-
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Successfully followed store",
-        "data" => $store_id
-    ]);
     exit();
 }
 
@@ -1050,50 +1064,27 @@ if ($_POST['type'] == 'GetFollowing') {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "GetFollowing",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
     $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
-    //retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    //Checks if user is in database
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
 
     //Get the stores
     try {
         $followStmt = $conn->prepare("SELECT store_id FROM follows WHERE user_id = ?");
-        if (!$followStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $followStmt->bind_param("i", $user['id']);
-        if (!$followStmt->execute()) {
-            throw new Exception("Execute failed: " . $followStmt->error);
-        }
-
+        $followStmt->bind_param("i", $user_id);
+        $followStmt->execute();
         $followResult = $followStmt->get_result();
         $followedStoreIds = [];
-        while ($id = $followResult->fetch_assoc()) {
-            $followedStoreIds[] = $id['store_id'];
+        while ($row = $followResult->fetch_assoc()) {
+            $followedStoreIds[] = $row['store_id'];
         }
-
         $followStmt->close();
 
         if (empty($followedStoreIds)) {
@@ -1106,24 +1097,15 @@ if ($_POST['type'] == 'GetFollowing') {
             exit();
         }
 
-        $stores = [];
-        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id = ?");
-        if (!$storeStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
+        //******************* Check if this code is fine ***********************//
+        $placeholders = implode(',', array_fill(0, count($followedStoreIds), '?'));
+        $types = str_repeat('i', count($followedStoreIds));
 
-        foreach ($followedStoreIds as $storeId) {
-            $storeStmt->bind_param("i", $storeId);
-            if (!$storeStmt->execute()) {
-                throw new Exception("Execute failed for store_id {$storeId}: " . $storeStmt->error);
-            }
-
-            $storeResult = $storeStmt->get_result();
-            if ($store = $storeResult->fetch_assoc()) {
-                $stores[] = $store;
-            }
-            $storeStmt->reset();
-        }
+        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id IN ($placeholders)");
+        $storeStmt->bind_param($types, ...$followedStoreIds);
+        $storeStmt->execute();
+        $storeResult = $storeStmt->get_result();
+        $stores = $storeResult->fetch_all(MYSQLI_ASSOC);
         $storeStmt->close();
 
         http_response_code(200);
@@ -1133,13 +1115,10 @@ if ($_POST['type'] == 'GetFollowing') {
             "data" => $stores
         ]);
 
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetFollowing", __LINE__);
     } catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
-        http_response_code(500);
-        die(json_encode([
-            "status" => "error",
-            "message" => "Failed to retrieve followed stores"
-        ]));
+        catchError($conn, $e, "GetFollowing", __LINE__);
     }
     exit();
 }
@@ -1151,60 +1130,38 @@ if ($_POST['type'] == 'Unfollow') {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "Unfollow",
+            "API Line" => __LINE__
         ]);
+        exit();
     }
 
     $store_id = $_POST['store_id'];
     $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
-    //retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    //Checks if user is in database
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit;
-    }
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
 
     //Remove from the follows table
     try{
+        $conn->begin_transaction();
         $followStmt = $conn->prepare("DELETE FROM follows WHERE store_id = ? AND user_id = ?");
-        if (!$followStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-        $followStmt->bind_param("ii", $store_id, $user['id']);
-        if (!$followStmt->execute()) {
-            throw new Exception("Execute failed: " . $followStmt->error);
-        }
+        $followStmt->bind_param("ii", $store_id, $user_id);
+        $followStmt->execute();
         $followStmt->close();
-    }catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to remove follow"
-        ]);
-        exit();
-    }
-    $conn->commit();
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Successfully removed follow",
-        "data" => $store_id
-    ]);
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully unfollowed store",
+            "data" => $store_id
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Unfollow", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "Unfollow", __LINE__, true);
+    }
     exit();
 }
 
@@ -1216,7 +1173,9 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "RegisterStoreOwner",
+            "API Line" => __LINE__
         ]);
         exit();
     }
@@ -1225,79 +1184,46 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     $store_url = $_POST['store_url'];
     $apikey = $_POST['apikey'];
     $type = $_POST['store_type'];
-
-    //Check if user exists
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
+    $user_id = authenticate($conn, $apikey);
 
     //Add store to database
-    $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, store_type) VALUES (?, ?, ?)");
-    $storeStmt->bind_param("sss", $store_name, $store_url, $type);
-    if (!$storeStmt->execute()) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add store"
-        ]);
-        exit();
-    }
-    $store_id = $storeStmt->insert_id;
-    $storeStmt->close();
+    try {
+        $conn->begin_transaction();
 
-    $storeQuery = $conn->prepare("SELECT store_id FROM store WHERE store_id = ?");
-    $storeQuery->bind_param("s", $store_id);
-    $storeQuery->execute();
-    $storeResult = $storeQuery->get_result();
+        $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, store_type) VALUES (?, ?, ?)");
+        $storeStmt->bind_param("sss", $store_name, $store_url, $type);
+        $storeStmt->execute();
+        $store_id = $storeStmt->insert_id;
+        $storeStmt->close();
 
-    if ($storeResult->num_rows === 0) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add store"
-        ]);
-        $storeQuery->close();
-        exit();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "RegisterStoreOwner", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "RegisterStoreOwner", __LINE__, true);
     }
 
-    $store = $storeResult->fetch_assoc();
-    $storeQuery->close();
-
-    $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
-    $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
-    if (!$ownerStmt->execute()) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to add owner to the created store"
-        ]);
+    try {
+        $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
+        $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
+        $ownerStmt->execute();
         $ownerStmt->close();
-        exit();
-    }
-    $ownerStmt->close();
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Successfully added store and assigned owner"
-    ]);
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully registered store owner"
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "RegisterStoreOwner", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "RegisterStoreOwner", __LINE__, true);
+    }
+
     exit();
 }
 
+//Filter stores
 if ($_POST['type'] == 'getFilteredStores') 
 {
     if (!isset($_POST['store_id']))
@@ -1347,12 +1273,20 @@ if ($_POST['type'] == 'AddBrand'){
 
     $apikey = $_POST['apikey'];
     $brand_name = $_POST['brand_name'];
-
+    $user_id = authenticate($conn, $apikey);
     //************************************** admin ************************************//
 
     try {
         $conn->begin_transaction();
         $brand_id = createBrand($conn, $brand_name);
+        $conn->commit();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Brand added successfully",
+            "data" => $brand_id
+        ]);
     } catch (Exception $e) {
         catchErrorSQL($conn, $e, "AddBrand", __LINE__, true);
     } catch (Error $e) {
@@ -1377,7 +1311,7 @@ if ($_POST['type'] == 'RemoveBrand'){
 
     $apikey = $_POST['apikey'];
     $brand_id = $_POST['brand_id'];
-
+    $user_id = authenticate($conn, $apikey);
     //************************************* Admin **********************************//
 
     try {
@@ -1387,12 +1321,18 @@ if ($_POST['type'] == 'RemoveBrand'){
         $stmt->bind_param("i", $brand_id);
         $stmt->execute();
         $stmt->close();
+        $conn->commit();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Brand removed successfully"
+        ]);
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "RemoveBrand", __LINE__, true);
     } catch (Exception $e) {
         catchError($conn, $e, "RemoveBrand", __LINE__, true);
     }
-    $conn->commit();
     exit();
 }
 
@@ -1480,7 +1420,7 @@ function catchError($conn, $error, $line, $type, $rollback = false){
     exit();
 }
 
-if ($_POST['type'] == ' SavePrefrences')
+if ($_POST['type'] == ' SavePreferences')
 {
 
     if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
@@ -1497,16 +1437,28 @@ if ($_POST['type'] == ' SavePrefrences')
     $max_price = $_POST['max_price'];
     $api_key = $_POST['apikey'];
 
-    $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
-    $stmt->bind_param("iiii", $theme, $min_price, $api_key);
+    $user_id = authenticate($conn, $api_key);
 
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Updated user settings"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Error updating the user settings"]);
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
+        $stmt->bind_param("iiii", $theme, $min_price, $max_price, $api_key);
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Preferences successfully updated"
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SavePreferences", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "SavePreferences", __LINE__, true);
     }
     exit();
-
 }
 
 /*
