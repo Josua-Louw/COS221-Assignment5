@@ -17,9 +17,9 @@
     DeleteProduct       [0]
     EditProduct         [0]
     GetFilteredProducts [0]
-    SubmitRating        [-1]
-    GetRatings          [-1]
-    DeleteRating        [-1]
+    SubmitRating        [0]
+    GetRatings          [0]
+    DeleteRating        [0]
     EditRating          [-1]
     GetStores           [-1]
     GetUsersStores      [0]
@@ -673,62 +673,66 @@ if ($_POST['type'] == 'GetFilteredProducts')
 //now we have the following for rating
 if ($_POST['type'] == 'SubmitRating')
 {
-    if (!isset($_POST['user_id']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
+    if (!isset($_POST['apikey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "SubmitRating",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
     $prod_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE id = ?");
-    $authQuery->bind_param("i", $user_id);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($authResult->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
+    try {
+        $duplicateStmt = $conn->prepare("SELECT user_id FROM Rating WHERE user_id = ?");
+        $duplicateStmt->bind_param("i", $user_id);
+        $duplicateStmt->execute();
+        $duplicateResult = $duplicateStmt->get_result();
+
+        if ($duplicateResult->num_rows !== 0){
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "This user already submitted a rating for this product",
+                "Type Handler" => "SubmitRating",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+        $duplicateStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SubmitRating", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"SubmitRating", __LINE__);
     }
 
-    $authQuery->close();
+    try {
+        $conn->begin_transaction();
 
-    $duplicateStmt = $conn->prepare("SELECT user_id FROM Rating WHERE user_id = ?");
-    $duplicateStmt->bind_param("i", $user_id);
-    $duplicateStmt->execute();
-    $duplicateResult = $duplicateStmt->get_result();
+        $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
+        $stmt->execute();
+        $stmt->close();
 
-    if ($duplicateResult->num_rows !== 0){
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "This user already submitted a rating for this product"
-        ]);
-        exit();
-    }
-
-    $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
-
-    if ($stmt->execute()) {
         http_response_code(200);
-        echo json_encode(["status" => "success", "message" => "Rating submitted successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Failed to submit rating."]);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rating successfully submitted."
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SubmitRating", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "SubmitRating", __LINE__, true);
     }
-    $stmt->close();
+    $conn->commit();
     exit();
 }
 
@@ -746,31 +750,35 @@ if ($_POST['type'] == 'GetRatings')
 
     $prod_id = $_POST['prod_id'];
 
-    $stmt = $conn->prepare("
-        SELECT u.name, r.rating, r.comment
-        FROM Rating r
-        JOIN User u ON r.user_id = u.user_id
-        WHERE r.prod_id = ?
-    ");
-    $stmt->bind_param("i", $prod_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    try {
+        $stmt = $conn->prepare("SELECT u.name, r.rating, r.comment FROM Rating r JOIN User u ON r.user_id = u.user_id WHERE r.prod_id = ?");
+        $stmt->bind_param("i", $prod_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $ratings = [];
-    while ($row = $result->fetch_assoc()) {
-        $ratings[] = $row;
+        $ratings = [];
+        while ($row = $result->fetch_assoc()) {
+            $ratings[] = $row;
+        }
+        $stmt->close();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Ratings fetched successfully.",
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetRatings", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e,"GetRatings", __LINE__);
     }
-    $stmt->close();
 
-    http_response_code(200);
-    echo json_encode(["status" => "success", "data" => $ratings]);
     exit();
 }
 
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating')
 {
-    if (!isset($_POST['rating_id']) || !isset($_POST['user_id'])) {
+    if (!isset($_POST['rating_id']) || !isset($_POST['apikey'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -779,37 +787,29 @@ if ($_POST['type'] == 'DeleteRating')
         exit();
     }
 
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
     $rating_id = $_POST['rating_id'];
 
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE id = ?");
-    $authQuery->bind_param("i", $user_id);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
+    $user_id = authenticate($conn, $apikey);
 
-    if ($authResult->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
+    try {
+        $conn->begin_transaction();
 
-    $authQuery->close();
-
-    $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
-    $stmt->bind_param("i", $rating_id);
-
-    if ($stmt->execute()) {
+        $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
+        $stmt->bind_param("i", $rating_id);
+        $stmt->execute();
+        $stmt->close();
         http_response_code(200);
-        echo json_encode(["status" => "success", "message" => "Rating deleted successfully."]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Failed to delete rating."]);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Rating deleted successfully."
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "DeleteRating", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "DeleteRating", __LINE__, true);
     }
-    $stmt->close();
+
     exit();
 }
 
