@@ -24,8 +24,8 @@
     GetStores           [0]
     GetUsersStores      [0]
     Follow              [0]
-    GetFollowing        [-1]
-    Unfollow            [-1]
+    GetFollowing        [0] *
+    Unfollow            [0]
     RegisterStoreOwner  [-1]
     SavePreference      [-1]
     AddBrand            [-1]
@@ -288,7 +288,9 @@ if ($_POST['type'] == 'AddProduct') {
             http_response_code(400);
             echo json_encode([
                 "status" => "error",
-                "message" => "Invalid field: $key"
+                "message" => "Invalid field: $key",
+                "Type Handler" => "AddProduct",
+                "API Line" => __LINE__
             ]);
             exit();
         }
@@ -299,7 +301,9 @@ if ($_POST['type'] == 'AddProduct') {
             http_response_code(400);
             echo json_encode([
                 "status" => "error",
-                "message" => "Missing required field: $field"
+                "message" => "Missing required field: $field",
+                "Type Handler" => "AddProduct",
+                "API Line" => __LINE__
             ]);
             exit();
         }
@@ -485,7 +489,9 @@ if ($_POST['type'] == 'EditProduct')
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "EditProduct",
+            "API Line" => __LINE__
         ]);
         exit();
     }
@@ -743,7 +749,9 @@ if ($_POST['type'] == 'GetRatings')
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "prod_id is required"
+            "message" => "prod_id is required",
+            "Type Handler" => "GetRatings",
+            "API Line" => __LINE__
         ]);
         exit();
     }
@@ -782,7 +790,9 @@ if ($_POST['type'] == 'DeleteRating')
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "DeleteRating",
+            "API Line" => __LINE__
         ]);
         exit();
     }
@@ -1054,50 +1064,27 @@ if ($_POST['type'] == 'GetFollowing') {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "GetFollowing",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
     $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
-    //retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    //Checks if user is in database
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
 
     //Get the stores
     try {
         $followStmt = $conn->prepare("SELECT store_id FROM follows WHERE user_id = ?");
-        if (!$followStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $followStmt->bind_param("i", $user['id']);
-        if (!$followStmt->execute()) {
-            throw new Exception("Execute failed: " . $followStmt->error);
-        }
-
+        $followStmt->bind_param("i", $user_id);
+        $followStmt->execute();
         $followResult = $followStmt->get_result();
         $followedStoreIds = [];
-        while ($id = $followResult->fetch_assoc()) {
-            $followedStoreIds[] = $id['store_id'];
+        while ($row = $followResult->fetch_assoc()) {
+            $followedStoreIds[] = $row['store_id'];
         }
-
         $followStmt->close();
 
         if (empty($followedStoreIds)) {
@@ -1110,24 +1097,15 @@ if ($_POST['type'] == 'GetFollowing') {
             exit();
         }
 
-        $stores = [];
-        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id = ?");
-        if (!$storeStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
+        //******************* Check if this code is fine ***********************//
+        $placeholders = implode(',', array_fill(0, count($followedStoreIds), '?'));
+        $types = str_repeat('i', count($followedStoreIds));
 
-        foreach ($followedStoreIds as $storeId) {
-            $storeStmt->bind_param("i", $storeId);
-            if (!$storeStmt->execute()) {
-                throw new Exception("Execute failed for store_id {$storeId}: " . $storeStmt->error);
-            }
-
-            $storeResult = $storeStmt->get_result();
-            if ($store = $storeResult->fetch_assoc()) {
-                $stores[] = $store;
-            }
-            $storeStmt->reset();
-        }
+        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id IN ($placeholders)");
+        $storeStmt->bind_param($types, ...$followedStoreIds);
+        $storeStmt->execute();
+        $storeResult = $storeStmt->get_result();
+        $stores = $storeResult->fetch_all(MYSQLI_ASSOC);
         $storeStmt->close();
 
         http_response_code(200);
@@ -1137,13 +1115,10 @@ if ($_POST['type'] == 'GetFollowing') {
             "data" => $stores
         ]);
 
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetFollowing", __LINE__);
     } catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
-        http_response_code(500);
-        die(json_encode([
-            "status" => "error",
-            "message" => "Failed to retrieve followed stores"
-        ]));
+        catchError($conn, $e, "GetFollowing", __LINE__);
     }
     exit();
 }
@@ -1155,60 +1130,38 @@ if ($_POST['type'] == 'Unfollow') {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "Unfollow",
+            "API Line" => __LINE__
         ]);
+        exit();
     }
 
     $store_id = $_POST['store_id'];
     $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
-    //retrieve user
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $apikey);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    //Checks if user is in database
-    if ($authResult->num_rows === 0) {
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit;
-    }
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
 
     //Remove from the follows table
     try{
+        $conn->begin_transaction();
         $followStmt = $conn->prepare("DELETE FROM follows WHERE store_id = ? AND user_id = ?");
-        if (!$followStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-        $followStmt->bind_param("ii", $store_id, $user['id']);
-        if (!$followStmt->execute()) {
-            throw new Exception("Execute failed: " . $followStmt->error);
-        }
+        $followStmt->bind_param("ii", $store_id, $user_id);
+        $followStmt->execute();
         $followStmt->close();
-    }catch (Exception $e) {
-        error_log("Database error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Failed to remove follow"
-        ]);
-        exit();
-    }
-    $conn->commit();
 
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "message" => "Successfully removed follow",
-        "data" => $store_id
-    ]);
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Successfully unfollowed store",
+            "data" => $store_id
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Unfollow", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "Unfollow", __LINE__, true);
+    }
     exit();
 }
 
