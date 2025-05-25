@@ -9,25 +9,13 @@
 <body>
     <header role="banner">
         <nav class="main-nav" aria-label="Main navigation">
+
             <div class="button-container">
                 <a href="products.php" class="nav-link">Products</a>
-                
-                <div class="dropdown" aria-haspopup="true">
-                    <button class="dropbtn" aria-expanded="false">Categories</button>
-                    <ul class="dropdown-content" role="menu">
-                        <?php
-                        // You can replace this with dynamic categories from your database
-                        $categories = ['Electronics', 'Clothing', 'Home & Garden', 'Books'];
-                        foreach ($categories as $category) {
-                            echo '<li role="none"><a href="products.php?category=' . urlencode($category) . '" role="menuitem">' . htmlspecialchars($category) . '</a></li>';
-                        }
-                        ?>
-                    </ul>
-                </div>
-                
+                <a href="products.php" class="nav-link">Stores</a>
                 <a href="stores.php" class="nav-link">Stores</a>
             </div>
-            
+
             <div class="login-container" id="auth-buttons">
                 <a href="login.php" class="auth-link" id="login-btn">Login</a>
                 <a href="register.php" class="auth-link" id="register-btn">Register</a>
