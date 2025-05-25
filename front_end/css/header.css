@@ -35,11 +35,33 @@ header {
     color: #0066cc;
 }
 
-.nav-link.active, .auth-link.active {
-  color: #0066cc;         
-  background-color: #e6f0fa; 
-  border-radius: 4px;
+#themeToggleBtn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    border: 1px solid #0066cc;
+    background-color: transparent;
+    color: #0066cc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
+
+#themeToggleBtn:hover {
+    background-color: #e6f0fa;
+    color: #0052a3;
+    border-color: #0052a3;
+}
+
+.theme-text {
+    display: inline;
+}
+
+
 
 .dropdown {
     position: relative;
@@ -56,17 +78,6 @@ header {
     font-family: inherit;
     font-size: inherit;
 }
-
-.dropbtn:hover {
-    color: #0066cc;         
-    background-color: transparent;
-  }
-
-  .dropdown .dropbtn.active {
-    color: #0066cc;   
-    background-color: #e6f0fa; 
-    border-radius: 4px;
-  }
 
 .dropdown-content {
     display: none;
@@ -152,3 +163,5 @@ header {
         width: 100%;
     }
 }
+
+
