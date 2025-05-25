@@ -38,7 +38,6 @@
         </nav>
     </header>
 
-    <script src="scripts/login.js"></script>
     <script src = "scripts/header.js"></script>
 </body>
 </html>

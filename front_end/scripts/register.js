@@ -40,10 +40,9 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     'user_type': user_type
   }
 
-  //planning on moving the making of a store owner to the time the user actually makes a store.
-  // if (user_type === 'Store Owner') {
-  //   registerBody.registrationNo = registrationNo;
-  // } 
+  if (user_type === 'Store Owner') {
+    registerBody.registrationNo = registrationNo;
+  }
 
   const register = new XMLHttpRequest;
 
@@ -67,7 +66,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     showError('Unable to connect to the server. Please try again later.');
   }
 
-  register.open("POST", process.env.API_Location, true);
+  register.open("POST", "http://localhost/COS221-Assignment5/api/api.php", true);
   register.setRequestHeader("Content-Type","application/json");
   register.send(JSON.stringify(registerBody));
 });

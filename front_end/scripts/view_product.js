@@ -164,7 +164,7 @@ function sendRequest(body) {
     }
   }
 
-  request.open("POST", process.env.API_Location, true);
+  request.open("POST", API_Location, true);
   request.setRequestHeader("Content-Type","application/json");
   request.send(JSON.stringify(body));
 }
