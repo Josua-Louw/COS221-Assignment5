@@ -16,7 +16,7 @@
     AddProduct          [0]
     DeleteProduct       [0]
     EditProduct         [0]
-    GetFilteredProducts [-1]
+    GetFilteredProducts [0]
     SubmitRating        [-1]
     GetRatings          [-1]
     DeleteRating        [-1]
@@ -585,30 +585,15 @@ if ($_POST['type'] == 'GetFilteredProducts')
         http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "Missing required fields"
+            "message" => "Missing required fields",
+            "Type Handler" => "GetFilteredProducts",
+            "API Line" => __LINE__
         ]);
         exit();
     }
 
-    $product_id = $_POST['product_id'];
-
-    $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
-    $authQuery->bind_param("s", $product_id);
-    $authQuery->execute();
-    $authResult = $authQuery->get_result();
-
-    if ($authResult->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Authentication failed. Invalid credentials."
-        ]);
-        $authQuery->close();
-        exit();
-    }
-
-    $user = $authResult->fetch_assoc();
-    $authQuery->close();
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
@@ -657,25 +642,31 @@ if ($_POST['type'] == 'GetFilteredProducts')
         $types .= "i";
     }
 
-    $stmt = $conn->prepare($sql);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+    try {
+        $stmt = $conn->prepare($sql);
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $products = [];
+        while ($row = $result->fetch_assoc()) {
+            $products[] = $row;
+        }
+        $stmt->close();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Products fetched successfully.",
+            "data" => $products
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetFilteredProducts", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetFilteredProducts", __LINE__);
     }
-
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $products = [];
-    while ($row = $result->fetch_assoc()) {
-        $products[] = $row;
-    }
-    $stmt->close();
-
-    http_response_code(200);
-    echo json_encode([
-        "status" => "success",
-        "data" => $products
-    ]);
     exit();
 }
 
@@ -922,7 +913,7 @@ if ($_POST['type'] == "GetStores")
 }
 
 //Fetch users store's
-if ($_POST['type'] == "GetUsersStores"){
+if ($_POST['type'] == "GetUsersStore"){
     if (!isset($_POST['apikey'])) {
         http_response_code(400);
         echo json_encode([
@@ -948,16 +939,13 @@ if ($_POST['type'] == "GetUsersStores"){
             echo json_encode([
                 "status" => "error",
                 "message" => "This user is not a store owner",
-                "Type Handler" => "GetUsersStores",
+                "Type Handler" => "GetUsersStore",
                 "API Line" => __LINE__
             ]);
             exit();
         }
 
-        $storeIDs = [];
-        while ($row = $ownerResult->fetch_assoc()) {
-            $storeIDs[] = $row['store_id'];
-        }
+        $storeID = $ownerResult->fetch_assoc()['store_id'];
         $ownerStmt->close();
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "GetUsersStores", __LINE__);
@@ -966,14 +954,12 @@ if ($_POST['type'] == "GetUsersStores"){
     }
 
     try {
-        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id IN (".implode(",", $storeIDs).")");
+        $storeStmt = $conn->prepare("SELECT * FROM store WHERE store_id = ?");
+        $storeStmt->bind_param("i", $storeID);
         $storeStmt->execute();
         $storeResult = $storeStmt->get_result();
 
-        $stores = [];
-        while ($row = $storeResult->fetch_assoc()) {
-            $stores[] = $row;
-        }
+        $stores = $storeResult->fetch_assoc();
         $storeStmt->close();
 
         http_response_code(200);
@@ -1226,7 +1212,7 @@ if ($_POST['type'] == 'Unfollow') {
 if ($_POST['type'] == 'RegisterStoreOwner') {
 
     //Check if all fields are present
-    if (!isset($_POST['apikey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['type'])){
+    if (!isset($_POST['apikey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['store_type'])){
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -1238,7 +1224,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     $store_name = $_POST['store_name'];
     $store_url = $_POST['store_url'];
     $apikey = $_POST['apikey'];
-    $type = $_POST['type'];
+    $type = $_POST['store_type'];
 
     //Check if user exists
     $authQuery = $conn->prepare("SELECT id FROM user WHERE apikey = ?");
@@ -1260,7 +1246,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     $authQuery->close();
 
     //Add store to database
-    $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, type) VALUES (?, ?, ?)");
+    $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, store_type) VALUES (?, ?, ?)");
     $storeStmt->bind_param("sss", $store_name, $store_url, $type);
     if (!$storeStmt->execute()) {
         http_response_code(500);
