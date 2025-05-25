@@ -35,10 +35,8 @@
 */
 
 //TODO:
-//  Improve Errors
 //  Test All Types
-//  Create Types:
-//      - SavePreference
+
 
 
 require_once 'config.php';
@@ -59,6 +57,7 @@ try {
         "Type Handler" => "creating connection",
         "API Line" => __LINE__
     ]);
+    exit();
 }
 
 //Checks if input has type field
@@ -88,7 +87,7 @@ if ($_POST['type'] == 'Login') {
     $email = $_POST['email'];
     $password = $_POST['password'];
     try {
-        $userStmt = $conn->prepare("SELECT * FROM Users WHERE email = ?");
+        $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $userStmt->bind_param("s", $email);
         $userStmt->execute();
         $userResult = $userStmt->get_result();
@@ -197,7 +196,7 @@ if ($_POST['type'] == 'Register') {
         $conn->begin_transaction();
 
         $stmt = $conn->prepare("
-                INSERT INTO Users (name, email, password, salt, user_type, apikey)
+                INSERT INTO users (name, email, password, salt, user_type, apikey)
                 VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("ssssss", $name, $email, $hashedPassword, $salt, $user_type, $apikey);
         $stmt->execute();
@@ -334,13 +333,12 @@ if ($_POST['type'] == 'AddProduct') {
         $brandResult = $brandStmt->get_result();
 
         if ($brandResult->num_rows === 0) {
-           $brand_id = createBrand($conn, $brand_name);
+           $brand_id = createBrand($conn, $brand_name, false);
         } else {
             $brand_id = $brandResult->fetch_assoc()['brand_id'];
         }
 
         $brandStmt->close();
-
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "AddProduct", __LINE__, true);
     } catch (Exception $e) {
@@ -1204,7 +1202,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
 
     try {
         $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
-        $ownerStmt->bind_param("ii", $user['id'], $store['store_id']);
+        $ownerStmt->bind_param("ii", $user_id, $store_id);
         $ownerStmt->execute();
         $ownerStmt->close();
 
@@ -1278,7 +1276,7 @@ if ($_POST['type'] == 'AddBrand'){
 
     try {
         $conn->begin_transaction();
-        $brand_id = createBrand($conn, $brand_name);
+        $brand_id = createBrand($conn, $brand_name, false);
         $conn->commit();
 
         http_response_code(200);
@@ -1344,7 +1342,7 @@ if ($_POST['type'] == 'GetBrands'){
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows == 0){
+        if ($result->num_rows === 0){
             http_response_code(204);
             echo json_encode([
                 "status" => "success",
@@ -1373,19 +1371,30 @@ if ($_POST['type'] == 'GetBrands'){
 }
 
 //creates a new brand
-function createBrand($conn, $brand_name)
+function createBrand($conn, $brand_name, $transaction = true)
 {
-    $conn->begin_transaction();
+    if ($transaction) {
+        $conn->begin_transaction();
+    }
 
-    $stmt = $conn->prepare("INSERT INTO brand (brand_name) VALUES (?)");
-    $stmt->bind_param("s", $brand_name);
-    $stmt->execute();
+    try {
+        $stmt = $conn->prepare("INSERT INTO brand (brand_name) VALUES (?)");
+        $stmt->bind_param("s", $brand_name);
+        $stmt->execute();
 
-    $brand_id = $stmt->insert_id;
-    $stmt->close();
+        $brand_id = $stmt->insert_id;
+        $stmt->close();
 
-    $conn->commit();
-    return $brand_id;
+        if ($transaction) {
+            $conn->commit();
+        }
+        return $brand_id;
+    } catch (Exception $e) {
+        if ($transaction) {
+            $conn->rollback();
+        }
+        throw $e;
+    }
 }
 
 //Catches SQL errors
@@ -1420,7 +1429,7 @@ function catchError($conn, $error, $line, $type, $rollback = false){
     exit();
 }
 
-if ($_POST['type'] == ' SavePreferences')
+if ($_POST['type'] == 'SavePreferences')
 {
 
     if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
@@ -1435,15 +1444,15 @@ if ($_POST['type'] == ' SavePreferences')
     $theme = $_POST['theme'];
     $min_price = $_POST['min_price'];
     $max_price = $_POST['max_price'];
-    $api_key = $_POST['apikey'];
+    $apikey = $_POST['apikey'];
 
-    $user_id = authenticate($conn, $api_key);
+    $user_id = authenticate($conn, $apikey);
 
     try {
         $conn->begin_transaction();
 
         $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
-        $stmt->bind_param("iiii", $theme, $min_price, $max_price, $api_key);
+        $stmt->bind_param("iiis", $theme, $min_price, $max_price, $apikey);
         $stmt->execute();
         $stmt->close();
 
@@ -1505,7 +1514,7 @@ function authenticate($conn, $apikey) {
         $stmt->bind_param("s", $apikey);
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows == 0) {
+        if ($result->num_rows === 0) {
             $row = $result->fetch_assoc();
             $user_id = $row['user_id'];
             return $user_id;
