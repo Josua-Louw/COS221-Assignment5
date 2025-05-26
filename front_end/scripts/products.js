@@ -86,10 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
         
         try {
-            if (!apiKey) {
-                throw new Error('Please login to view products');
-            }
-
             const response = await getAllProducts();
             
             if (response.status === 'success') {
