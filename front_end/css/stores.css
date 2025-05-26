@@ -1,77 +1,114 @@
-        .stores-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        .store-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-        .store-logo {
-            width: 120px;
-            height: 120px;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-        .store-info {
-            flex: 1;
-        }
-        .store-name {
-            font-size: 1.5rem;
-            margin: 0 0 0.5rem;
-            color: #333;
-        }
-        .store-type {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        .store-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .btn-visit {
-            background: #0066cc;
-            color: white;
-        }
-        .btn-follow {
-            background: #f0f0f0;
-            color: #333;
-            border: 1px solid #ddd;
-        }
-        .search-container {
-            margin-bottom: 2rem;
-            display: flex;
-            gap: 1rem;
-        }
-        .search-input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        .search-btn {
-            padding: 0 1.5rem;
-            background: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+  }
+  
+  .stores-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .store-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+  
+  .store-logo {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  
+  .store-info {
+    flex: 1;
+  }
+  
+  .store-name {
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+    color: #333;
+  }
+  
+  .store-type {
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .store-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .btn-visit,  .search-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-visit:hover,  .search-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .btn-follow {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-follow:hover {
+    background-color: #e6f0fa;
+  }
+  
+  .search-container {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .search-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  footer {
+    margin-top: auto;
+    background: white;
+    text-align: center;
+    padding: 0.5rem 0;
+    box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+  }
+  
