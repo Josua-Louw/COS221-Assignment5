@@ -1,10 +1,4 @@
-.search-container{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    
-}
+
 .logo1-container {
     display: flex;
     justify-content: center;
@@ -24,4 +18,28 @@
     display: block;
     
 }
-
+.welcome-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 600px;        
+    margin: 20px auto;       
+    padding: 25px 30px;      
+    border: 2px solid #007BFF; 
+    border-radius: 12px;   
+    background-color: #f0f8ff; 
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #003366;          
+    text-align: center;      
+    line-height: 1.5;
+   margin-bottom: 100px;
+}
+footer {
+    margin-top: auto;            
+    background: white;
+    text-align: center;
+    padding: 0.5rem 0;
+    box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+    }
