@@ -1466,7 +1466,7 @@ if ($_POST['type'] == 'SavePreferences')
         $conn->begin_transaction();
 
         $stmt = $conn->prepare("UPDATE users SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
-        $stmt->bind_param("iiis", $theme, $min_price, $max_price, $apikey);
+        $stmt->bind_param("sdds", $theme, $min_price, $max_price, $apikey);
         $stmt->execute();
         $stmt->close();
 
@@ -1528,7 +1528,7 @@ function authenticate($conn, $apikey) {
         $stmt->bind_param("s", $apikey);
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows === 0) {
+        if ($result->num_rows === 1) {
             $row = $result->fetch_assoc();
             $user_id = $row['user_id'];
             return $user_id;
