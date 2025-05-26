@@ -1,4 +1,4 @@
-const response = fetch('stationarySearch.json').then(response => response.json()).then( data => {
+const response = fetch('electronicsSearch.json').then(response => response.json()).then( data => {
     const results = data.shopping_results;
     console.log(response);
     var i = 2;

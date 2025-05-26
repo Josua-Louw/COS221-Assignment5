@@ -144,7 +144,7 @@ if ($_POST['type'] == 'AddProduct')
    // $brand_id = $_POST['brand_id'];
 
     $stmt = $conn->prepare("
-        INSERT INTO Products (title, price, product_link, launch_date, thumbnail, store_id, category)
+        INSERT INTO products (title, price, product_link, launch_date, thumbnail, store_id, category)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("sdsssis", $title, $price, $product_link, $launch_date, $thumbnail, $storeID, $category);
