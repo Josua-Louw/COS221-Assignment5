@@ -151,7 +151,7 @@ if ($_POST['type'] == 'Login') {
         }
 
         $_SESSION["apikey"] = $user['apikey'];
-        
+        $_SESSION["LoginAttempts"] = 0; 
         http_response_code(200);
         echo json_encode([
             "status" => "success",
