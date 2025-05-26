@@ -52,7 +52,7 @@ try {
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database error",
+        "message" => "Database errorsssss",
         "Type Handler" => "creating connection",
         "API Line" => __LINE__
     ]);
@@ -690,8 +690,9 @@ if ($_POST['type'] == 'GetFilteredProducts')
 //now we have the following for rating
 if ($_POST['type'] == 'SubmitRating')
 {
+    
     if (!isset($_POST['apikey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
-        http_response_code(400);
+        //http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing required fields",
@@ -705,37 +706,13 @@ if ($_POST['type'] == 'SubmitRating')
     $prod_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
-
     $user_id = authenticate($conn, $apikey);
-
-    try {
-        $duplicateStmt = $conn->prepare("SELECT user_id FROM ratings WHERE user_id = ?");
-        $duplicateStmt->bind_param("i", $user_id);
-        $duplicateStmt->execute();
-        $duplicateResult = $duplicateStmt->get_result();
-
-        if ($duplicateResult->num_rows !== 0){
-            http_response_code(400);
-            echo json_encode([
-                "status" => "error",
-                "message" => "This user already submitted a rating for this product",
-                "Type Handler" => "SubmitRating",
-                "API Line" => __LINE__
-            ]);
-            exit();
-        }
-        $duplicateStmt->close();
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "SubmitRating", __LINE__);
-    } catch (Exception $e) {
-        catchError($conn, $e,"SubmitRating", __LINE__);
-    }
 
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("INSERT INTO ratings (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
+        $stmt = $conn->prepare("INSERT INTO ratings (rating, comment,product_id,user_id_ratings) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isii", $rating, $comment,$prod_id,$user_id);
         $stmt->execute();
         $stmt->close();
         $conn->commit();
@@ -754,45 +731,40 @@ if ($_POST['type'] == 'SubmitRating')
 }
 
 // Get All Ratings for a Product
-if ($_POST['type'] == 'GetRatings')
-{
+if ($_POST['type'] === 'GetRatings') {
     if (!isset($_POST['prod_id'])) {
-        http_response_code(400);
         echo json_encode([
             "status" => "error",
-            "message" => "prod_id is required",
-            "Type Handler" => "GetRatings",
-            "API Line" => __LINE__
+            "message" => "Product ID is required",
+            "line" => __LINE__
         ]);
         exit();
     }
 
-    $prod_id = $_POST['prod_id'];
+    $prod_id = (int)$_POST['prod_id'];
 
-    try {
-        $stmt = $conn->prepare("SELECT u.name, r.rating, r.comment FROM ratings r JOIN users u ON r.user_id = u.user_id WHERE r.prod_id = ?");
-        $stmt->bind_param("i", $prod_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    $stmt = $conn->prepare("
+    SELECT r.rating, r.comment, u.name
+    FROM ratings r
+    JOIN users u ON r.user_id_ratings = u.user_id
+    WHERE r.product_id = ?
+");
+    $stmt->bind_param("i", $prod_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        $ratings = [];
-        while ($row = $result->fetch_assoc()) {
-            $ratings[] = $row;
-        }
-        $stmt->close();
-        http_response_code(200);
-        echo json_encode([
-            "status" => "success",
-            "message" => "Ratings fetched successfully.",
-        ]);
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "GetRatings", __LINE__);
-    } catch (Exception $e) {
-        catchError($conn, $e,"GetRatings", __LINE__);
+    $ratings = [];
+    while ($row = $result->fetch_assoc()) {
+        $ratings[] = $row;
     }
 
+    echo json_encode([
+        "status" => "success",
+        "data" => $ratings
+    ]);
     exit();
 }
+
 
 //Delete Rating
 if ($_POST['type'] == 'DeleteRating')
@@ -1420,7 +1392,7 @@ function catchErrorSQL($conn, $error, $type , $line , $rollback = false){
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database error",
+        "message" => "Database errorsssssffff",
         "Type Handler" => $type,
         "API Line" => $line
     ]);
