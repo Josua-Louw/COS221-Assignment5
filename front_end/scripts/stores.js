@@ -84,12 +84,13 @@ function attachFollowListeners() {
                     });
                     if(!response.ok){
                         console.log("Request error");
+                    } else {
+                        this.textContent = 'Unfollow';
+                        this.style.backgroundColor = '#e0e0e0';
                     }
                 } catch (error) {
                     console.log(error);
                 }
-                this.textContent = 'Unfollow';
-                this.style.backgroundColor = '#e0e0e0';
 
             } else {
                 console.log('Unfollowing store:', storeId);
@@ -107,12 +108,13 @@ function attachFollowListeners() {
                     });
                     if(!response.ok){
                         console.log("Request error");
+                    } else {
+                        this.textContent = 'Follow';
+                        this.style.backgroundColor = '';
                     }
                 } catch (error) {
                     console.log(error);
                 }
-                this.textContent = 'Follow';
-                this.style.backgroundColor = '';
             }
         });
     });
