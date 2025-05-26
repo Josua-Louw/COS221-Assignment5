@@ -76,7 +76,7 @@ if ($_POST['type'] == 'Login') {
     session_start();
     if (isset($_SESSION["LoginBlock"])) {
         if (time() - $_SESSION["LoginBlock"] >= 60) {//can be extended but for demo cases we will keep it short
-            $_SESSION["LoginAttempts"] = 0; 
+            $_SESSION["LoginAttempts"] = 0;
             unset($_SESSION['LoginBlock']);
         } else {
             http_response_code(401);
@@ -90,7 +90,7 @@ if ($_POST['type'] == 'Login') {
         }
     }
     if (!isset($_SESSION["LoginAttempts"])) {
-       $_SESSION["LoginAttempts"] = 0; 
+        $_SESSION["LoginAttempts"] = 0;
     } else {
         $_SESSION["LoginAttempts"] += 1;
         if ($_SESSION["LoginAttempts"] >= 5) {
@@ -105,7 +105,7 @@ if ($_POST['type'] == 'Login') {
             exit();
         }
     }
-    
+
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         http_response_code(400);
         echo json_encode([
@@ -119,6 +119,30 @@ if ($_POST['type'] == 'Login') {
 
     $email = $_POST['email'];
     $password = $_POST['password'];
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid email format.",
+            "Type Handler" => 'Login',
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+            "Type Handler" => "Login",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+
     try {
         $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $userStmt->bind_param("s", $email);
@@ -151,7 +175,7 @@ if ($_POST['type'] == 'Login') {
         }
 
         $_SESSION["apikey"] = $user['apikey'];
-        $_SESSION["LoginAttempts"] = 0; 
+        $_SESSION["LoginAttempts"] = 0;
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -175,7 +199,7 @@ if ($_POST['type'] == 'Login') {
 //registration
 if ($_POST['type'] == 'Register') {
 
-    if (!isset($_POST['name']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['user_type'])) {
+    if (!isset($_POST['name']) || !isset($_POST['email']) || !isset($_POST['password'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -189,7 +213,31 @@ if ($_POST['type'] == 'Register') {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $user_type = $_POST['user_type'];
+    $user_type = 'customer';
+    $date = time();
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid email format.",
+            "Type Handler" => "Register",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+            "Type Handler" => "Register",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
 
     try {
         $check = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -219,18 +267,18 @@ if ($_POST['type'] == 'Register') {
     try {
         $apikey = generateApikey();
     } catch (Exception $e) {
-        
+
     }
-    
+
 
     try {
 
         $conn->begin_transaction();
 
         $stmt = $conn->prepare("
-                INSERT INTO users (name, email, password, salt, user_type, apikey)
-                VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $name, $email, $hashedPassword, $salt, $user_type, $apikey);
+                INSERT INTO users (name, email, password, salt, user_type, apikey, date)
+                VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssi", $name, $email, $hashedPassword, $salt, $user_type, $apikey, $date);
         $stmt->execute();
         $user_id = $stmt->insert_id;
         $stmt->close();
@@ -360,7 +408,7 @@ if ($_POST['type'] == 'AddProduct') {
         $brandResult = $brandStmt->get_result();
 
         if ($brandResult->num_rows === 0) {
-           $brand_id = createBrand($conn, $brand_name, false);
+            $brand_id = createBrand($conn, $brand_name, false);
         } else {
             $brand_id = $brandResult->fetch_assoc()['brand_id'];
         }
@@ -1236,7 +1284,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
 }
 
 //Filter stores
-if ($_POST['type'] == 'getFilteredStores') 
+if ($_POST['type'] == 'getFilteredStores')
 {
     if (!isset($_POST['store_id']))
     {
@@ -1253,14 +1301,14 @@ if ($_POST['type'] == 'getFilteredStores')
     $stmt = $conn->prepare("SELECT * FROM stores WHERE store_id = ?");
     $stmt->bind_param("i", $store_id);
 
-    if ($stmt->execute()) 
+    if ($stmt->execute())
     {
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         http_response_code(200);
         echo json_encode(["status" => "success", "data" => $row]);
-    } 
-    else 
+    }
+    else
     {
         http_response_code(500);
         echo json_encode(["status" => "error", "message" => "Error retrieving store"]);
@@ -1384,6 +1432,110 @@ if ($_POST['type'] == 'GetBrands'){
     exit();
 }
 
+//Gets stats of the user
+if ($_POST['type'] == 'GetStats'){
+    if (!isset($_POST['apikey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "GetStats",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+    $stats = [];
+
+    try {
+        $stmt = $conn->prepare("
+            SELECT p.category, SUM(c.number_of_times_clicked) AS total_clicks
+            FROM clicks c
+            JOIN products p ON c.product_id = p.product_id
+            WHERE c.user_id = ?
+            GROUP BY p.category
+        ");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $clickStats = [];
+        while ($row = $result->fetch_assoc()) {
+            $clickStats[] = $row;
+        }
+        $stats['total_clicks'] = $clickStats;
+
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetStats", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetStats", __LINE__);
+    }
+
+    try {
+        $dateStmt = $conn->prepare("SELECT date FROM users WHERE user_id = ?");
+        $dateStmt->bind_param("i", $user_id);
+        $dateStmt->execute();
+        $dateResult = $dateStmt->get_result();
+        $stats['date'] = $dateResult->fetch_assoc()['date'] ?? null;
+        $dateStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetStats", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetStats", __LINE__);
+    }
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Stats successfully retrieved",
+        "data" => $stats
+    ]);
+    exit();
+}
+
+//Updates / insert user stats
+if ($_POST['type'] == 'UpdateStats'){
+    if (!isset($_POST['apikey']) || !isset($_POST['product_id'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "UpdateStats",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+    $product_id = $_POST['product_id'];
+
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("INSERT INTO clicks (user_id, product_id, amount) VALUES (?, ?, 1)
+        ON DUPLICATE KEY UPDATE amount = amount + 1");
+        $stmt->bind_param("ii", $user_id, $product_id);
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Stats successfully updated"
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "UpdateStats", __LINE__, true);
+    } catch (Exception $e) {
+        catchError($conn, $e, "UpdateStats", __LINE__, true);
+    }
+    exit();
+}
+
 //creates a new brand
 function createBrand($conn, $brand_name, $transaction = true)
 {
@@ -1446,7 +1598,7 @@ function catchError($conn, $error, $type, $line, $rollback = false){
 if ($_POST['type'] == 'SavePreferences')
 {
 
-    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey'])){
+    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password'])){
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -1459,14 +1611,16 @@ if ($_POST['type'] == 'SavePreferences')
     $min_price = $_POST['min_price'];
     $max_price = $_POST['max_price'];
     $apikey = $_POST['apikey'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
     $user_id = authenticate($conn, $apikey);
 
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("UPDATE users SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
-        $stmt->bind_param("sdds", $theme, $min_price, $max_price, $apikey);
+        $stmt = $conn->prepare("UPDATE users SET theme = ?, min_price = ? , max_price = ?, email = ?, password = ? WHERE apikey = ?");
+        $stmt->bind_param("sddsss", $theme, $min_price, $max_price, $email, $password, $apikey);
         $stmt->execute();
         $stmt->close();
 
@@ -1504,14 +1658,14 @@ function generateApikey() {
         } catch (Exception $e) {
             catchError($conn, $e, __LINE__, "generate apikey", false);
         }
-        
+
     } while ($result->num_rows != 0);
-    
+
     return $apikey;
 }
 
-/* 
-    This function uses the apikey to see if the user is actually logged in by checking the session variable 
+/*
+    This function uses the apikey to see if the user is actually logged in by checking the session variable
     and then returns the user_id if successful
     otherwise it catches errors or sends back an unauthorised message.
 */
