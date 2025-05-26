@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 26, 2025 at 08:49 AM
+-- Generation Time: May 26, 2025 at 04:00 PM
 -- Server version: 10.3.39-MariaDB-0+deb10u2
 -- PHP Version: 7.3.31-1~deb10u7
 
@@ -30,6 +30,18 @@ SET time_zone = "+00:00";
 CREATE TABLE `brand` (
   `brand_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `clicks`
+--
+
+CREATE TABLE `clicks` (
+  `user_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `amount` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -63,19 +75,6 @@ INSERT INTO `customers` (`user_id`) VALUES
 CREATE TABLE `follows` (
   `user_id` int(11) DEFAULT NULL,
   `store_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `clicks`
---
-
-CREATE TABLE `clicks` (
-  `user_id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL,
-  `amount` int(11) NOT NULL
-  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -520,20 +519,21 @@ CREATE TABLE `users` (
   `min_price` decimal(10,2) DEFAULT NULL,
   `max_price` decimal(10,2) DEFAULT NULL,
   `apikey` varchar(255) DEFAULT NULL,
-  `user_type` enum('customer','store_owner','admin','') NOT NULL
+  `user_type` enum('customer','store_owner','admin','') NOT NULL,
+  `date_registered` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `min_price`, `max_price`, `apikey`, `user_type`) VALUES
-(1, 'John Nathan', '5766c9fd4b34aec7a9a7cd84a5e42ab0510d244c1176a99520d822cef60ef187518984281e20b8d9552de7608d2a89a7cfdac73545242a7829ad01c27ced191', '48088c4dbe281c415db5bf2bc72117dcaeb99c289b2ac66c926e1334cc02b88078c44db679176d04dd9e22cb7f491e422bd6b7e6d89cd8c904abc0fb10b3de857c090e54e3969754c3f9e2c98273626b4263ca55ba2f6919b0c6dc332608cdae654867ca6e48b44ee3b445c8f8e9ee432b940959b4ced09aa34f353d62dbae', 'johnnathan@gmail.com', 'dark', '120.00', '200.00', '36cf8d0b74a40ef80d4dad5817770faf', 'customer'),
-(2, 'Defualt', '148281df02341a0a3eaa698cfe399801dc209e820d9fbfcc0d34c44faedfb3f35433c9b42165be26bc12abf459eb33753f174e9c27114735bc522ee0e00b249', '21cd20dde568c897b01f8ea6aad158c63f87e53a65e75c4fc1ac98ff7637a5c2aec8e56f1ff12b4c09754382122ac4437d251a86ce99616f2459e22630028b2554a06872cf3d71225c4685cfa50eedbe7cf714e67dc269141da3edffa6b8157973a66983d87ae611acd59818e92e767b3fbfc6c84abe51d43c6ebe4876bd97', 'mydefualtuser@gmail.com', 'light', NULL, NULL, '718e17922f8bdb863430a8695062ce34', 'customer'),
-(3, 'DariusTest', 'f47a8cfbb49ee5ef4f3beb92480f6c3fbe07187a8dc13ac8541b6d8490cf7a0012856b72f2af7ecc246b9abe794d862ed972fe48f82ac3648a689e7a6263170', 'aadafbb6e98fbe56d77e2dfb03646573607dc684293c6bb5ec08d4134fcc7f83c46d6b75eaf8a56a314f7bc02c7aaa6ea53cd33eb1926af28a67ce2a4b8a4a7094a855ed59c291e0f369155550497035d062afa9ba9a3e11448ab97fa74715f6d9184009c40f805d98ec95d010e520b14ebd4e204b75bd8d858d6b6cbe9a93', 'DarTest@gmail.com', 'light', NULL, NULL, 'e34da69ab572ef8d2391c8a992bd5e0e', 'customer'),
-(4, 'test', '3eb523b97e08eeaa7252d0b9191ec05f9cb94671bfbc9887eb90835b0d903c144037ed3bbe60b77868e6ecaf106db52bd3ec7f0b3d0c575202837fb4834130e', '6b4e1be56857ffc6a0e5f0b21814703bed2067870bbe16ae2f44d9c99d4332506149e51a96b9cb820137ce10871df743d36cec6635de054823bbdd48db5fc36e5c0ffad17657c69307fde96f2b6789c0e4d549440655be6c9cad2a8c348a4d873d82d37605c92dddc9820d3610d89c79c178c18ca8835dc457553fa7e138c4', 'test@test.com', 'light', '600.00', '1000.00', 'ed1aac15ad816068ea021e2e0899f02b', 'customer'),
-(5, 'bob', '203682de23fe665bba800f6746478c8363f15017fb902ccefd721e1e2fc0beeeb19239c772e4e2456c6cd17180b099fa55750ab433e76e392f9293c2641b85a', 'ee5f82aecb0dd04d1d7e9d6836251b83281947bcacdaece6843364b9a397677d25fc74cb3ea63e0767c85f86b25e3764b73fbc9aef78ee6e90ca07a4bdd77ab4dc02646845e7d84919dbc35e095732e91b55140d245343b2287ccff2f42c203622d44bb1e68a5ed2f3eb4b82754ff236ee1b0e80a3913c334fe034c1523e4f', 'bob@bob.com', 'light', NULL, NULL, '705a1533935187f09462ad0ac6355ad7', 'customer'),
-(6, 'Nico', 'a23f095bb94936ad4f0b7fc9816ca60d7ffb76cf109ff4de94491eafe9b9705d52a82d89ac09018d0bd91180ccb080a4886a5ad59a8a89e9543b8fe86ad824d', '080f7b99f3c9aa01d57b486a88a8bf1cf798c78369b52b124701c91904ed37af9615b96eb5ffce482742f9584b45f54f08f4f2506e72ee1564b6ac8c38dbe7bff06c98dfb018be61992e48f549a11e1775c69d2cd72ab68041bc0aa62ce574af02a9faf6921b5dfab0c5f30fdf524b03a3ed8fdd18fbb87286cf3e2bed21c6', 'theron.nico2@gmail.com', 'light', NULL, NULL, '10aec8409e2cb0bfccf463df0ff6e51f', 'customer');
+INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `min_price`, `max_price`, `apikey`, `user_type`, `date_registered`) VALUES
+(1, 'John Nathan', '5766c9fd4b34aec7a9a7cd84a5e42ab0510d244c1176a99520d822cef60ef187518984281e20b8d9552de7608d2a89a7cfdac73545242a7829ad01c27ced191', '48088c4dbe281c415db5bf2bc72117dcaeb99c289b2ac66c926e1334cc02b88078c44db679176d04dd9e22cb7f491e422bd6b7e6d89cd8c904abc0fb10b3de857c090e54e3969754c3f9e2c98273626b4263ca55ba2f6919b0c6dc332608cdae654867ca6e48b44ee3b445c8f8e9ee432b940959b4ced09aa34f353d62dbae', 'johnnathan@gmail.com', 'dark', '120.00', '200.00', '36cf8d0b74a40ef80d4dad5817770faf', 'customer', '0000-00-00'),
+(2, 'Defualt', '148281df02341a0a3eaa698cfe399801dc209e820d9fbfcc0d34c44faedfb3f35433c9b42165be26bc12abf459eb33753f174e9c27114735bc522ee0e00b249', '21cd20dde568c897b01f8ea6aad158c63f87e53a65e75c4fc1ac98ff7637a5c2aec8e56f1ff12b4c09754382122ac4437d251a86ce99616f2459e22630028b2554a06872cf3d71225c4685cfa50eedbe7cf714e67dc269141da3edffa6b8157973a66983d87ae611acd59818e92e767b3fbfc6c84abe51d43c6ebe4876bd97', 'mydefualtuser@gmail.com', 'light', NULL, NULL, '718e17922f8bdb863430a8695062ce34', 'customer', '0000-00-00'),
+(3, 'DariusTest', 'f47a8cfbb49ee5ef4f3beb92480f6c3fbe07187a8dc13ac8541b6d8490cf7a0012856b72f2af7ecc246b9abe794d862ed972fe48f82ac3648a689e7a6263170', 'aadafbb6e98fbe56d77e2dfb03646573607dc684293c6bb5ec08d4134fcc7f83c46d6b75eaf8a56a314f7bc02c7aaa6ea53cd33eb1926af28a67ce2a4b8a4a7094a855ed59c291e0f369155550497035d062afa9ba9a3e11448ab97fa74715f6d9184009c40f805d98ec95d010e520b14ebd4e204b75bd8d858d6b6cbe9a93', 'DarTest@gmail.com', 'light', NULL, NULL, 'e34da69ab572ef8d2391c8a992bd5e0e', 'customer', '0000-00-00'),
+(4, 'test', '3eb523b97e08eeaa7252d0b9191ec05f9cb94671bfbc9887eb90835b0d903c144037ed3bbe60b77868e6ecaf106db52bd3ec7f0b3d0c575202837fb4834130e', '6b4e1be56857ffc6a0e5f0b21814703bed2067870bbe16ae2f44d9c99d4332506149e51a96b9cb820137ce10871df743d36cec6635de054823bbdd48db5fc36e5c0ffad17657c69307fde96f2b6789c0e4d549440655be6c9cad2a8c348a4d873d82d37605c92dddc9820d3610d89c79c178c18ca8835dc457553fa7e138c4', 'test@test.com', 'light', '600.00', '1000.00', 'ed1aac15ad816068ea021e2e0899f02b', 'customer', '0000-00-00'),
+(5, 'bob', '203682de23fe665bba800f6746478c8363f15017fb902ccefd721e1e2fc0beeeb19239c772e4e2456c6cd17180b099fa55750ab433e76e392f9293c2641b85a', 'ee5f82aecb0dd04d1d7e9d6836251b83281947bcacdaece6843364b9a397677d25fc74cb3ea63e0767c85f86b25e3764b73fbc9aef78ee6e90ca07a4bdd77ab4dc02646845e7d84919dbc35e095732e91b55140d245343b2287ccff2f42c203622d44bb1e68a5ed2f3eb4b82754ff236ee1b0e80a3913c334fe034c1523e4f', 'bob@bob.com', 'light', NULL, NULL, '705a1533935187f09462ad0ac6355ad7', 'customer', '0000-00-00'),
+(6, 'Nico', 'a23f095bb94936ad4f0b7fc9816ca60d7ffb76cf109ff4de94491eafe9b9705d52a82d89ac09018d0bd91180ccb080a4886a5ad59a8a89e9543b8fe86ad824d', '080f7b99f3c9aa01d57b486a88a8bf1cf798c78369b52b124701c91904ed37af9615b96eb5ffce482742f9584b45f54f08f4f2506e72ee1564b6ac8c38dbe7bff06c98dfb018be61992e48f549a11e1775c69d2cd72ab68041bc0aa62ce574af02a9faf6921b5dfab0c5f30fdf524b03a3ed8fdd18fbb87286cf3e2bed21c6', 'theron.nico2@gmail.com', 'light', NULL, NULL, '10aec8409e2cb0bfccf463df0ff6e51f', 'customer', '0000-00-00');
 
 --
 -- Indexes for dumped tables
@@ -544,6 +544,13 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `m
 --
 ALTER TABLE `brand`
   ADD PRIMARY KEY (`brand_id`);
+
+--
+-- Indexes for table `clicks`
+--
+ALTER TABLE `clicks`
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `product_id` (`product_id`);
 
 --
 -- Indexes for table `customers`
@@ -557,13 +564,6 @@ ALTER TABLE `customers`
 ALTER TABLE `follows`
   ADD KEY `user_id` (`user_id`),
   ADD KEY `store_id` (`store_id`);
-
---
--- Indexes for table `clicks`
---
-ALTER TABLE `clicks`
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `product_id` (`product_id`);
 
 --
 -- Indexes for table `products`
@@ -638,6 +638,13 @@ ALTER TABLE `users`
 --
 
 --
+-- Constraints for table `clicks`
+--
+ALTER TABLE `clicks`
+  ADD CONSTRAINT `clicks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `clicks_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
+
+--
 -- Constraints for table `customers`
 --
 ALTER TABLE `customers`
@@ -649,13 +656,6 @@ ALTER TABLE `customers`
 ALTER TABLE `follows`
   ADD CONSTRAINT `follows_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`);
-
---
--- Constraints for table `clicks`
---
-ALTER TABLE `clicks`
-  ADD CONSTRAINT `clicks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `clicks_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
 
 --
 -- Constraints for table `products`
