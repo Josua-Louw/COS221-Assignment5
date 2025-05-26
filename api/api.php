@@ -75,9 +75,18 @@ if ($_POST['type'] == 'Login') {
     //count login attempts
     session_start();
     if (isset($_SESSION["LoginBlock"])) {
-        if ($_SESSION["LoginBlock"] - time() >= 60) {//can be extended but for demo cases we will keep it short
+        if (time() - $_SESSION["LoginBlock"] >= 60) {//can be extended but for demo cases we will keep it short
             $_SESSION["LoginAttempts"] = 0; 
             unset($_SESSION['LoginBlock']);
+        } else {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Login is still blocked just wait a bit longer.",
+                "Type Handler" => "Login",
+                "API Line" => __LINE__
+            ]);
+            exit();
         }
     }
     if (!isset($_SESSION["LoginAttempts"])) {
@@ -141,7 +150,6 @@ if ($_POST['type'] == 'Login') {
             exit();
         }
 
-        session_start();
         $_SESSION["apikey"] = $user['apikey'];
         
         http_response_code(200);
