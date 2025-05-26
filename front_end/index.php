@@ -9,7 +9,7 @@ require_once 'header.php';
     <link rel = "stylesheet" href = "css/index.css">
 </head>
 <body>
-    <div class = "logo-container">
+    <div class = "logo1-container">
         <!--Need logo-->
         <img src = "img/logo.png" alt = "Logo">
     </div>
