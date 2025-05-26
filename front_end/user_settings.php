@@ -29,18 +29,30 @@ require_once 'header.php';
         </select>
     </div>
 
+    <?php if (isset($_SESSION['user'])): ?>
     <div class="form-group">
-        <label for="email">New Email (optional):</label>
-        <input type="email" id="email" name="email" placeholder="newemail@example.com">
+      <label for="current-email">Current Email<span class="required">*</span>:</label>
+      <input type="email" id="current-email" name="current_email" required>
+    </div>
+    <div class="form-group">
+      <label for="current-password">Current Password<span class="required">*</span>:</label>
+      <input type="password" id="current-password" name="current_password" required>
     </div>
 
     <div class="form-group">
-      <label for="password">New Password (optional):</label>
-      <input type="password" id="password" name="password" placeholder="New password">
+      <label for="new-email">New Email<span class="required">*</span>:</label>
+      <input type="email" id="new-email" name="new_email" required>
     </div>
+    <div class="form-group">
+      <label for="new-password">New Password<span class="required">*</span>:</label>
+      <input type="password" id="new-password" name="new_password" required>
+    </div>
+    <?php else: ?>
+      <p class="note">Log in to change your email or password.</p>
+    <?php endif; ?>
 
     <button id="save-preferences-btn" type="submit">Save Settings</button>
-  <div id="settingsMessage" class="error-message"></div>
+    <div id="settingsMessage" class="error-message"></div>
   </form>
 </div>
 
