@@ -39,6 +39,7 @@ async function getStores() {
 }
 
 function displayStores(stores) {
+
     const container = document.querySelector('.store-list');
     container.innerHTML = '';
     console.log(stores);
@@ -67,9 +68,14 @@ function displayStores(stores) {
 function attachFollowListeners() {
     document.querySelectorAll('.btn-follow').forEach(button => {
         button.addEventListener('click', async function () {
+
             const storeId = this.getAttribute('data-store-id');
             if (this.textContent === 'Follow') {
                 console.log('Following store:', storeId);
+                if(!apiKey){
+                    alert('Log-in to be able to follow');
+                    return;
+                }
                 try {
                     const response = await fetch(apiUrl, {
                         method: 'POST',
