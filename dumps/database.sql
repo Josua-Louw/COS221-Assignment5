@@ -129,6 +129,19 @@ CREATE TABLE `users` (
   `user_type` enum('customer','store_owner','admin','') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `clicks`
+--
+
+CREATE TABLE `clicks` (
+  `user_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `amount` int(11) NOT NULL
+  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -151,6 +164,13 @@ ALTER TABLE `customers`
 ALTER TABLE `follows`
   ADD KEY `user_id` (`user_id`),
   ADD KEY `store_id` (`store_id`);
+
+--
+-- Indexes for table `clicks`
+--
+ALTER TABLE `clicks`
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `product_id` (`product_id`);
 
 --
 -- Indexes for table `products`
@@ -236,6 +256,13 @@ ALTER TABLE `customers`
 ALTER TABLE `follows`
   ADD CONSTRAINT `follows_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`);
+
+--
+-- Constraints for table `clicks`
+--
+ALTER TABLE `clicks`
+  ADD CONSTRAINT `clicks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `clicks_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
 
 --
 -- Constraints for table `products`
