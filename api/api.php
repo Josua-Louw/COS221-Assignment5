@@ -1524,5 +1524,4 @@ function authenticate($conn, $apikey) {
         catchError($conn, $e, __LINE__, "authentication", false);
     }
 }
-
 ?>
