@@ -4,7 +4,9 @@ var allStores = [];
 const apiKey = sessionStorage.getItem('apiKey');
 
 async function getStores() {
-
+    if (apiKey) {
+        await fetchFollowedStores();
+    }
 
     try {
         const response = await fetch(apiUrl, {
@@ -29,7 +31,6 @@ async function getStores() {
                 console.error('API error:', result.message || 'Unknown error');
             }
         } else {
-            // Not JSON — probably an HTML error page
             const text = await response.text();
             console.error('Expected JSON, got:', text);
         }
@@ -46,16 +47,17 @@ function displayStores(stores) {
     stores.forEach(store => {
         const storeCard = document.createElement('div');
         storeCard.classList.add('store-card');
-
+        const isFollowing = followedStoreIds.includes(store.store_id);
         storeCard.innerHTML = `
-            
             <div class="store-info">
                 <h2 class="store-name">${store.name}</h2>
                 <span class="store-type">${store.type}</span>
                 <p>Explore a wide range of Stores at ${store.name}.</p>
                 <div class="store-actions">
                     <a href="${store.url}" target="_blank" class="btn btn-visit">Visit Store</a>
-                    <button class="btn btn-follow" data-store-id="${store.store_id}">Follow</button>
+                    <button class="btn btn-follow" data-store-id="${store.store_id}" style="background-color: ${isFollowing ? '#e0e0e0' : ''}">
+                        ${isFollowing ? 'Unfollow' : 'Follow'}
+                    </button>
                 </div>
             </div>
         `;
@@ -65,64 +67,87 @@ function displayStores(stores) {
     attachFollowListeners();
 }
 
+let followedStoreIds = [];
+
+
+async function fetchFollowedStores() {
+    if (!apiKey) return;
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'GetFollowing',
+                apikey: apiKey
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.status === 'success') {
+                followedStoreIds = result.data.map(store => store.store_id);
+            } else {
+                console.error("Error fetching followed stores:", result.message);
+            }
+        } else {
+            console.error("Failed to fetch followed stores");
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+    }
+}
+
 function attachFollowListeners() {
     document.querySelectorAll('.btn-follow').forEach(button => {
         button.addEventListener('click', async function () {
-
             const storeId = this.getAttribute('data-store-id');
-            if (this.textContent === 'Follow') {
-                console.log('Following store:', storeId);
-                if(!apiKey){
-                    alert('Log-in to be able to follow');
-                    return;
-                }
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            type: 'Follow',
-                            apikey: apiKey,
-                            store_id: storeId
-                        })
-                    });
-                    if(!response.ok){
-                        console.log("Request error");
-                    }
-                } catch (error) {
-                    console.log(error);
-                }
-                this.textContent = 'Unfollow';
-                this.style.backgroundColor = '#e0e0e0';
+            const isFollowing = followedStoreIds.includes(parseInt(storeId));
 
-            } else {
-                console.log('Unfollowing store:', storeId);
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            type: 'Unfollow',
-                            apikey: apiKey,
-                            store_id: storeId
-                        })
-                    });
-                    if(!response.ok){
-                        console.log("Request error");
+
+            if (!apiKey) {
+                alert('Log in to be able to follow');
+                return;
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: isFollowing ? 'Unfollow' : 'Follow',
+                        apikey: apiKey,
+                        store_id: storeId
+                    })
+                });
+
+                if (response.ok) {
+
+                    if (isFollowing) {
+                        this.textContent = 'Follow';
+                        this.style.backgroundColor = '';
+                        followedStoreIds = followedStoreIds.filter(id => id != storeId);
+                        console.log('Unfollowed store:', storeId);
+                    } else {
+                        this.textContent = 'Unfollow';
+                        this.style.backgroundColor = '#e0e0e0';
+                        followedStoreIds.push(parseInt(storeId));
+                        console.log('Followed store:', storeId);
                     }
-                } catch (error) {
-                    console.log(error);
+                } else {
+                    console.log(`${isFollowing ? 'Unfollow' : 'Follow'} request error`);
                 }
-                this.textContent = 'Follow';
-                this.style.backgroundColor = '';
+            } catch (error) {
+                console.log(error);
             }
         });
     });
 }
+
 function filterStores() {
     const query = document.getElementById("filter-input").value.toLowerCase();
     const selectedType = document.getElementById("filter-dropdown").value;
