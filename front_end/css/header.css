@@ -35,6 +35,34 @@ header {
     color: #0066cc;
 }
 
+#themeToggleBtn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    border: 1px solid #0066cc;
+    background-color: transparent;
+    color: #0066cc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#themeToggleBtn:hover {
+    background-color: #e6f0fa;
+    color: #0052a3;
+    border-color: #0052a3;
+}
+
+.theme-text {
+    display: inline;
+}
+
+
+
 .dropdown {
     position: relative;
     display: inline-block;
@@ -135,3 +163,5 @@ header {
         width: 100%;
     }
 }
+
+

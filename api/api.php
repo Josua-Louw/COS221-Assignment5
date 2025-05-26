@@ -203,7 +203,7 @@ if ($_POST['type'] == 'Register') {
         $user_id = $stmt->insert_id;
         $stmt->close();
 
-        $customerStmt = $conn->prepare("INSERT INTO Customers (user_id) VALUES (?)");
+        $customerStmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
         $customerStmt->bind_param("i", $user_id);
         $customerStmt->execute();
         $customerStmt->close();
@@ -252,7 +252,7 @@ if ($_POST['type'] == 'GetAllProducts')
             $brand = $brandResult->fetch_assoc();
             $brandQuery->close();
             $products[] = [
-                'id' => $row['id'],
+                'id' => $row['product_id'],
                 'title' => $row['title'],
                 'price' => $row['price'],
                 'product_link' => $row['product_link'],
@@ -263,6 +263,7 @@ if ($_POST['type'] == 'GetAllProducts')
                 'brand_name' => $brand
             ];
         }
+        $stmt->close();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -606,7 +607,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
     $search = $_POST['search'] ?? null;
     $store_id = $_POST['store_id'] ?? null;
 
-    $sql = "SELECT * FROM Product WHERE 1=1";
+    $sql = "SELECT * FROM products WHERE 1=1";
     $params = [];
     $types = "";
 

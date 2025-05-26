@@ -1,51 +1,109 @@
-//All javascipt files that use the api must be in a php file that requires header.php
+// All JavaScript files that use the API must be in a PHP file that requires header.php
 const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
 
- //calls the api adn returns a json object of whatever the api returns
+// Call the API and return a JSON object of whatever the API returns
 async function sendRequest(body) {
-  const request = new XMLHttpRequest;
+  try {
+    const response = await fetch(API_Location, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
 
-  request.onload = async function () {
-    if (this.readyState == 4) {
-      if (this.status == 200) {
-        try {
-            return await JSON.parse(this.responseText);
-        } catch {
-            return this.responseText;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error in sendRequest:', error);
+    return {
+      status: 'error',
+      message: error.message
+    };
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  function setTheme(theme) {
+    document.documentElement.classList.remove('light-theme', 'dark-theme');
+    document.documentElement.classList.add(`${theme}-theme`);
+    sessionStorage.setItem('theme', theme);
+    
+
+    const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        userObj.theme = theme;
+        sessionStorage.setItem('user', JSON.stringify(userObj));
+        if (localStorage.getItem('user')) {
+          localStorage.setItem('user', JSON.stringify(userObj));
         }
-        
-      } else {
-        try {
-          const repsonse = JSON.parse(this.responseText)
-          return await repsonse;
-        } catch {
-          //only returns text if the error cannot be made into a JSON object
-          return this.responseText;
-        }
+      } catch (e) {
+        console.error('Error updating user theme:', e);
       }
     }
   }
 
-  request.open("POST", API_Location, true);
-  request.setRequestHeader("Content-Type","application/json");
-  request.send(JSON.stringify(body));
-}
+  let theme = sessionStorage.getItem('theme');
+  if (!theme) {
+    const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        theme = userObj.theme || 'light';
+      } catch (e) {
+        theme = 'light';
+      }
+    } else {
+      theme = 'light';
+    }
+  }
+  setTheme(theme);
 
- document.addEventListener('DOMContentLoaded', function() {
-            const dropdown = document.querySelector('.dropdown');
-            const dropbtn = document.querySelector('.dropbtn');
-            
-            dropbtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const expanded = this.getAttribute('aria-expanded') === 'true';
-                this.setAttribute('aria-expanded', !expanded);
-                dropdown.classList.toggle('open');
-            });
-            
-            document.addEventListener('click', function(e) {
-                if (!dropdown.contains(e.target)) {
-                    dropbtn.setAttribute('aria-expanded', 'false');
-                    dropdown.classList.remove('open');
-                }
-            });
-        });
+  const toggleBtn = document.getElementById('themeToggleBtn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const currentTheme = sessionStorage.getItem('theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      setTheme(newTheme);
+    });
+  }
+
+  const dropdown = document.querySelector('.dropdown');
+  const dropbtn = document.querySelector('.dropbtn');
+
+  if (dropbtn && dropdown) {
+    dropbtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const expanded = this.getAttribute('aria-expanded') === 'true';
+      this.setAttribute('aria-expanded', !expanded);
+      dropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!dropdown.contains(e.target)) {
+        dropbtn.setAttribute('aria-expanded', 'false');
+        dropdown.classList.remove('open');
+      }
+    });
+  }
+
+  const currentPage = window.location.pathname.split('/').pop() || 'index.php';
+  const links = document.querySelectorAll('.nav-link, .auth-link');
+  
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+   
+    const linkPage = href?.replace('.php', '');
+    const currentPageBase = currentPage.replace('.php', '');
+    
+    if (linkPage === currentPageBase) {
+      link.classList.add('active');
+    }
+  });
+});
