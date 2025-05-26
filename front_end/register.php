@@ -22,18 +22,6 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <div class="form-group">
-                <label for="user_type">User Type</label>
-                <select id="user_type" name="user_type" required>
-                    <option value="">Select user type</option>
-                    <option value="Customer">Customer</option>
-                    <option value="Store Owner">Store Owner</option>
-                </select>
-            </div>
-            <div class="form-group" id="registrationNoField">
-                <label for="registrationNo">Registration Number</label>
-                <input type="text" id="registrationNo" name="registrationNo">
-            </div>
             <button type="submit">Register</button>
             <div id="errorMessage" class="error-message"></div>
         </form>
