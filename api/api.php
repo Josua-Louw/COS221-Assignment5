@@ -72,6 +72,31 @@ if (!isset($_POST['type'])) {
 
 //For user we have the following login and registration
 if ($_POST['type'] == 'Login') {
+    //count login attempts
+    session_start();
+    if (isset($_SESSION["LoginBlock"])) {
+        if ($_SESSION["LoginBlock"] - time() >= 60) {//can be extended but for demo cases we will keep it short
+            $_SESSION["LoginAttempts"] = 0; 
+            unset($_SESSION['LoginBlock']);
+        }
+    }
+    if (!isset($_SESSION["LoginAttempts"])) {
+       $_SESSION["LoginAttempts"] = 0; 
+    } else {
+        $_SESSION["LoginAttempts"] += 1;
+        if ($_SESSION["LoginAttempts"] >= 5) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Too many failed attempts. Try again in a minute.",
+                "Type Handler" => "Login",
+                "API Line" => __LINE__
+            ]);
+            $_SESSION["LoginBlock"] = time();
+            exit();
+        }
+    }
+    
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         http_response_code(400);
         echo json_encode([
