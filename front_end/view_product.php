@@ -12,7 +12,9 @@ session_start();
     <script src="scripts/header.js" defer></script>
 </head>
 <body>
-    <?php require_once '../front_end/header.php'; ?>
+    <?php
+require_once 'header.php';
+?>
 
     <main>
         <div class="product-container">
@@ -21,14 +23,24 @@ session_start();
                 <img id="main-image" src="https://via.placeholder.com/300" alt="Main Product Image">
                 <div id="thumbnail-container" class="thumbnail-row"></div>
             </div>
-            <p id="product-price" class="price">R0.00</p>
+            <p id="product-price" class="price" class="middle">R0.00</p>
             <p id="product-description" class="description">Loading description...</p>
-            <div id="rating-stars" class="rating">Rating: -</div>
+            <!-- <div id="rating-stars" class="rating">Rating: -</div> -->
             <a id="external-link" href="#" target="_blank" class="external-link-btn" style="display: none;">View on Store Website</a>
         </div>
-    </main>
 
+        <div class="product-container">
+            <h3 class="All_Rating">All the ratings off the products</h3>
+        </div>
+
+        <div class="product-container">
+            <button class="Add_rating">Add a rating</button>
+        </div>
+
+    </main>
     <script src="scripts/view_product.js"></script>
-    <?php require_once '../includes/footer.php'; ?>
+   <?php
+require_once 'footer.php';
+?>
 </body>
 </html>

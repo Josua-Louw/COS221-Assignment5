@@ -27,6 +27,8 @@ body {
     max-width: 900px;
     margin: auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    margin-top: 30px;
 }
 
 .dark-theme .product-container {
@@ -148,4 +150,51 @@ body {
     background: #f0f0f0;
     border-radius: 4px;
     margin-bottom: 10px;
+}
+
+.Add_rating {
+    background-color: #4CAF50;       
+    color: white;                   
+    padding: 10px 20px;              
+    border: none;                    
+    border-radius: 5px;              
+    font-size: 14px;               
+    cursor: pointer;                
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+    margin-left: 380px;
+}
+
+.Add_rating:hover {
+    background-color: #45a049;       
+    transform: scale(1.03);          
+}
+
+.Add_rating:active {
+    transform: scale(0.98);         
+}
+
+.All_Rating
+{
+    text-align: center;
+}
+
+#product-price
+{
+    text-align: center;
+}
+
+#product-description
+{
+    text-align: center;
+}
+
+#external-link
+{
+    margin-left: 350px;
+}
+
+#product-title
+{
+    text-align: center;
 }
