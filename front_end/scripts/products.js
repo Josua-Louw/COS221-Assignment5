@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let totalProducts = 0;
     let allProducts = [];
-    const brandFilter = document.querySelector('.brand-filter');
 
     let apiKey = sessionStorage.getItem('apiKey') || localStorage.getItem('apiKey') || 
                  sessionStorage.getItem('apikey') || localStorage.getItem('apikey');
@@ -41,9 +40,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const applyFiltersBtn = document.querySelector('.apply-filters');
     const resetFiltersBtn = document.querySelector('.reset-filters');
     const searchInput = document.querySelector('.search-input');
+    const ratingFilter = document.querySelector('.rating-filter');
+    let searchTimeout;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                fetchProductsWithFilters();
+            }, 300);
+        });
+    }
 
     fetchProducts();
-    initializeBrandFilter().catch(e => console.error('Brand filter init failed:', e));
 
     if (applyFiltersBtn) {
         applyFiltersBtn.addEventListener('click', () => {
@@ -61,25 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
             currentPage = 1;
             fetchProducts();
         });
-    }
-
-    async function initializeBrandFilter() {
-        if (!brandFilter) return;
-        
-        try {
-            const response = await sendRequest({ type: 'GetBrands' });
-            if (response.status === 'success' && Array.isArray(response.data)) {
-                brandFilter.innerHTML = '<option value="">All Brands</option>';
-                response.data.forEach(brand => {
-                    const option = document.createElement('option');
-                    option.value = brand.brand_id || brand.id;
-                    option.textContent = brand.name || brand.brand_name || `Brand ${brand.id}`;
-                    brandFilter.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error('Brand filter initialization failed:', error);
-        }
     }
 
     async function fetchProducts() {
@@ -108,25 +100,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    async function fetchProductsWithFilters() {
-        if (!apiKey) {
-            throw new Error('No API key found. Please login.');
+async function fetchProductsWithFilters() {
+    if (!apiKey) {
+        throw new Error('No API key found. Please login.');
+    }
+
+    showLoading();
+
+    try {
+        const getValue = (val) => val === '' ? undefined : val;
+        
+        const filters = {
+            category: getValue(categoryFilter?.value),
+            min_price: minPriceInput?.value ? parseFloat(minPriceInput.value) : undefined,
+            max_price: maxPriceInput?.value ? parseFloat(maxPriceInput.value) : undefined,
+            search: getValue(searchInput?.value.trim()),
+            min_rating: getValue(ratingFilter?.value) ? parseFloat(ratingFilter.value) : undefined
+        };
+
+            if (filters.min_rating !== undefined && (filters.min_rating < 1 || filters.min_rating > 5)) {
+            throw new Error('Rating filter must be between 1 and 5');
         }
-    
-        showLoading();
-
-        try {
-            if (!apiKey) throw new Error('Please login to view products');
-
-            const getValue = (val) => val === '' ? undefined : val;
-            
-            const filters = {
-                category: getValue(categoryFilter?.value),
-                min_price: minPriceInput?.value ? parseFloat(minPriceInput.value) : undefined,
-                max_price: maxPriceInput?.value ? parseFloat(maxPriceInput.value) : undefined,
-                search: getValue(searchInput?.value.trim()),
-                brand: getValue(brandFilter?.value)
-            };
 
             if (filters.min_price !== undefined && isNaN(filters.min_price)) {
                 throw new Error('Minimum price must be a number');
@@ -140,14 +134,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const response = await getFilteredProducts(
-                undefined,
-                filters.brand,
-                filters.category,
-                filters.min_price,
-                filters.max_price,
-                filters.search,
-                undefined
-            );
+            undefined,
+            undefined, 
+            filters.category,
+            filters.min_price,
+            filters.max_price,
+            filters.search,
+            undefined,
+            filters.min_rating 
+        );
             
             if (response.status === 'success') {
                 processProductData(response.data);
@@ -170,62 +165,95 @@ document.addEventListener('DOMContentLoaded', function() {
         setupPagination();
     }
 
-    function renderProducts() {
-        const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-        const endIndex = startIndex + PRODUCTS_PER_PAGE;
-        const productsToDisplay = allProducts.slice(startIndex, endIndex);
+ function renderProducts() {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const endIndex = startIndex + PRODUCTS_PER_PAGE;
+    const productsToDisplay = allProducts.slice(startIndex, endIndex);
 
-        productList.innerHTML = '';
+    productList.innerHTML = '';
 
-        if (productsToDisplay.length === 0) {
-            productList.innerHTML = '<div class="no-products">No products found</div>';
-            return;
-        }
-
-        productsToDisplay.forEach(product => {
-            const productElement = document.createElement('div');
-            productElement.className = 'product';
-        
-            const priceNum = Number(product.price);
-            const price = !isNaN(priceNum) ? priceNum.toFixed(2) : '0.00';
-
-            const productID = product.product_id || product.id || product.id_product;
-
-            productElement.innerHTML = `
-                ${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="${escapeHtml(product.title)}">` : ''}
-                <div class="product-info">
-                    <h3>${escapeHtml(product.title || 'Untitled Product')}</h3>
-                    <p class="price">R${price}</p>
-                    ${product.description ? `<p class="description">${escapeHtml(product.description)}</p>` : ''}
-                    ${product.category ? `<p class="category">${escapeHtml(product.category)}</p>` : ''}
-                    <button class="view-product" data-prod-id="${productID}">View Product</button>
-                </div>
-            `;
-
-            const viewButton = productElement.querySelector(".view-product");
-            viewButton.addEventListener("click", () => {
-                if (!productID) {
-                    console.warn("No product ID found for:", product);
-                    return;
-                }
-
-                const productData = {
-                    prod_id: productID,
-                    title: product.title,
-                    thumbnail: product.thumbnail,
-                    price: product.price,
-                    description: product.description,
-                    product_link: product.product_link
-                };
-
-                console.log("Storing in sessionStorage:", productData);
-                sessionStorage.setItem("selectedProduct", JSON.stringify(productData));
-                window.location.href = "view_product.php";
-            });
-
-            productList.appendChild(productElement);
-        });
+    if (productsToDisplay.length === 0) {
+        productList.innerHTML = '<div class="no-products">No products found</div>';
+        return;
     }
+
+    productsToDisplay.forEach(product => {
+        const productElement = document.createElement('div');
+        productElement.className = 'product';
+    
+        const priceNum = Number(product.price);
+        const price = !isNaN(priceNum) ? priceNum.toFixed(2) : '0.00';
+
+        const avgRating = product.average_rating ? parseFloat(product.average_rating).toFixed(1) : null;
+        
+        const starRating = avgRating ? generateStarRating(avgRating) : '<div class="no-rating">Not rated yet</div>';
+
+        const productID = product.product_id || product.id || product.id_product;
+
+        productElement.innerHTML = `
+            ${product.thumbnail ? `<img src="${escapeHtml(product.thumbnail)}" alt="${escapeHtml(product.title)}">` : ''}
+            <div class="product-info">
+                <h3>${escapeHtml(product.title || 'Untitled Product')}</h3>
+                <div class="product-meta">
+                    <p class="price">R${price}</p>
+                    <div class="rating-container">
+                        ${starRating}
+                        ${avgRating ? `<span class="rating-text">${avgRating}/5</span>` : ''}
+                    </div>
+                </div>
+                ${product.description ? `<p class="description">${escapeHtml(product.description)}</p>` : ''}
+                ${product.category ? `<p class="category">${escapeHtml(product.category)}</p>` : ''}
+                <button class="view-product" data-prod-id="${productID}">View Product</button>
+            </div>
+        `;
+
+        const viewButton = productElement.querySelector(".view-product");
+        viewButton.addEventListener("click", () => {
+            if (!productID) {
+                console.warn("No product ID found for:", product);
+                return;
+            }
+
+            const productData = {
+                prod_id: productID,
+                title: product.title,
+                thumbnail: product.thumbnail,
+                price: product.price,
+                description: product.description,
+                product_link: product.product_link,
+                average_rating: avgRating // Include rating in product data
+            };
+
+            sessionStorage.setItem("selectedProduct", JSON.stringify(productData));
+            window.location.href = "view_product.php";
+        });
+
+        productList.appendChild(productElement);
+    });
+}
+
+function generateStarRating(rating) {
+    const numericRating = parseFloat(rating);
+    const fullStars = Math.floor(numericRating);
+    const hasHalfStar = numericRating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    let starsHTML = '';
+    
+    for (let i = 0; i < fullStars; i++) {
+        starsHTML += '<i class="fas fa-star"></i>';
+    }
+    
+    if (hasHalfStar) {
+        starsHTML += '<i class="fas fa-star-half-alt"></i>';
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+        starsHTML += '<i class="far fa-star"></i>';
+    }
+    
+    return `<div class="star-rating">${starsHTML}</div>`;
+}
 
 
     function setupPagination() {
@@ -327,20 +355,22 @@ document.addEventListener('DOMContentLoaded', function() {
         return await sendRequest(body);
     }
 
-    async function getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store_id) {
-        const body = {
-            type: 'GetFilteredProducts',
-            apikey: apiKey
-        };
+    async function getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store_id, min_rating) {
+    const body = {
+        type: 'GetFilteredProducts',
+        apikey: apiKey
+    };
 
-        if (prod_id !== undefined) body.prod_id = prod_id;
-        if (brand !== undefined) body.brand = brand;
-        if (category !== undefined) body.category = category;
-        if (min_price !== undefined) body.min_price = min_price;
-        if (max_price !== undefined) body.max_price = max_price;
-        if (search !== undefined) body.search = search;
-        if (store_id !== undefined) body.store_id = store_id;
+    if (prod_id !== undefined) body.prod_id = prod_id;
+    if (category !== undefined) body.category = category;
+    if (min_price !== undefined) body.min_price = min_price;
+    if (max_price !== undefined) body.max_price = max_price;
+    if (search !== undefined) body.search = search;
+    if (store_id !== undefined) body.store_id = store_id;
+    if (min_rating !== undefined) body.min_rating = min_rating;
 
-        return await sendRequest(body);
-    }
+    return await sendRequest(body);
+}
 });
+
+
