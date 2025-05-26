@@ -32,8 +32,22 @@ document.addEventListener('DOMContentLoaded', function () {
     document.documentElement.classList.remove('light-theme', 'dark-theme');
     document.documentElement.classList.add(`${theme}-theme`);
     sessionStorage.setItem('theme', theme);
-    
-
+  
+    const lbl = document.getElementById('themeLabel');
+    if (lbl) lbl.textContent = theme[0].toUpperCase() + theme.slice(1);
+  
+    const logoLight = document.getElementById('logoLight');
+    const logoDark = document.getElementById('logoDark');
+    if (logoLight && logoDark) {
+      if (theme === 'dark') {
+        logoLight.style.display = 'none';
+        logoDark.style.display = 'block';
+      } else {
+        logoLight.style.display = 'block';
+        logoDark.style.display = 'none';
+      }
+    }
+  
     const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
     if (storedUser) {
       try {
@@ -48,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   }
-
+  
   let theme = sessionStorage.getItem('theme');
   if (!theme) {
     const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
