@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('settingsForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const apiKey = localStorage.getItem('apikey');
+  const apiKey = sessionStorage.getItem('apikey');
   if (!apiKey) {
     showMessage('You must be logged in to alter user settings.', true);
     return;
@@ -33,11 +33,11 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
   const password = document.getElementById('password').value;
 
   const payload = {
-    type:             'update_settings',
+    type:             'SavePreferences',
     apikey:           apiKey,
-    preferred_theme:  theme,
-    price_min:        priceMin,
-    price_max:        priceMax,
+    theme:            theme,
+    min_price:        priceMin,
+    max_price:        priceMax,
   };
 
   if (email) payload.new_email = email;
