@@ -12,7 +12,7 @@
 
     Login               [0]
     Register            [0]
-    GetAllProducts      [0]
+    GetAllProducts      [1]
     AddProduct          [0]
     DeleteProduct       [0]
     EditProduct         [0]
@@ -36,7 +36,6 @@
 
 //TODO:
 //  Test All Types
-
 
 
 require_once 'config.php';
@@ -227,29 +226,22 @@ if ($_POST['type'] == 'Register') {
 if ($_POST['type'] == 'GetAllProducts')
 {
     try {
-        $stmt = $conn->prepare("SELECT * FROM Product");
+        $stmt = $conn->prepare("SELECT * FROM products");
         $stmt->execute();
         $result = $stmt->get_result();
-        $stmt->close();
         $products = [];
 
         while ($row = $result->fetch_assoc()) {
-            $brandQuery = $conn->prepare("SELECT name FROM Brand where brand_id = ?");
+            $brandQuery = $conn->prepare("SELECT name FROM brand where brand_id = ?");
             $brandQuery->bind_param("i", $row['brand_id']);
             $brandQuery->execute();
             $brandResult = $brandQuery->get_result();
             if ($brandResult->num_rows === 0) {
-                http_response_code(400);
-                echo json_encode([
-                    "status" => "error",
-                    "message" => "Brand does not exist.",
-                    "Type Handler" => "GetAllProducts",
-                    "API Line" => __LINE__
-                ]);
-                $brandQuery->close();
-                exit();
+                $brand = "no brand";
+            } else {
+                $brandRow = $brandResult->fetch_assoc();
+                $brand = $brandRow['name'];
             }
-            $brand = $brandResult->fetch_assoc();
             $brandQuery->close();
             $products[] = [
                 'id' => $row['product_id'],
@@ -281,7 +273,7 @@ if ($_POST['type'] == 'GetAllProducts')
 //add product
 if ($_POST['type'] == 'AddProduct') {
 
-    $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'store_id', 'user_id', 'type'];
+    $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'store_id', 'apikey', 'type'];
 
     foreach ($_POST as $key => $value) {
         if (!in_array($key, $validFields) && $key !== 'brand_name') {
@@ -317,7 +309,8 @@ if ($_POST['type'] == 'AddProduct') {
     $thumbnail = $_POST['thumbnail'];
     $category = $_POST['category'];
     $store_id = $_POST['store_id'];
-    $user_id = $_POST['user_id'];
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
 
     if (!isset($_POST['brand_name'])) {
         $brand_name = $_POST['title'];
@@ -328,7 +321,7 @@ if ($_POST['type'] == 'AddProduct') {
     try {
         $conn->begin_transaction();
 
-        $brandStmt = $conn->prepare("SELECT * FROM Brand WHERE name = ?");
+        $brandStmt = $conn->prepare("SELECT * FROM brand WHERE name = ?");
         $brandStmt->bind_param("s", $brand_name);
         $brandStmt->execute();
         $brandResult = $brandStmt->get_result();
@@ -347,7 +340,7 @@ if ($_POST['type'] == 'AddProduct') {
     }
 
     try {
-        $ownerStmt = $conn->prepare("SELECT userID,store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+        $ownerStmt = $conn->prepare("SELECT user_id ,store_id FROM store_owner WHERE user_id = ? AND store_id = ?");
         $ownerStmt->bind_param("ii", $user_id,$store_id);
         $ownerStmt->execute();
         $ownerStmt->store_result();
@@ -371,7 +364,7 @@ if ($_POST['type'] == 'AddProduct') {
 
     try {
         $stmt = $conn->prepare("
-        INSERT INTO Product (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
+        INSERT INTO products (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sdssssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id);
         $stmt->execute();
@@ -413,7 +406,7 @@ if ($_POST['type'] == 'DeleteProduct')
     $user_id = authenticate($conn, $apikey);
 
     try {
-        $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+        $stmt = $conn->prepare("SELECT user_id, store_id FROM store_owner WHERE user_id = ? AND store_id = ?");
         $stmt->bind_param("ii", $user_id,$store_id);
         $stmt->execute();
         $stmt->store_result();
@@ -436,7 +429,7 @@ if ($_POST['type'] == 'DeleteProduct')
     }
 
     try {
-        $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
+        $productCheck = $conn->prepare("SELECT * FROM products WHERE prod_id = ? AND store_id = ?");
         $productCheck->bind_param("ii", $prod_id, $store_id);
         $productCheck->execute();
         $productCheck->store_result();
@@ -460,7 +453,7 @@ if ($_POST['type'] == 'DeleteProduct')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("DELETE FROM Product WHERE prod_id = ?");
+        $stmt = $conn->prepare("DELETE FROM products WHERE prod_id = ?");
         $stmt->bind_param("i", $prod_id);
         $stmt->execute();
         $stmt->close();
@@ -502,7 +495,7 @@ if ($_POST['type'] == 'EditProduct')
     $user_id = authenticate($conn, $apikey);
 
     try {
-        $stmt = $conn->prepare("SELECT user_id, store_id FROM store_Owner WHERE user_id = ? AND store_id = ?");
+        $stmt = $conn->prepare("SELECT user_id, store_id FROM store_owner WHERE user_id = ? AND store_id = ?");
         $stmt->bind_param("ii", $user_id,$store_id);
         $stmt->execute();
         $stmt->store_result();
@@ -525,7 +518,7 @@ if ($_POST['type'] == 'EditProduct')
     }
 
     try {
-        $productCheck = $conn->prepare("SELECT * FROM Product WHERE prod_id = ? AND store_id = ?");
+        $productCheck = $conn->prepare("SELECT * FROM products WHERE prod_id = ? AND store_id = ?");
         $productCheck->bind_param("ii", $prod_id, $store_id);
         $productCheck->execute();
         $productResult = $productCheck->get_result();
@@ -562,7 +555,7 @@ if ($_POST['type'] == 'EditProduct')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("UPDATE Product
+        $stmt = $conn->prepare("UPDATE products
         SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?, store_id = ?
         WHERE prod_id = ?");
         $stmt->bind_param("sdsssssiii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id, $prod_id);;
@@ -697,7 +690,7 @@ if ($_POST['type'] == 'SubmitRating')
     $user_id = authenticate($conn, $apikey);
 
     try {
-        $duplicateStmt = $conn->prepare("SELECT user_id FROM Rating WHERE user_id = ?");
+        $duplicateStmt = $conn->prepare("SELECT user_id FROM ratings WHERE user_id = ?");
         $duplicateStmt->bind_param("i", $user_id);
         $duplicateStmt->execute();
         $duplicateResult = $duplicateStmt->get_result();
@@ -722,7 +715,7 @@ if ($_POST['type'] == 'SubmitRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("INSERT INTO Rating (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO ratings (user_id, prod_id, rating, comment) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iiis", $user_id, $prod_id, $rating, $comment);
         $stmt->execute();
         $stmt->close();
@@ -758,7 +751,7 @@ if ($_POST['type'] == 'GetRatings')
     $prod_id = $_POST['prod_id'];
 
     try {
-        $stmt = $conn->prepare("SELECT u.name, r.rating, r.comment FROM Rating r JOIN User u ON r.user_id = u.user_id WHERE r.prod_id = ?");
+        $stmt = $conn->prepare("SELECT u.name, r.rating, r.comment FROM ratings r JOIN users u ON r.user_id = u.user_id WHERE r.prod_id = ?");
         $stmt->bind_param("i", $prod_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -804,7 +797,7 @@ if ($_POST['type'] == 'DeleteRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("DELETE FROM Rating WHERE rating_id = ?");
+        $stmt = $conn->prepare("DELETE FROM ratings WHERE rating_id = ?");
         $stmt->bind_param("i", $rating_id);
         $stmt->execute();
         $stmt->close();
@@ -844,7 +837,7 @@ if ($_POST['type'] == 'EditRating')
     $user_id = authenticate($conn, $apikey);
 
     try {
-        $checkStmt = $conn->prepare("SELECT * FROM Rating WHERE rating_id = ? AND user_id = ?");
+        $checkStmt = $conn->prepare("SELECT * FROM ratings WHERE rating_id = ? AND user_id = ?");
         $checkStmt->bind_param("ii", $rating_id, $user_id);
         $checkStmt->execute();
         $result = $checkStmt->get_result();
@@ -870,7 +863,7 @@ if ($_POST['type'] == 'EditRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("UPDATE Rating SET rating = ?, comment = ? WHERE rating_id = ?");
+        $stmt = $conn->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE rating_id = ?");
         $stmt->bind_param("isi", $rating, $comment, $rating_id);
         $stmt->execute();
         $stmt->close();
@@ -1168,7 +1161,7 @@ if ($_POST['type'] == 'Unfollow') {
 if ($_POST['type'] == 'RegisterStoreOwner') {
 
     //Check if all fields are present
-    if (!isset($_POST['apikey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['store_type'])){
+    if (!isset($_POST['apikey']) || !isset($_POST['store_name']) || !isset($_POST['store_url']) || !isset($_POST['store_type']) || !isset($_POST['registrationNo'])){
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -1183,6 +1176,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     $store_url = $_POST['store_url'];
     $apikey = $_POST['apikey'];
     $type = $_POST['store_type'];
+    $registrationNo = $_POST['registrationNo'];
     $user_id = authenticate($conn, $apikey);
 
     //Add store to database
@@ -1202,8 +1196,8 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     }
 
     try {
-        $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id) VALUES (?, ?)");
-        $ownerStmt->bind_param("ii", $user_id, $store_id);
+        $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id, registrationNo) VALUES (?, ?, ?)");
+        $ownerStmt->bind_param("iii", $user_id, $store_id, $registrationNo);;
         $ownerStmt->execute();
         $ownerStmt->close();
 
@@ -1316,7 +1310,7 @@ if ($_POST['type'] == 'RemoveBrand'){
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("DELETE FROM Brand WHERE brand_id = ?");
+        $stmt = $conn->prepare("DELETE FROM brand WHERE brand_id = ?");
         $stmt->bind_param("i", $brand_id);
         $stmt->execute();
         $stmt->close();
@@ -1339,7 +1333,7 @@ if ($_POST['type'] == 'RemoveBrand'){
 if ($_POST['type'] == 'GetBrands'){
 
     try {
-        $stmt = $conn->prepare("SELECT * FROM Brand");
+        $stmt = $conn->prepare("SELECT * FROM brand");
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -1399,7 +1393,7 @@ function createBrand($conn, $brand_name, $transaction = true)
 }
 
 //Catches SQL errors
-function catchErrorSQL($conn, $error, $line, $type , $rollback = false){
+function catchErrorSQL($conn, $error, $type , $line , $rollback = false){
     if ($rollback) {
         $conn->rollback();
     }
@@ -1415,7 +1409,7 @@ function catchErrorSQL($conn, $error, $line, $type , $rollback = false){
 }
 
 //Catches errors
-function catchError($conn, $error, $line, $type, $rollback = false){
+function catchError($conn, $error, $type, $line, $rollback = false){
     if ($rollback) {
         $conn->rollback();
     }
@@ -1452,7 +1446,7 @@ if ($_POST['type'] == 'SavePreferences')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("UPDATE User SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
+        $stmt = $conn->prepare("UPDATE users SET theme = ?, min_price = ? , max_price = ? WHERE apikey = ?");
         $stmt->bind_param("iiis", $theme, $min_price, $max_price, $apikey);
         $stmt->execute();
         $stmt->close();
