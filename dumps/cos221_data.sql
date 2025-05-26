@@ -29,8 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `brand` (
   `brand_id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `store_id` int(11) DEFAULT NULL
+  `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -517,56 +516,56 @@ CREATE TABLE `store` (
 --
 
 INSERT INTO `store` (`store_id`, `name`, `type`, `url`) VALUES
-(1, 'Game', NULL, 'https://www.game.co.za/'),
-(2, 'Toys R Us', NULL, NULL),
-(3, 'takealot.com', NULL, 'https://www.takealot.com/'),
-(4, 'The Papery', NULL, NULL),
-(5, 'Cotton On', NULL, NULL),
-(7, 'Makro', NULL, 'https://www.makro.co.za/'),
-(8, 'Three6ixty Marketing & Branding', NULL, NULL),
-(9, 'GeeWiz', NULL, NULL),
-(10, 'Brandability', NULL, NULL),
+(1, 'Game', 'Omnichannel', 'https://www.game.co.za/'),
+(2, 'Toys R Us', 'Omnichannel', 'https://www.toysrus.co.za/'),
+(3, 'takealot.com', 'Online-only', 'https://www.takealot.com/'),
+(4, 'The Papery', 'Online-only', 'https://thepapery.co.za/'),
+(5, 'Cotton On', 'Omnichannel', 'https://cottonon.com/ZA/'),
+(7, 'Makro', 'Omnichannel', 'https://www.makro.co.za/'),
+(8, 'Three6ixty Marketing & Branding', 'Wholesale', 'https://three6ixty.co.za/'),
+(9, 'GeeWiz', 'Online-only', 'https://www.geewiz.co.za/'),
+(10, 'Brandability', 'Wholesale', 'https://www.brandability.co.za/'),
 (11, 'Space Camp', NULL, NULL),
-(12, 'Bookmall.co.za', NULL, NULL),
-(13, 'Gift Mania SA', NULL, NULL),
-(14, 'Furbish', NULL, NULL),
-(15, 'Shop n Scrap', NULL, NULL),
-(16, 'Amazon.co.za', NULL, 'https://www.amazon.co.za/'),
-(17, 'Scribble and Scratch', NULL, NULL),
+(12, 'Bookmall.co.za', 'Online-only', 'https://www.bookmall.co.za/'),
+(13, 'Gift Mania SA', 'Online-only', 'https://giftmania.co.za/'),
+(14, 'Furbish', 'Online-only', 'https://furbishstudio.com/'),
+(15, 'Shop n Scrap', 'Online-only', 'https://shop-n-scrap.co.za/'),
+(16, 'Amazon.co.za', 'Online-only', 'https://www.amazon.co.za/'),
+(17, 'Scribble and Scratch', 'Online-only', 'https://www.scribbleandscratch.co.za/'),
 (18, 'Love from Me', NULL, NULL),
-(19, 'Creative Brands', NULL, NULL),
-(20, 'Good Golly', NULL, NULL),
-(21, 'pgifts.co.za', NULL, NULL),
-(22, 'Just Labels', NULL, NULL),
-(23, 'Write GEAR', NULL, NULL),
+(19, 'Creative Brands', 'Wholesale', 'https://www.creativebrands.co.za/'),
+(20, 'Good Golly', 'Physical-only', NULL),
+(21, 'pgifts.co.za', 'Online-only', 'https://www.pgifts.co.za/'),
+(22, 'Just Labels', 'Online-only', 'https://justlabels.co.za/'),
+(23, 'Write GEAR', 'Online-only', 'https://writegear.co.za/'),
 (24, 'Social Paper Company', NULL, NULL),
-(25, 'Ubuy', NULL, NULL),
-(26, 'Wantitall', NULL, NULL),
+(25, 'Ubuy', 'Online-only', 'https://www.ubuy.co.za/'),
+(26, 'Wantitall', 'Online-only', 'https://www.wantitall.co.za/'),
 (27, 'Likhaan', NULL, NULL),
-(28, 'eBay - grandeagleretail', NULL, NULL),
-(29, 'Import It All', NULL, NULL),
-(30, 'Value City Wholesalers CC', NULL, NULL),
+(28, 'eBay - grandeagleretail', 'Online-only', 'https://www.ebay.com/usr/grandeagleretail'),
+(29, 'Import It All', 'Online-only', 'https://www.importitall.co.za/'),
+(30, 'Value City Wholesalers CC', 'Wholesale', NULL),
 (31, 'Art Shop', NULL, NULL),
-(32, 'Gadgetseek', NULL, NULL),
+(32, 'Gadgetseek', 'Online-only', 'https://www.gadgetseek.co.za/'),
 (33, 'amuse', NULL, NULL),
-(34, 'eBay - natshp-24', NULL, NULL),
+(34, 'eBay - natshp-24', 'Online-only', 'https://www.ebay.com/usr/natshp-24'),
 (35, 'RM Signs', NULL, NULL),
-(36, 'eBay - ranotlior.08', NULL, NULL),
+(36, 'eBay - ranotlior.08', 'Online-only', 'https://www.ebay.com/usr/ranotlior.08'),
 (37, 'To Be Gift Boxes', NULL, NULL),
-(38, 'Hyperli', NULL, NULL),
-(39, 'Ribbens Office National', NULL, NULL),
+(38, 'Hyperli', 'Online-only', 'https://www.hyperli.com/'),
+(39, 'Ribbens Office National', 'Omnichannel', 'https://www.officenational.co.za/'),
 (40, 'diabco', NULL, NULL),
-(41, 'KoreKawaii.com', NULL, NULL),
+(41, 'KoreKawaii.com', 'Online-only', 'https://korekawaii.com/'),
 (42, 'Bubblegumfringe', NULL, NULL),
 (43, 'Valenna', NULL, NULL),
-(44, 'NetFlorist', NULL, NULL),
+(44, 'NetFlorist', 'Online-only', 'https://www.netflorist.co.za/'),
 (45, 'Happy Harvesting', NULL, NULL),
 (46, 'Evermore ZA', NULL, NULL),
-(47, 'McGrocer', NULL, NULL),
+(47, 'McGrocer', 'Online-only', 'https://www.mcgrocer.com/'),
 (48, 'Pause Room', NULL, NULL),
-(49, 'Biblio.com - City Lights Bookstore', NULL, NULL),
+(49, 'Biblio.com - City Lights Bookstore', 'Online-only', 'https://www.biblio.com/bookstore/city-lights-bookstore-asheville'),
 (50, 'Claudi Lourens Creative Studio', NULL, NULL),
-(51, 'Bob Shop', NULL, NULL),
+(51, 'Bob Shop', 'Online-only', 'https://www.bobshop.co.za/'),
 (52, 'Kaito Japan Design', NULL, NULL),
 (53, 'Coral Designs', NULL, NULL);
 
@@ -618,8 +617,7 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `m
 -- Indexes for table `brand`
 --
 ALTER TABLE `brand`
-  ADD PRIMARY KEY (`brand_id`),
-  ADD KEY `store_ibfk_1` (`store_id`);
+  ADD PRIMARY KEY (`brand_id`);
 
 --
 -- Indexes for table `customers`
@@ -705,12 +703,6 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `brand`
---
-ALTER TABLE `brand`
-  ADD CONSTRAINT `store_ibfk_1` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`);
 
 --
 -- Constraints for table `customers`
