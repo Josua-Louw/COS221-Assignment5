@@ -1,6 +1,5 @@
 <?php
 session_start();
-include 'header.php';
 
 // TODO: finish code to connect to database and api and remove the placeholder
 
@@ -28,7 +27,7 @@ if (!$product) {
 }
 */
 
-//Temporary placeholder 
+// Temporary placeholder
 $product = [
     'title' => 'Test Product',
     'thumbnail' => 'https://via.placeholder.com/300',
@@ -38,6 +37,16 @@ $product = [
     'description' => 'This is a test product'
 ];
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Product</title>
+  <link rel="stylesheet" href="/front_end/css/view_product.css">
+</head>
+<body>
+<?php include 'header.php'; ?>
 
 <main>
   <section id="product-title">

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="css/login.css">
-    <script src="js/login.js"></script>
 </head>
 <body>
     <div class="login-container">
@@ -26,5 +25,6 @@
             Don't have an account? <a href="register.php">Register here</a>
         </div>
     </div>
+    <script src="scripts/login.js"></script>
 </body>
 </html>
