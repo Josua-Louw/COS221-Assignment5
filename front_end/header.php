@@ -27,20 +27,19 @@
   <header role="banner">
     <nav class="main-nav" aria-label="Main navigation">
       
-      <!-- LOGO (slightly reduced padding/font in CSS) -->
-      <div class="logo-container">
-        <a href="index.php" class="logo-link" aria-label="CompareIt Home">
-          <h1>CompareIt</h1>
-        </a>
-      </div>
+    <div class="logo-container">
+      <a href="index.php" class="logo-link" aria-label="CompareIt Home">
+        <img src="img/logo-light.png" alt="CompareIt" id="logoLight">
+        <img src="img/logo-dark.png"  alt="CompareIt" id="logoDark">
+      </a>
+    </div>
       
-      <!-- CENTERED: Products / Stores -->
       <div class="button-container">
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
+        <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
       </div>
       
-      <!-- RIGHT: Auth links + Theme switch -->
       <div class="auth-container" id="auth-buttons">
         <?php if (isset($_SESSION['user'])): ?>
           <div class="user-dropdown" aria-haspopup="true">
@@ -63,11 +62,10 @@
           </div>
         <?php endif; ?>
         
-        <!-- THEME SLIDER + LABEL -->
         <label class="theme-switch">
           <input type="checkbox" id="themeToggle" aria-label="Toggle dark mode">
           <span class="slider"></span>
-          <span id="themeLabel"></span> <!-- will show “Light” or “Dark” -->
+          <span id="themeLabel"></span> 
         </label>
       </div>
     </nav>
