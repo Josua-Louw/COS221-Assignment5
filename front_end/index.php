@@ -11,7 +11,7 @@ require_once 'header.php';
 <body>
     <div class = "logo-container">
         <!--Need logo-->
-        <img src = "img/..." alt = "Logo">
+        <img src = "img/logo.png" alt = "Logo">
     </div>
     
     <div class = "search-container">
