@@ -25,6 +25,6 @@
             Don't have an account? <a href="register.php">Register here</a>
         </div>
     </div>
+    <script src="scripts/login.js"></script>
 </body>
 </html>
-<script src="scripts/login.js"></script>
