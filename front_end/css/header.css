@@ -218,22 +218,6 @@ html.dark-theme footer, body.dark-theme footer {
   .logo-container {
     margin-right: auto;
   }
-  
-  /* .logo-container .logo-light,
-  .logo-container .logo-dark {
-    display: none !important;
-  }
-  
-  body:not(.dark-theme)  .logo-container .logo-light,
-  html:not(.dark-theme)  .logo-container .logo-light {
-    display: block !important;
-  }
-  
-  body.dark-theme  .logo-container .logo-dark,
-  html.dark-theme  .logo-container .logo-dark {
-    display: block !important;
-  }
-   */
 
    .logo-container img {
     max-height: 50px;
