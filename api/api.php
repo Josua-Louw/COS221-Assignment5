@@ -1516,8 +1516,8 @@ if ($_POST['type'] == 'UpdateStats'){
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("INSERT INTO clicks (user_id, product_id, number_of_times_clicked) VALUES (?, ?, 1)
-        ON DUPLICATE KEY UPDATE number_of_times_clicked = number_of_times_clicked + 1");
+        $stmt = $conn->prepare("INSERT INTO clicks (user_id, product_id, amount) VALUES (?, ?, 1)
+        ON DUPLICATE KEY UPDATE amount = amount + 1");
         $stmt->bind_param("ii", $user_id, $product_id);
         $stmt->execute();
         $stmt->close();
