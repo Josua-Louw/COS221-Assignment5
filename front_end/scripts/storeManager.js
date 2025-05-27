@@ -132,7 +132,7 @@ getStoreUserOwns(apiKey)
             result.status === "error" &&
             result.message === "This user is not a store owner"
         ) {
-            console.warn("User does not own a store.");
+            console.log("User does not own a store.");
            
         } else {
             console.error("Unexpected error:", result.message);
@@ -141,3 +141,23 @@ getStoreUserOwns(apiKey)
     .catch(error => {
         console.error("Request failed or invalid JSON:", error);
     });
+
+document.getElementById('submit-btn').addEventListener('click', function (e) {
+    e.preventDefault();
+
+    
+    const store_name = document.getElementById("store_name").value;
+    const store_url = document.getElementById("store_url").value;
+    const store_type = document.getElementById("filter-dropdown").value;
+    const registrationNo = document.getElementById("store_reg").value;
+
+    registerStoreOwner(apiKey, store_name, store_url, store_type, registrationNo)
+        .then(result => {
+            console.log(result);
+            getStoreUserOwns(apiKey);
+        })
+        .catch(error => {
+            console.error("Error registering store owner:", error);
+        });
+});
+
