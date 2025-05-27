@@ -1,3 +1,17 @@
+:root {
+  --bg-page: #f9f9f9;
+  --bg-container: #ffffff;
+  --text-color: #222;
+  --text-invert: #222;
+}
+
+html.dark-theme {
+  --bg-page: #121212;
+  --bg-container: #1e1e1e;
+  --text-color: #f1f1f1;
+  --text-invert: #ffffff; 
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -34,8 +48,8 @@ body {
   text-align: center;
   font-size: 1.2rem;          
   line-height: 1.8;           
-  color: #333;                
-  background-color: #f9f9f9;  
+  color: var(--text-invert);                
+  background-color: var(--bg-container);  
   border-radius: 8px;         
   box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -44,8 +58,9 @@ body {
   user-select: text;         
   transition: box-shadow 0.3s ease;
 }
+
 .welcome-container:hover {
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* lift effect on hover */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 footer {
   margin-top: auto;
