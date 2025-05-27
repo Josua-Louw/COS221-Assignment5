@@ -123,3 +123,14 @@ body {
   body.dark-theme .btn-visit, body.dark-theme .search-btn, html.dark-theme .btn-visit, html.dark-theme .search-btn {
     color: var(--text-primary);
   }
+
+  .Follow_products
+  {
+    flex: 1;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
