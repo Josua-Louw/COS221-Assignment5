@@ -141,134 +141,100 @@ if ($_POST['type'] == 'Login') {
 
 //registration
 if ($_POST['type'] == 'Register') {
-
-    if (!isset($_POST['name']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['user_type'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields",
-            "Type Handler" => "Register",
-            "API Line" => __LINE__
-        ]);
-        exit();
+    $required = ['name', 'email', 'password', 'user_type'];
+    foreach ($required as $field) {
+        if (!isset($_POST[$field])) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Missing required field: $field"
+            ]);
+            exit();
+        }
     }
 
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $user_type = $_POST['user_type'];
+    $user_type = strtolower(trim($_POST['user_type'])); // convert to lowercase for enum match
+    $registrationNo = $_POST['registrationNo'] ?? null;
+
+    if (!in_array($user_type, ['customer', 'store_owner', 'admin'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid user type"
+        ]);
+        exit();
+    }
 
     try {
-        $check = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $check = $conn->prepare("SELECT email FROM users WHERE email = ?");
         $check->bind_param("s", $email);
         $check->execute();
-        $checkResult = $check->get_result();
 
-        if ($checkResult->num_rows > 0) {
-            http_response_code(401);
+        if ($check->get_result()->num_rows > 0) {
+            http_response_code(409);
             echo json_encode([
                 "status" => "error",
-                "message" => "User with similar details already exists.",
-                "Type Handler" => "Register",
+                "message" => "Email already registered"
             ]);
-            $check->close();
             exit();
         }
         $check->close();
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "Register", __LINE__);
-    } catch (Exception $e) {
-        catchError($conn, $e, "Register", __LINE__);
-    }
 
-    $salt = bin2hex(random_bytes(127));
-    $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
-    try {
-        $apikey = generateApikey();
-    } catch (Exception $e) {
-        
-    }
-    
-
-    try {
+        $salt = bin2hex(random_bytes(16)); // Required field
+        $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
+        $apikey = bin2hex(random_bytes(32));
+        $date_registered = date("Y-m-d");
 
         $conn->begin_transaction();
 
+        // Include `salt` and `date_registered`
         $stmt = $conn->prepare("
-                INSERT INTO users (name, email, password, salt, user_type, apikey)
-                VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $name, $email, $hashedPassword, $salt, $user_type, $apikey);
+            INSERT INTO users (name, email, password, salt, user_type, apikey, date_registered)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("sssssss", $name, $email, $hashedPassword, $salt, $user_type, $apikey, $date_registered);
         $stmt->execute();
         $user_id = $stmt->insert_id;
         $stmt->close();
 
-        $customerStmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
-        $customerStmt->bind_param("i", $user_id);
-        $customerStmt->execute();
-        $customerStmt->close();
+        if ($user_type === 'customer') {
+            $stmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $stmt->close();
+        } else if ($user_type === 'store_owner') {
+            if (empty($registrationNo)) {
+                throw new Exception("Registration number required for store owners");
+            }
+            $stmt = $conn->prepare("INSERT INTO store_owner (user_id, registration_no) VALUES (?, ?)");
+            $stmt->bind_param("is", $user_id, $registrationNo);
+            $stmt->execute();
+            $stmt->close();
+        }
 
         $conn->commit();
 
-        http_response_code(200);
+        http_response_code(201);
         echo json_encode([
             "status" => "success",
-            "message" => "User registered successfully."
+            "message" => "Registration successful",
+            "user_id" => $user_id
         ]);
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "Register", __LINE__, true);
+
     } catch (Exception $e) {
-        catchError($conn, $e, "Register", __LINE__, true);
+        $conn->rollback();
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Registration failed: " . $e->getMessage()
+        ]);
     }
     exit();
 }
 
-//now we have the following for products(add/delete/edit/remove)
-if ($_POST['type'] == 'GetAllProducts')
-{
-    try {
-        $stmt = $conn->prepare("SELECT * FROM products");
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $products = [];
-
-        while ($row = $result->fetch_assoc()) {
-            $brandQuery = $conn->prepare("SELECT name FROM brand where brand_id = ?");
-            $brandQuery->bind_param("i", $row['brand_id']);
-            $brandQuery->execute();
-            $brandResult = $brandQuery->get_result();
-            if ($brandResult->num_rows === 0) {
-                $brand = "no brand";
-            } else {
-                $brandRow = $brandResult->fetch_assoc();
-                $brand = $brandRow['name'];
-            }
-            $brandQuery->close();
-            $products[] = [
-                'id' => $row['product_id'],
-                'title' => $row['title'],
-                'price' => $row['price'],
-                'product_link' => $row['product_link'],
-                'description' => $row['description'],
-                'launch_date' => $row['launch_date'],
-                'thumbnail' => $row['thumbnail'],
-                'category' => $row['category'],
-                'brand_name' => $brand
-            ];
-        }
-        $stmt->close();
-        http_response_code(200);
-        echo json_encode([
-            "status" => "success",
-            "message" => "Products fetched successfully",
-            "data" => $products
-        ]);
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "GetAllProducts", __LINE__);
-    } catch (Exception $e) {
-        catchError($conn, $e, "GetAllProducts", __LINE__);
-    }
-    exit();
-}
 
 if ($_POST['type'] == 'GetProductsWithRatings') {
     $stmt = $conn->prepare("
@@ -1451,6 +1417,54 @@ function catchError($conn, $error, $type, $line, $rollback = false){
         "Type Handler" => $type,
         "API Line" => $line
     ]);
+    exit();
+}
+
+//now we have the following for products(add/delete/edit/remove)
+if ($_POST['type'] == 'GetAllProducts')
+{
+    try {
+        $stmt = $conn->prepare("SELECT * FROM products");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $products = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $brandQuery = $conn->prepare("SELECT name FROM brand where brand_id = ?");
+            $brandQuery->bind_param("i", $row['brand_id']);
+            $brandQuery->execute();
+            $brandResult = $brandQuery->get_result();
+            if ($brandResult->num_rows === 0) {
+                $brand = "no brand";
+            } else {
+                $brandRow = $brandResult->fetch_assoc();
+                $brand = $brandRow['name'];
+            }
+            $brandQuery->close();
+            $products[] = [
+                'id' => $row['product_id'],
+                'title' => $row['title'],
+                'price' => $row['price'],
+                'product_link' => $row['product_link'],
+                'description' => $row['description'],
+                'launch_date' => $row['launch_date'],
+                'thumbnail' => $row['thumbnail'],
+                'category' => $row['category'],
+                'brand_name' => $brand
+            ];
+        }
+        $stmt->close();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Products fetched successfully",
+            "data" => $products
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetAllProducts", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetAllProducts", __LINE__);
+    }
     exit();
 }
 
