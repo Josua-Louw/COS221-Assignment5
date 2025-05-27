@@ -10,7 +10,7 @@
 <body>
     <div class="stores-container">
         <h1>Your Store</h1>
-        <button onclick = "openPopup()">Add Store</button>
+        <button id = "btn-add-store" class = "btn-add-store" onclick = "openPopup()">Add Store</button>
         
 
         <div class="store-list">
