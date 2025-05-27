@@ -26,11 +26,12 @@ require_once 'header.php';
             <input type="text" class="search-input" placeholder="Search products...">
             
             <div class="filter-section">
-
-            <select class="Follow_products" id="Follow_products">
-            <option value="">Showing Products</option>
-            <option value="1">Products you follow</option>
-            </select>
+            <?php if (isset($_SESSION['apikey'])): ?> 
+                <select class="Follow_products" id="Follow_products">
+                <option value="">Showing Products</option>
+                <option value="1">Products you follow</option>
+                </select>
+            <?php endif; ?>
 
             <select class="rating-filter" id="rating">
             <option value="">All Ratings</option>
