@@ -1534,7 +1534,10 @@ function catchError($conn, $error, $type, $line, $rollback = false){
 if ($_POST['type'] == 'GetAllProducts')
 {
     try {
-        $stmt = $conn->prepare("SELECT * FROM products");
+        $stmt = $conn->prepare("SELECT p.*, AVG(r.rating) as average_rating 
+        FROM products p
+        LEFT JOIN ratings r ON p.product_id = r.product_id
+        GROUP BY p.product_id");
         $stmt->execute();
         $result = $stmt->get_result();
         $products = [];
@@ -1560,7 +1563,8 @@ if ($_POST['type'] == 'GetAllProducts')
                 'launch_date' => $row['launch_date'],
                 'thumbnail' => $row['thumbnail'],
                 'category' => $row['category'],
-                'brand_name' => $brand
+                'brand_name' => $brand,
+                'average_rating' => $row['average_rating']
             ];
         }
         $stmt->close();
