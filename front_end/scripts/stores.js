@@ -320,3 +320,46 @@ window.addEventListener('DOMContentLoaded', getStores);
 document.getElementById("filter-dropdown").addEventListener("change", filterStores);
 document.getElementById("filter-input").addEventListener("input", filterStores);
 
+
+
+document.getElementById("Follow_products").addEventListener("change", async function () {
+    const selected = this.value;
+
+    let requestType = "";
+    
+    console.log(selected);
+    if (selected != "1") {
+        requestType = "GetStores";
+    } 
+    else {
+        requestType = "GetFollowing";
+    }
+
+    try {
+        const res = await fetch("http://localhost/COS221-Assignment5/api/api.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                type: requestType,
+                apikey: apiKey
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "success") {
+            console.log("Products:", data.data);
+            displayStores(data.data); 
+        } else {
+            console.error("Error from API:", data.message);
+        }
+
+    } catch (err) {
+        console.error("Fetch failed:", err);
+    }
+});
+
+
+
