@@ -789,7 +789,7 @@ if ($_POST['type'] == 'DeleteRating')
 //Edit Rating
 if ($_POST['type'] == 'EditRating')
 {
-    if (!isset($_POST['rating_id']) || !isset($_POST['apikey']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
+    if (!isset($_POST['prod_id']) || !isset($_POST['apikey']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -801,15 +801,15 @@ if ($_POST['type'] == 'EditRating')
     }
 
     $apikey = $_POST['apikey'];
-    $rating_id = $_POST['rating_id'];
+    $product_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
     $user_id = authenticate($conn, $apikey);
 
     try {
-        $checkStmt = $conn->prepare("SELECT * FROM ratings WHERE rating_id = ? AND user_id = ?");
-        $checkStmt->bind_param("ii", $rating_id, $user_id);
+        $checkStmt = $conn->prepare("SELECT * FROM ratings WHERE product_id = ? AND user_id = ?");
+        $checkStmt->bind_param("ii", $product_id, $user_id);
         $checkStmt->execute();
         $result = $checkStmt->get_result();
 
@@ -834,8 +834,8 @@ if ($_POST['type'] == 'EditRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE rating_id = ?");
-        $stmt->bind_param("isi", $rating, $comment, $rating_id);
+        $stmt = $conn->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE product_id = ? AND user_id = ?");
+        $stmt->bind_param("isii", $rating, $comment, $product_id, $user_id);
         $stmt->execute();
         $stmt->close();
         $conn->commit();
