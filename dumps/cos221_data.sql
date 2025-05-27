@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 27, 2025 at 09:16 PM
+-- Generation Time: May 27, 2025 at 10:52 PM
 -- Server version: 10.3.39-MariaDB-0+deb10u2
 -- PHP Version: 7.3.31-1~deb10u7
 
@@ -48,7 +48,10 @@ INSERT INTO `brand` (`brand_id`, `name`) VALUES
 (9, 'test'),
 (10, '123'),
 (11, '1'),
-(12, 'a23');
+(12, 'a23'),
+(27, 'Nike'),
+(28, 'testing'),
+(29, '');
 
 -- --------------------------------------------------------
 
@@ -81,10 +84,12 @@ INSERT INTO `clicks` (`user_id`, `product_id`, `amount`) VALUES
 (6, 3, 19),
 (6, 5, 2),
 (6, 6, 1),
+(6, 8, 2),
 (6, 9, 2),
 (6, 488, 1),
 (19, 4, 1),
-(22, 3, 1);
+(22, 3, 1),
+(25, 471, 1);
 
 -- --------------------------------------------------------
 
@@ -112,7 +117,9 @@ INSERT INTO `customers` (`user_id`) VALUES
 (20),
 (21),
 (22),
-(23);
+(23),
+(24),
+(25);
 
 -- --------------------------------------------------------
 
@@ -138,7 +145,9 @@ INSERT INTO `follows` (`user_id`, `store_id`) VALUES
 (1, 85),
 (2, 7),
 (18, 79),
-(22, 1);
+(22, 1),
+(25, 1),
+(25, 2);
 
 -- --------------------------------------------------------
 
@@ -447,7 +456,8 @@ INSERT INTO `products` (`product_id`, `title`, `thumbnail`, `launch_date`, `prod
 (481, 'SparkFun Electronics 15583 TEENSY 4.0', 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTCjWbebYepRb5NalWTgmhvq_KRS7JFbBGNzM5zicQyUAvomXu6uiuCAlHqJ17G4F31ResMl4lyEOShFJijiWpcWdNCHw7jMNsUS5YyjaMjjN2M4s-NLaC5tQ', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:4592733958526635513', '442.68', NULL, 'electronics', 64, NULL),
 (486, 'a', 'aaa', '2025-05-02', 'Pentel', '1.00', 'Pentel', 'ass', 84, 12),
 (487, 'a123', 'a', '2025-05-03', 'a', '3.00', 'a', 'a', 84, 6),
-(488, 'PnP UHT Full Cream Milk 6 x 1L', 'https://cdn-prd-02.pnp.co.za/sys-master/images/hc2/hbc/11126258532382/silo-product-image-v2-16Mar2023-184819-6001007164294-Straight_on-102613-11023_515Wx515H', '2025-05-27', 'https://www.pnp.co.za/pnp-uht-full-cream-milk-6-x-1l/p/000000000000349246_CS', '94.00', 'MILK', 'cereal', 85, 8);
+(488, 'PnP UHT Full Cream Milk 6 x 1L', 'https://cdn-prd-02.pnp.co.za/sys-master/images/hc2/hbc/11126258532382/silo-product-image-v2-16Mar2023-184819-6001007164294-Straight_on-102613-11023_515Wx515H', '2025-05-27', 'https://www.pnp.co.za/pnp-uht-full-cream-milk-6-x-1l/p/000000000000349246_CS', '94.00', 'MILK', 'cereal', 85, 8),
+(492, 'test', 'tetsing', '2025-05-08', '55455', '46.00', 'testing', 'dfgggf', 88, 28);
 
 -- --------------------------------------------------------
 
@@ -578,7 +588,10 @@ INSERT INTO `store` (`store_id`, `name`, `type`, `url`) VALUES
 (76, 'Masons', 'Furniture & Electronics', 'https://www.masons.co.za/'),
 (79, 'a', 'a', 'All'),
 (84, 'aa', 'Wholesale', 'aaa'),
-(85, 'Pick n Pay', 'Omnichannel', 'https://www.pnp.co.za/');
+(85, 'Pick n Pay', 'Omnichannel', 'https://www.pnp.co.za/'),
+(86, 'Test', 'All', 'Test123'),
+(88, 'test', 'Online-only', 'testURL'),
+(92, 'Dok&#039;s Biz', 'All', '123');
 
 -- --------------------------------------------------------
 
@@ -588,7 +601,7 @@ INSERT INTO `store` (`store_id`, `name`, `type`, `url`) VALUES
 
 CREATE TABLE `store_owner` (
   `user_id` int(11) NOT NULL,
-  `registration_no` int(11) DEFAULT NULL,
+  `registration_no` varchar(255) DEFAULT NULL,
   `store_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -597,9 +610,12 @@ CREATE TABLE `store_owner` (
 --
 
 INSERT INTO `store_owner` (`user_id`, `registration_no`, `store_id`) VALUES
-(1, 1968, 85),
-(18, 0, 79),
-(22, 0, 84);
+(1, '1968', 85),
+(2, '0', 88),
+(18, '0', 79),
+(22, '0', 84),
+(24, '0', 86),
+(25, '982', 92);
 
 -- --------------------------------------------------------
 
@@ -627,7 +643,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `min_price`, `max_price`, `apikey`, `user_type`, `date_registered`) VALUES
 (1, 'John Nathan', '5766c9fd4b34aec7a9a7cd84a5e42ab0510d244c1176a99520d822cef60ef187518984281e20b8d9552de7608d2a89a7cfdac73545242a7829ad01c27ced191', '48088c4dbe281c415db5bf2bc72117dcaeb99c289b2ac66c926e1334cc02b88078c44db679176d04dd9e22cb7f491e422bd6b7e6d89cd8c904abc0fb10b3de857c090e54e3969754c3f9e2c98273626b4263ca55ba2f6919b0c6dc332608cdae654867ca6e48b44ee3b445c8f8e9ee432b940959b4ced09aa34f353d62dbae', 'johnnathan@gmail.com', 'dark', '0.00', '40.00', '36cf8d0b74a40ef80d4dad5817770faf', 'store_owner', '2025-05-20'),
-(2, 'Defualt', '148281df02341a0a3eaa698cfe399801dc209e820d9fbfcc0d34c44faedfb3f35433c9b42165be26bc12abf459eb33753f174e9c27114735bc522ee0e00b249', '21cd20dde568c897b01f8ea6aad158c63f87e53a65e75c4fc1ac98ff7637a5c2aec8e56f1ff12b4c09754382122ac4437d251a86ce99616f2459e22630028b2554a06872cf3d71225c4685cfa50eedbe7cf714e67dc269141da3edffa6b8157973a66983d87ae611acd59818e92e767b3fbfc6c84abe51d43c6ebe4876bd97', 'mydefualtuser@gmail.com', 'light', NULL, NULL, '718e17922f8bdb863430a8695062ce34', 'customer', '2025-05-21'),
+(2, 'Defualt', '148281df02341a0a3eaa698cfe399801dc209e820d9fbfcc0d34c44faedfb3f35433c9b42165be26bc12abf459eb33753f174e9c27114735bc522ee0e00b249', '21cd20dde568c897b01f8ea6aad158c63f87e53a65e75c4fc1ac98ff7637a5c2aec8e56f1ff12b4c09754382122ac4437d251a86ce99616f2459e22630028b2554a06872cf3d71225c4685cfa50eedbe7cf714e67dc269141da3edffa6b8157973a66983d87ae611acd59818e92e767b3fbfc6c84abe51d43c6ebe4876bd97', 'mydefualtuser@gmail.com', 'light', NULL, NULL, '718e17922f8bdb863430a8695062ce34', 'store_owner', '2025-05-21'),
 (3, 'DariusTest', 'f47a8cfbb49ee5ef4f3beb92480f6c3fbe07187a8dc13ac8541b6d8490cf7a0012856b72f2af7ecc246b9abe794d862ed972fe48f82ac3648a689e7a6263170', 'aadafbb6e98fbe56d77e2dfb03646573607dc684293c6bb5ec08d4134fcc7f83c46d6b75eaf8a56a314f7bc02c7aaa6ea53cd33eb1926af28a67ce2a4b8a4a7094a855ed59c291e0f369155550497035d062afa9ba9a3e11448ab97fa74715f6d9184009c40f805d98ec95d010e520b14ebd4e204b75bd8d858d6b6cbe9a93', 'DarTest@gmail.com', 'light', NULL, NULL, 'e34da69ab572ef8d2391c8a992bd5e0e', 'customer', '2025-05-25'),
 (4, 'test', '3eb523b97e08eeaa7252d0b9191ec05f9cb94671bfbc9887eb90835b0d903c144037ed3bbe60b77868e6ecaf106db52bd3ec7f0b3d0c575202837fb4834130e', '6b4e1be56857ffc6a0e5f0b21814703bed2067870bbe16ae2f44d9c99d4332506149e51a96b9cb820137ce10871df743d36cec6635de054823bbdd48db5fc36e5c0ffad17657c69307fde96f2b6789c0e4d549440655be6c9cad2a8c348a4d873d82d37605c92dddc9820d3610d89c79c178c18ca8835dc457553fa7e138c4', 'test@test.com', 'light', '80.00', '120.00', 'ed1aac15ad816068ea021e2e0899f02b', 'customer', '2025-05-25'),
 (5, 'bob', '203682de23fe665bba800f6746478c8363f15017fb902ccefd721e1e2fc0beeeb19239c772e4e2456c6cd17180b099fa55750ab433e76e392f9293c2641b85a', 'ee5f82aecb0dd04d1d7e9d6836251b83281947bcacdaece6843364b9a397677d25fc74cb3ea63e0767c85f86b25e3764b73fbc9aef78ee6e90ca07a4bdd77ab4dc02646845e7d84919dbc35e095732e91b55140d245343b2287ccff2f42c203622d44bb1e68a5ed2f3eb4b82754ff236ee1b0e80a3913c334fe034c1523e4f', 'bob@bob.com', 'light', NULL, NULL, '705a1533935187f09462ad0ac6355ad7', 'customer', '2025-05-25'),
@@ -637,7 +653,9 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `m
 (20, 'antony', '37dad736f7fe8fd5a6b4768eb27abbeb528cbf40f8456937737bfa3cee10fe6f2898268d64e2af71b0414f5f0bb1c13be17f5b234b6444dc4b051385f4c9f3d', '147874eb09b5d752002826dd72f76760', 'avsTest2@gmail.com', 'light', NULL, NULL, 'fbb41a4e1bfae3bce997a5e5b5e8907549c4b32a212296ee8794b25d1ab91a0c', 'customer', '2025-05-27'),
 (21, 'avsTest3', '1c1e95a30dbe7bbe8da3f7fbdd9d61456c0b749f729d0f162406babfcbcf9d509a41d31198557b561ccf3250a34401e64e88336df912820609e4df70af2c652', '2bb0841a9240b6935939c1c637286c3b', 'avsTest3@gmail.com', 'light', NULL, NULL, '41e3118c0856333daa56bd0d2d4d10a9f37ef8d54c227047748eb3eb9f59f2eb', 'customer', '2025-05-27'),
 (22, 'finalTestAnt', 'b7ed74e89ada8398cf8755bf8219a8cf3f5c495257edf1d5a70624a5b17a8fb6209529f11db17abe1ab5a33f4f8d3b081dc95b81abdb5da30cccae1c9ad2397', '146c8f73f7945d9f3b2bf774e5887faa', 'antLast@gmail.com', 'light', NULL, NULL, '9dbc88281e49435a7a441c5fefc6150c0cfbb6d56c8df0d4ae37153679d6719b', 'store_owner', '2025-05-27'),
-(23, 'josh', '1cd93a97dc58a9058132f8e237ab93927539f3db633c78504d185c66467264e2aa8c79c24f474a500f1f41903181effa4c9ff6a033a2ce3e3bed4f85871ea89', 'fc31c613bdf3012ed6f8aae30a477532', 'heath@heath.com', 'light', NULL, NULL, '947ecce452d055fb7da651e72c6f183c624f4bc35fc39ee055d02247b361ba34', 'customer', '2025-05-27');
+(23, 'josh', '1cd93a97dc58a9058132f8e237ab93927539f3db633c78504d185c66467264e2aa8c79c24f474a500f1f41903181effa4c9ff6a033a2ce3e3bed4f85871ea89', 'fc31c613bdf3012ed6f8aae30a477532', 'heath@heath.com', 'light', NULL, NULL, '947ecce452d055fb7da651e72c6f183c624f4bc35fc39ee055d02247b361ba34', 'customer', '2025-05-27'),
+(24, 'abdulrahman', '11071afb78de392844e88b693e2f6130dce6be64061475e12100307373c9d2ba95291c7194aaf3f5234e04af9b67fc4a6ebebabb2a732717791fa440daac0c5', 'd2bb8e0d1a8e4b8db6dd896188a9acfc', 'abdulSUS@gmail.com', 'light', NULL, NULL, '7e9c25f2093fd9a388a0ce7d50001baf5642d9aa8c62c470096873b207ad9012', 'store_owner', '2025-05-27'),
+(25, 'Dok Eras', 'a262e9112db3e2f5b9a6755c38e3f1c342813d70076d6c67d0cbe942a3923fc0318cd641ae32f228bb208e6b2ed0fba439ff022c6f15d1ba2185be0de5c56db', '513fe22188f939b6c368163421c9a274558f96da8b4aa433e3c0c1c979868bc91f49c451033f9c5eb2e2795fbd6d9520d82d223372e811abf85b4584ffe76fb4b3f215598a82b8f2f4f3c4b2f724edf4b8c7a6d3bcb50665adf8d4105ebfef9a6fc12aa5678e48ee58803fc937f78acd0e7685fb05e4e20fdc0cb566201de9', 'Dok@gmail.com', 'light', NULL, NULL, '2e98f7e88bb387c8a283f9e8a2f172f1a758aa0ab4dafccbf55e334c64600e9b', 'store_owner', '2025-05-27');
 
 --
 -- Indexes for dumped tables
@@ -713,13 +731,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `brand`
 --
 ALTER TABLE `brand`
-  MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=490;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=494;
 
 --
 -- AUTO_INCREMENT for table `ratings`
@@ -731,13 +749,13 @@ ALTER TABLE `ratings`
 -- AUTO_INCREMENT for table `store`
 --
 ALTER TABLE `store`
-  MODIFY `store_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `store_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- Constraints for dumped tables
