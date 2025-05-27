@@ -612,25 +612,16 @@ if ($_POST['type'] == 'GetFilteredProducts')
     $store_id = sanitizeInput($_POST['store_id']) ?? null;
     $min_rating = sanitizeInput($_POST['min_rating']) ?? null;
 
-    $sql = "SELECT p.* FROM products p WHERE 1=1";
-    $params = [];
-    $types = "";
-
-    if (!empty($min_rating)) {
-        $sql = "SELECT p.*, AVG(r.rating) as average_rating 
-                FROM products p
-                LEFT JOIN ratings r ON p.product_id = r.product_id
-                WHERE 1=1";
-    }
-    else {
-        $sql = "SELECT p.*, b.name AS brand_name 
-                FROM products p
-                LEFT JOIN brand b ON p.brand_id = b.brand_id
-                WHERE 1=1";
-    }
+    // Unified query selecting brand and rating info
+    $sql = "SELECT p.*, b.name AS brand_name, AVG(r.rating) AS average_rating
+            FROM products p
+            LEFT JOIN brand b ON p.brand_id = b.brand_id
+            LEFT JOIN ratings r ON p.product_id = r.product_id
+            WHERE 1=1";
 
     $params = [];
     $types = "";
+
     if (!empty($brand_id)) {
         $sql .= " AND p.brand_id = ?";
         $params[] = $brand_id;
@@ -667,11 +658,15 @@ if ($_POST['type'] == 'GetFilteredProducts')
         $types .= "i";
     }
 
+    $sql .= " GROUP BY p.product_id";
+
     if (!empty($min_rating)) {
-        $sql .= " GROUP BY p.product_id HAVING average_rating >= ?";
+        $sql .= " HAVING average_rating >= ?";
         $params[] = $min_rating;
         $types .= "d";
     }
+
+    $sql .= " ORDER BY average_rating ASC";
 
     try {
         $stmt = $conn->prepare($sql);
@@ -686,6 +681,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
         while ($row = $result->fetch_assoc()) {
             $products[] = $row;
         }
+
         $stmt->close();
         http_response_code(200);
         echo json_encode([
@@ -1593,7 +1589,7 @@ if ($_POST['type'] == 'GetAllProducts')
         $stmt = $conn->prepare("SELECT p.*, AVG(r.rating) as average_rating 
         FROM products p
         LEFT JOIN ratings r ON p.product_id = r.product_id
-        GROUP BY p.product_id");
+        GROUP BY p.product_id ORDER BY average_rating ASC");
         $stmt->execute();
         $result = $stmt->get_result();
         $products = [];
