@@ -84,7 +84,7 @@ if ($_POST['type'] == 'Login') {
     $password = sanitizeInput($_POST['password']);
 
     try {
-        $userStmt = $conn->prepare("SELECT user_id, name, email, theme, min_price, max_price, apikey, user_type, date_registered FROM users WHERE email = ?");
+        $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $userStmt->bind_param("s", $email);
         $userStmt->execute();
         $userResult = $userStmt->get_result();
@@ -118,7 +118,8 @@ if ($_POST['type'] == 'Login') {
         }
         
         $_SESSION["apikey"] = $user['apikey'];
-        
+
+        unset($user['password'], $user['salt']);
         http_response_code(200);
         echo json_encode([
             "status" => "success",
