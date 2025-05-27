@@ -1,4 +1,4 @@
-const apiUrl = "http://localhost/COS221-Assignment5/api/api.php";
+
 
 const apiKey = sessionStorage.getItem('apiKey');
 //Pop up functionality
@@ -6,9 +6,20 @@ const apiKey = sessionStorage.getItem('apiKey');
             document.getElementById("popup").style.display = "flex";
         }
 
-        function closePopup() {
+function closePopup() {
             document.getElementById("popup").style.display = "none";
         }
+//Send req to API
+function sendRequest(body) {
+    return fetch('http://localhost/COS221-Assignment5/api/api.php', {          
+        method: 'POST',
+        headers: {
+                'Content-Type': 'application/json'  
+            },
+        body: JSON.stringify(body)
+  })
+  .then(response => response.json());
+}
 //For initial creation of store
 function registerStoreOwner(apikey, store_name, store_url, store_type, registrationNo) {
     const body = {
@@ -78,7 +89,7 @@ function editProductInStore(prod_id, title, price, product_link, description, th
 //gets the stores that the user owns.
 function getStoreUserOwns(apiKey) {
     const body = {
-        type: 'GetUsersStores',
+        type: 'GetUsersStore',
         apikey: apiKey
     }
     return sendRequest(body);
@@ -112,11 +123,21 @@ function displayStores(stores) {
 }
 
 
-getStoreUserOwns(apiKey).then(result => {
-    if (result && result.status === "success") {
-        displayStores(result.data);
-        console.log("Owned stores:", result.data);
-    } else {
-        console.error("Failed to load stores:", result?.message);
-    }
-});
+getStoreUserOwns(apiKey)
+    .then(result => {
+        if (result.status === "success") {
+            console.log("User owns a store:", result.data);
+            displayStores(result.data);
+        } else if (
+            result.status === "error" &&
+            result.message === "This user is not a store owner"
+        ) {
+            console.warn("User does not own a store.");
+           
+        } else {
+            console.error("Unexpected error:", result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Request failed or invalid JSON:", error);
+    });
