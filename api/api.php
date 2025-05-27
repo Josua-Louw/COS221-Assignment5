@@ -724,7 +724,7 @@ if ($_POST['type'] === 'GetRatings') {
     $prod_id = (int)$_POST['prod_id'];
 
     $stmt = $conn->prepare("
-    SELECT r.rating, r.comment, u.name, u.user_id
+    SELECT r.rating_id, r.rating, r.comment, u.name, u.user_id
     FROM ratings r
     JOIN users u ON r.user_id_ratings = u.user_id
     WHERE r.product_id = ?
@@ -772,6 +772,8 @@ if ($_POST['type'] == 'DeleteRating')
         $stmt->bind_param("i", $rating_id);
         $stmt->execute();
         $stmt->close();
+
+        $conn->commit();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
