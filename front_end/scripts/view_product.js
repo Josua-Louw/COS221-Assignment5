@@ -3,6 +3,9 @@
 
     var allStores = [];
     const apiKey = sessionStorage.getItem('apiKey');
+    const user_id = JSON.parse(sessionStorage.getItem('user')).user_id;
+
+    
 
 
     document.addEventListener("DOMContentLoaded", async function () {
@@ -129,6 +132,11 @@
     }
 
     try {
+        let typeSet = "SubmitRating";
+        let button_rating = document.getElementById("rating_button_submit");
+        if (button_rating.textContent === "Edit Rating"){
+            typeSet = "EditRating";
+        }
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
@@ -137,7 +145,7 @@
             body: JSON.stringify({
                 studentnum: "u24566170",
                 apikey: apikey,
-                type: "SubmitRating",
+                type: typeSet,
                 prod_id: prod_id,
                 rating: parseInt(rating),
                 comment: comment
@@ -147,7 +155,11 @@
         const result = await response.json();
 
         if (response.ok && result.status === 'success') {
-            alert("Rating successfully submitted!");
+            if (typeSet === "EditRating") {
+                alert("Your review has been updated!");
+                    } else {
+                alert("Rating successfully submitted!");
+            }
             document.getElementById("ratingForm").style.display = "none";
             document.getElementById("rating").value = "";
             document.getElementById("comment").value = "";
@@ -217,7 +229,8 @@
         if (averageRatingElement) {
             averageRatingElement.innerHTML = `${stars} ${avg} / 5 <span class="review-count">(${data.data.length} review${data.data.length !== 1 ? 's' : ''})</span>`;
         }
-
+        console.log(data);
+        console.log(user_id);
         // Render each review
         data.data.forEach(r => {
             const ratingValue = parseInt(r.rating);
@@ -227,7 +240,13 @@
             const p = document.createElement("p");
             p.innerHTML = `${name}: ${stars} — ${r.comment}`;
             ratingsDiv.appendChild(p);
+
+            if(r.user_id===user_id){
+                let button_rating = document.getElementById("rating_button_submit");
+                button_rating.textContent = "Edit Rating";
+            }
         });
+
     } else {
         console.error("Failed to fetch ratings:", data.message);
     }

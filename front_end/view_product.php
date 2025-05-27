@@ -34,7 +34,7 @@ require_once 'header.php';
         </div>
 
         <div class="product-container">
-            <button class="Add_rating">Add a rating</button>
+            <button class="Add_rating" id="rating_button_submit">Add a rating</button>
         </div>
 
         <div class="product-container-for-rating" id="ratingForm" style="display: none;">
