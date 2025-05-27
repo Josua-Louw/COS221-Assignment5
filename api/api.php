@@ -1,42 +1,5 @@
 <?php
 
-/* The Null Pointers - COS221 Assignment 5
-
-    Progress:   [-1] - Unfinished
-                [0] - Untested
-                [1] - Main functionality tested
-                [2] - Edge cases tested
-                [3] - Edge cases tested + secure
-
-    Types Handled:
-
-    Login               [0]
-    Register            [0]
-    GetAllProducts      [1]
-    AddProduct          [0]
-    DeleteProduct       [0]
-    EditProduct         [0]
-    GetFilteredProducts [0]
-    SubmitRating        [0]
-    GetRatings          [0]
-    DeleteRating        [0]
-    EditRating          [0]
-    GetStores           [0]
-    GetUsersStores      [0]
-    Follow              [0]
-    GetFollowing        [0] *
-    Unfollow            [0]
-    RegisterStoreOwner  [0]
-    SavePreference      [0]
-    AddBrand            [-1]
-    RemoveBrand         [-1]
-    GetBrands           [0]
-
-*/
-
-//TODO:
-//  Test All Types
-
 
 require_once 'config.php';
 
@@ -701,6 +664,29 @@ if ($_POST['type'] == 'SubmitRating')
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
     $user_id = authenticate($conn, $apikey);
+
+    try {
+        $stmt = $conn->prepare("SELECT * FROM ratings WHERE user_id = ? AND product_id = ?;");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+             http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "You have already rated this product.",
+                "Type Handler" => "SubmitRating",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SubmitRating", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "SubmitRating", __LINE__);
+    }
 
     try {
         $conn->begin_transaction();
