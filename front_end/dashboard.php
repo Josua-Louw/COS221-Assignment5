@@ -1,5 +1,8 @@
 <?php
 require_once 'header.php';
+if (!isset($_SESSION['apikey'])) {
+    header("Location: index.php");
+}
 ?>
 
 <!DOCTYPE html>

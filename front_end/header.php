@@ -1,4 +1,4 @@
-
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,13 +33,14 @@
       </a>
     </div>
       
-      <div class="button-container">
-       
-
-         <a href="dashboard.php"   class="nav-link">dashboard</a>
+      <div class="button-container">  
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
-        <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
+        <?php if (isset($_SESSION['apikey'])): ?> 
+            <a href="dashboard.php" class="nav-link">Dashboard</a>
+            <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
+            </ul>
+        <?php endif; ?>
       </div>
       
       <div class="auth-container" id="auth-buttons">
