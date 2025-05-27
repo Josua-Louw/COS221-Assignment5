@@ -1702,6 +1702,13 @@ function generateApikey() {
     otherwise it catches errors or sends back an unauthorised message.
 */
 function authenticate($conn, $apikey) {
+    session_start();
+    if (!isset($_SESSION["apikey"]) || $_SESSION["apikey"] != $apikey) {
+        http_response_code(401);
+        echo json_encode(["status" => "error", "message" => "user not signed in"]);
+        die;
+    }
+
     try {
         $stmt = $conn->prepare("SELECT user_id FROM users WHERE apikey = ?;");
         $stmt->bind_param("s", $apikey);
