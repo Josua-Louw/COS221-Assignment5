@@ -1,10 +1,10 @@
 // All JavaScript files that use the API must be in a PHP file that requires header.php
-const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
+// const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
 
 // Call the API and return a JSON object of whatever the API returns
 async function sendRequest(body) {
   try {
-    const response = await fetch(API_Location, {
+    const response = await fetch("http://localhost/COS221-Assignment5/api/api.php", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
