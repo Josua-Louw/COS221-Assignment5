@@ -1,3 +1,7 @@
+nav.main-nav {
+  max-width: none !important;
+  width: 100%     !important;
+}
 
 .popup-bg {
     display: none; 
@@ -48,9 +52,11 @@
     font-weight: bold;
     cursor: pointer;
 }
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -61,19 +67,34 @@ body {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
-    background: white;
+    background-color: var(--bg-container);
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
   }
   
+  .stores-container > button {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1.5rem;
+    background-color: var(--link-hover);
+    color: var(--text-invert);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .stores-container > button:hover {
+    background-color: var(--link-active-bg);
+  }
+
   .store-card {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     display: flex;
     gap: 2rem;
-    align-items: center;
+    align-items: flex-start;
   }
   
   .store-logo {
@@ -90,16 +111,17 @@ body {
   .store-name {
     font-size: 1.5rem;
     margin: 0 0 0.5rem;
-    color: #333;
+    color: var(--text-primary);
   }
   
   .store-type {
     display: inline-block;
-    background: #f0f0f0;
+    background-color: var(--bg-container);
+    color: var(--text-primary);
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.9rem;
-    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
   }
   
   .store-actions {
@@ -112,50 +134,102 @@ body {
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 4px;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--link-hover);
+    color: var(--text-invert);
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
   
   .btn-visit:hover {
-    background-color: #0056b3;
+    background-color: var(--link-active-bg);
   }
   
   .btn-follow {
     padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
+    background-color: var(--bg-container);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background-color: #f0f0f0;
-    color: #333;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
   
   .btn-follow:hover {
-    background-color: #e6f0fa;
+    background-color: var(--link-active-bg);
+    color: var(--link-hover);
   }
   
+  .popup-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
 
 .popup-form .cancel-btn {
     flex: 1;
     padding: 10px;
-    background: #f0f0f0;
-    color: #333;
+    background-color: var(--bg-container);
+    color: var(--text-primary);
     border: none;
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
 }
 
-/* Footer styling */
+.popup-form .submit-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: var(--link-hover);
+  color: var(--text-invert);
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.popup-form .submit-btn:hover {
+  background-color: var(--link-active-bg);
+}
+
+.popup-form input, .popup-form select {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+}
+
 footer {
     margin-top: auto;            
-    background: white;
+    background: var(--bg-container);
     text-align: center;
     padding: 0.5rem 0;
     box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
     font-family: Arial, sans-serif;
+}
+
+html.dark-theme body {
+  background-color: var(--bg-page);
+}
+html.dark-theme .stores-container,
+html.dark-theme .popup-form,
+html.dark-theme footer {
+  background-color: var(--bg-container);
+}
+html.dark-theme .store-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+html.dark-theme input,
+html.dark-theme select {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
