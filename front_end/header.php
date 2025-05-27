@@ -8,7 +8,6 @@
   <title>CompareIt - Price Comparison</title>
   <link rel="stylesheet" href="css/header.css">
   <style>
-    /* your existing small overrides */
     .auth-container {
       display: flex;
       align-items: center;

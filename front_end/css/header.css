@@ -6,11 +6,9 @@
   --bg-card:        #ffffff;
   --bg-input:       #ffffff;
   --bg-dropdown:    #ffffff;
-
   --text-primary:   #333333;
   --text-muted:     #666666;
   --text-invert:    #ffffff;
-
   --border-color:   #ccc;
   --link-hover:     #0066cc;
   --link-active-bg: #e6f0fa;
@@ -23,11 +21,9 @@
   --bg-card:        #2a2a2a;
   --bg-input:       #2d2d2d;
   --bg-dropdown:    #2d2d2d;
-
   --text-primary:   #e0e0e0;
   --text-muted:     #aaaaaa;
   --text-invert:    #000000;  
-
   --border-color:   #555555;
   --link-hover:     #66aaff;
   --link-active-bg: #555555;
@@ -48,7 +44,7 @@
   .main-nav {
     display: flex;
     justify-content: space-between;
-    max-width: 1850px;
+    max-width: 1450px;
     margin: 0 auto;
     padding: 1rem 1rem;
     gap: 1rem;
@@ -68,6 +64,10 @@
     border: 1px solid var(--link-hover);
     border-radius: 4px;
     transition: color 0.3s, background-color 0.3s, border-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
   
   .nav-link:hover, .auth-link:hover {
@@ -219,7 +219,7 @@ html.dark-theme footer, body.dark-theme footer {
   }
 
    .logo-container img {
-    max-height: 50px;
+    max-height: 40px;
     width: auto;
     height: auto;
   }
