@@ -637,7 +637,7 @@ CREATE TABLE `users` (
   `date_registered` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
+
 -- Dumping data for table `users`
 --
 
@@ -658,6 +658,7 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `m
 (25, 'Dok Eras', 'a262e9112db3e2f5b9a6755c38e3f1c342813d70076d6c67d0cbe942a3923fc0318cd641ae32f228bb208e6b2ed0fba439ff022c6f15d1ba2185be0de5c56db', '513fe22188f939b6c368163421c9a274558f96da8b4aa433e3c0c1c979868bc91f49c451033f9c5eb2e2795fbd6d9520d82d223372e811abf85b4584ffe76fb4b3f215598a82b8f2f4f3c4b2f724edf4b8c7a6d3bcb50665adf8d4105ebfef9a6fc12aa5678e48ee58803fc937f78acd0e7685fb05e4e20fdc0cb566201de9', 'Dok@gmail.com', 'light', NULL, NULL, '2e98f7e88bb387c8a283f9e8a2f172f1a758aa0ab4dafccbf55e334c64600e9b', 'store_owner', '2025-05-27');
 
 --
+
 -- Indexes for dumped tables
 --
 
