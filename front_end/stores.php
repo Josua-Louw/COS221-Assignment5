@@ -27,7 +27,7 @@ require_once __DIR__ . '/../api/config.php';
 
             <select class="Follow_products" id="Follow_products">
             <option value="">Showing Products</option>
-            <option value="1">Products you follow</option>
+            <option value="1">Stores you follow</option>
             </select>
             
         </div>
