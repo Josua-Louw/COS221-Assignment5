@@ -1541,6 +1541,13 @@ function generateApikey() {
     otherwise it catches errors or sends back an unauthorised message.
 */
 function authenticate($conn, $apikey) {
+    session_start();
+    if (!isset($_SESSION["apikey"]) || $_SESSION["apikey"] != $apikey) {
+        http_response_code(401);
+        echo json_encode(["status" => "error", "message" => "user not signed in"]);
+        die;
+    }
+
     try {
         $stmt = $conn->prepare("SELECT user_id FROM users WHERE apikey = ?;");
         $stmt->bind_param("s", $apikey);
@@ -1548,7 +1555,8 @@ function authenticate($conn, $apikey) {
         $result = $stmt->get_result();
         if ($result->num_rows === 1) {
             $row = $result->fetch_assoc();
-            return $row['user_id'];
+            $user_id = $row['user_id'];
+            return $user_id;
         } else {
             http_response_code(401);
             echo json_encode(["status" => "error", "message" => "user not signed in"]);
@@ -1560,5 +1568,4 @@ function authenticate($conn, $apikey) {
         catchError($conn, $e, __LINE__, "authentication", false);
     }
 }
-
 ?>

@@ -5,9 +5,11 @@ function showMessage(msg, isError = false) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('theme') || 'light';
+  const savedTheme = sessionStorage.getItem('theme') || 'light';
   document.getElementById('theme').value = savedTheme;
-  document.body.classList.toggle('dark-theme', savedTheme === 'dark');
+  document.documentElement.classList.toggle('dark-theme', savedTheme === 'dark');
+  const checkbox = document.getElementById('themeToggle');
+  if (checkbox) checkbox.checked = (savedTheme === 'dark');
   const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
   if (prefs.price_min != null && prefs.price_max != null) {
     document.getElementById('price-filter').value =
@@ -17,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('settingsForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const apiKey = localStorage.getItem('apikey');
+  const apiKey = sessionStorage.getItem('apikey');
   if (!apiKey) {
     showMessage('You must be logged in to alter user settings.', true);
     return;
@@ -33,24 +35,53 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
   const password = document.getElementById('password').value;
 
   const payload = {
-    type:             'update_settings',
+    type:             'SavePreferences',
     apikey:           apiKey,
-    preferred_theme:  theme,
-    price_min:        priceMin,
-    price_max:        priceMax,
+    theme:            theme,
+    min_price:        priceMin,
+    max_price:        priceMax,
   };
 
-  if (email) payload.new_email = email;
-  if (password) payload.new_password = password;
+  if (document.getElementById('current-email')) {
+    const currEmail = document.getElementById('current-email').value.trim();
+    const currPassword = document.getElementById('current-password').value;
+    const newEmail = document.getElementById('new-email').value.trim();
+    const newPassword = document.getElementById('new-password').value;
+
+    if (!currEmail || !currPassword || !newEmail || !newPassword) {
+      showMessage('Please fill in all email/password fields.', true);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      showMessage('Please enter a valid new email address.', true);
+      return;
+    }
+    if (newPassword.length < 8) {
+      showMessage('Password does not meet specifications.', true);
+      return;
+    }
+
+    payload.current_email    = currEmail;
+    payload.current_password = currPassword;
+    payload.new_email        = newEmail;
+    payload.new_password     = newPassword;
+  }
 
   localStorage.setItem('theme', theme);
+  sessionStorage.setItem('theme', theme);
   localStorage.setItem('preferences', JSON.stringify({
     price_min: priceMin, price_max: priceMax
   }));
-  document.body.classList.toggle('dark-theme', theme === 'dark');
+  document.documentElement.classList.toggle('dark-theme', theme === 'dark');
   
   try {
-    const data = await sendRequest(payload);
+    const data = await fetch('api/api.php', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    }).then(r => r.json());
 
     if (data.status === 'success') {
         showMessage('Settings saved!');
@@ -60,8 +91,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
                 p.price_min = parseFloat(p.price_min).toFixed(2);
                 p.price_max = parseFloat(p.price_max).toFixed(2);
             }
-            Cookies.set('preferences', JSON.stringify(p), { expires: 7, path: '/' });
-            console.log('Updated preferences in cookies:', p);
+            localStorage.setItem('preferences', JSON.stringify(p));
         }
     } else {
       showMessage(data.message || 'Save failed', true);
