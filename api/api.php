@@ -667,7 +667,7 @@ if ($_POST['type'] == 'SubmitRating')
 
     try {
         $stmt = $conn->prepare("SELECT * FROM ratings WHERE user_id = ? AND product_id = ?;");
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("ii", $user_id, $prod_id);
         $stmt->execute();
 
         $result = $stmt->get_result();
