@@ -1,5 +1,14 @@
+const apiUrl = "http://localhost/COS221-Assignment5/api/api.php";
 
+const apiKey = sessionStorage.getItem('apiKey');
+//Pop up functionality
+ function openPopup() {
+            document.getElementById("popup").style.display = "flex";
+        }
 
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
 //For initial creation of store
 function registerStoreOwner(apikey, store_name, store_url, store_type, registrationNo) {
     const body = {
@@ -67,10 +76,47 @@ function editProductInStore(prod_id, title, price, product_link, description, th
 }
 
 //gets the stores that the user owns.
-function getStoreUserOwns(apikey) {
+function getStoreUserOwns(apiKey) {
     const body = {
         type: 'GetUsersStores',
-        apikey: apikey
+        apikey: apiKey
     }
     return sendRequest(body);
 }
+function displayStores(stores) {
+
+    const container = document.querySelector('.store-list');
+    container.innerHTML = '';
+    console.log(stores);
+    stores.forEach(store => {
+        const storeCard = document.createElement('div');
+        storeCard.classList.add('store-card');
+        const isFollowing = followedStoreIds.includes(store.store_id);
+        storeCard.innerHTML = `
+            <div class="store-info">
+                <h2 class="store-name">${store.name}</h2>
+                <span class="store-type">${store.type}</span>
+                <p>Explore a wide range of Stores at ${store.name}.</p>
+                <div class="store-actions">
+                    <a href="${store.url}" target="_blank" class="btn btn-visit">Visit Store</a>
+                    <button class="btn btn-follow" data-store-id="${store.store_id}" style="background-color: ${isFollowing ? '#e0e0e0' : ''}">
+                        ${isFollowing ? 'Unfollow' : 'Follow'}
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(storeCard);
+    });
+
+    attachFollowListeners();
+}
+
+
+getStoreUserOwns(apiKey).then(result => {
+    if (result && result.status === "success") {
+        displayStores(result.data);
+        console.log("Owned stores:", result.data);
+    } else {
+        console.error("Failed to load stores:", result?.message);
+    }
+});
