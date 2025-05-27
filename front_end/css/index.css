@@ -13,10 +13,27 @@ body {
   align-items: center;
 }
     
-.logo-container {
+.logo1-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 2rem;
+}
+
+.logo1-container img {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.welcome-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
 
 footer {
