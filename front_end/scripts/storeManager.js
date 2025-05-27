@@ -8,17 +8,8 @@ const apiKey = sessionStorage.getItem('apikey');
 function closePopup() {
             document.getElementById("popup").style.display = "none";
         }
-//Send req to API
-function sendRequest(body) {
-    return fetch('http://localhost/COS221-Assignment5/api/api.php', {          
-        method: 'POST',
-        headers: {
-                'Content-Type': 'application/json'  
-            },
-        body: JSON.stringify(body)
-  })
-  .then(response => response.json());
-}
+
+
 //For initial creation of store
 function registerStoreOwner(apikey, store_name, store_url, store_type, registrationNo) {
     const body = {
@@ -29,7 +20,11 @@ function registerStoreOwner(apikey, store_name, store_url, store_type, registrat
         store_type: store_type,
         registrationNo: registrationNo
     }
-    return sendRequest(body);
+    sendRequest(body).then(data => {
+            console.log(data);
+        }).catch(err => {
+            console.log(err);
+        })
 }
 
 //filters products based on the stores products
@@ -149,6 +144,14 @@ document.getElementById('submit-btn').addEventListener('click', function (e) {
     const store_url = document.getElementById("store_url").value;
     const store_type = document.getElementById("filter-dropdown").value;
     const registrationNo = document.getElementById("store_reg").value;
+
+    console.log("Submitting with:", { store_name, store_url, store_type, registrationNo });
+
+    
+    if (!store_name || !store_url || !store_type || !registrationNo) {
+        alert("Please fill in all fields.");
+        return;
+    }
 
     registerStoreOwner(apiKey, store_name, store_url, store_type, registrationNo)
         .then(result => {
