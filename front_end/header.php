@@ -38,7 +38,7 @@
         <a href="stores.php"   class="nav-link">Stores</a>
         <?php if (isset($_SESSION['apikey'])): ?> 
             <a href="dashboard.php" class="nav-link">Dashboard</a>
-            <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
+            <a href="storeManagement.php"  class="nav-link">Manage Stores</a>
             </ul>
         <?php endif; ?>
       </div>

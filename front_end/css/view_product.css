@@ -184,6 +184,7 @@ body{
 }
 
 #rating {
+    font-family: 'Poppins', sans-serif;
     padding: 0.5rem;
     font-size: 1rem;
     border-radius: 6px;
@@ -261,3 +262,34 @@ body{
     margin-bottom: 30px;
     margin-top: 30px;
 }
+
+.delete-rating-btn {
+    background-color: #dc3545; /* red */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.delete-rating-btn:hover {
+    background-color: #c82333; /* darker red */
+    transform: scale(1.05);
+}
+
+.delete-rating-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.5);
+}
+
+.dark-theme .delete-rating-btn {
+    background-color: #b02a37;
+}
+
+.dark-theme .delete-rating-btn:hover {
+    background-color: #891f2b;
+}
+
