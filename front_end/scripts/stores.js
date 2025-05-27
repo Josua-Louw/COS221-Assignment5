@@ -1,7 +1,7 @@
 const apiUrl = "http://localhost/COS221-Assignment5/api/api.php"; // Replace with actual API URL
 
 var allStores = [];
-const apiKey = sessionStorage.getItem('apiKey');
+const apiKey = sessionStorage.getItem('apikey');
 
 async function getStores() {
     if (apiKey) {
