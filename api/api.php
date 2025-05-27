@@ -178,7 +178,7 @@ if ($_POST['type'] == 'Register') {
         }
         $check->close();
 
-        $salt = bin2hex(random_bytes(16)); // Required field
+        $salt = bin2hex(random_bytes(127)); // Required field
         $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
         $apikey = bin2hex(random_bytes(32));
         $date_registered = date("Y-m-d");
