@@ -180,13 +180,7 @@ if ($_POST['type'] == 'Login') {
         echo json_encode([
             "status" => "success",
             "message" => "Login successful",
-            "user" => [
-                "user_id" => $user['user_id'],
-                "name" => $user['name'],
-                "email" => $user['email'],
-                "user_type" => $user['user_type'],
-                "apikey" => $user['apikey']
-            ]
+            "user" => $user
         ]);
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "Login", __LINE__);
