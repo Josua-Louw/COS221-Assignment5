@@ -26,13 +26,14 @@ require_once 'header.php';
             <input type="text" class="search-input" placeholder="Search products...">
             
             <div class="filter-section">
-                <select class="rating-filter" id="rating">
-    <option value="">All Ratings</option>
-    <option value="4">4 Stars & Up</option>
-    <option value="3">3 Stars & Up</option>
-    <option value="2">2 Stars & Up</option>
-    <option value="1">1 Star & Up</option>
-</select>
+
+            <select class="rating-filter" id="rating">
+            <option value="">All Ratings</option>
+            <option value="4">4 Stars & Up</option>
+            <option value="3">3 Stars & Up</option>
+            <option value="2">2 Stars & Up</option>
+            <option value="1">1 Star & Up</option>
+            </select>
                 
                 <div class="price-range">
                     <input type="number" class="min-price" placeholder="Min" min="0">
@@ -43,10 +44,10 @@ require_once 'header.php';
                 <button class="apply-filters btn-primary">Apply Filters</button>
                 <button class="reset-filters btn-secondary">Reset</button>
 
-                    <select class="rating-filter" id="rating">
-                    <option value="">Showing Products</option>
-                    <option value="4">Products you follow</option>
-                    </select>
+                <select class="Follow_products" id="Follow_products">
+                <option value="">Showing Products</option>
+                <option value="4">Products you follow</option>
+                </select>
 
             </div>
         </div>
