@@ -151,7 +151,9 @@ if ($_POST['type'] == 'Login') {
             exit();
         }
 
+       
         session_start();
+
         $_SESSION["apikey"] = $user['apikey'];
         
         http_response_code(200);

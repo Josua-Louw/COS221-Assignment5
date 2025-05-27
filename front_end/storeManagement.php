@@ -37,6 +37,7 @@
             </form>
         </div>
     </div>
+    <div class = "product-list"></div>
 
     <script src = "scripts/storeManager.js"></script>
 </body>

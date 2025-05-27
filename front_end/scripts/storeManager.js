@@ -37,6 +37,7 @@ function getStoresProducts(store_id) {
         type: 'GetFilteredProducts',
         store_id: store_id
     }
+    console.log("getStoresProducts body:", body);
     return sendRequest(body);
 }
 
@@ -105,7 +106,7 @@ async function fetchFollowedStores() {
         if (response.ok) {
             const result = await response.json();
             if (result.status === 'success') {
-                // Return the IDs here
+                
                 return result.data.map(store => store.store_id);
             } else {
                 console.error("Error fetching followed stores:", result.message);
@@ -198,16 +199,60 @@ function displayStores(stores) {
     attachFollowListeners();
 }
 
+function displayProducts(products) {
+    let productContainer = document.querySelector('.product-list');
+    if (!productContainer) {
+        productContainer = document.createElement('div');
+        productContainer.className = 'product-list';
+        document.body.appendChild(productContainer); 
+    }
+    productContainer.innerHTML = '';
+    if (products.length === 0) {
+        productContainer.innerHTML = '<p>No products available for this store.</p>';
+        return;
+    }
+    products.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.classList.add('product-card');
+        productCard.innerHTML = `
+            <h3>${product.title}</h3>
+            <p>${product.description}</p>
+            <p>Price: ${product.price}</p>
+            <a href="${product.product_link}" target="_blank">View Product</a>
+        `;
+        productContainer.appendChild(productCard);
+    });
+}
+
+// After displaying the store, fetch and display its products
+function displayStoreAndProducts(store) {
+    displayStores([store]);
+    console.log("displayStoreAndProducts store object:", store);
+    getStoresProducts(store.store_id)
+        .then(result => {
+            if (result.status === "success" && Array.isArray(result.data)) {
+                displayProducts(result.data);
+            } else {
+                displayProducts([]);
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching products:", error);
+            displayProducts([]);
+        });
+}
+
 Promise.all([getStoreUserOwns(apiKey), fetchFollowedStores()])
     .then(([storeResult, followedIds]) => {
         if (storeResult.status === "success") {
             followedStoreIds = followedIds || [];
-            if (Array.isArray(storeResult.data)) {
-                displayStores(storeResult.data);
+            if (Array.isArray(storeResult.data) && storeResult.data.length > 0) {
+                displayStoreAndProducts(storeResult.data[0]);
             } else if (storeResult.data !== null) {
-                displayStores([storeResult.data]);
+                displayStoreAndProducts(storeResult.data);
             } else {
                 displayStores([]);
+                displayProducts([]);
             }
         } else {
             console.error("Unexpected error:", storeResult.message);
