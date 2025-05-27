@@ -1586,10 +1586,10 @@ function catchError($conn, $error, $type, $line, $rollback = false){
 if ($_POST['type'] == 'GetAllProducts')
 {
     try {
-        $stmt = $conn->prepare("SELECT p.*, AVG(r.rating) as average_rating 
-        FROM products p
-        LEFT JOIN ratings r ON p.product_id = r.product_id
-        GROUP BY p.product_id ORDER BY average_rating ASC");
+        $stmt = $conn->prepare("SELECT p.*, average_rating 
+        FROM products AS p
+        LEFT JOIN (SELECT AVG(r.rating) AS average_rating, product_id FROM ratings AS r GROUP BY r.product_id) AS r ON p.product_id = r.product_id
+        ORDER BY average_rating DESC;");
         $stmt->execute();
         $result = $stmt->get_result();
         $products = [];
