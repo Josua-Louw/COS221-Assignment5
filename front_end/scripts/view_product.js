@@ -32,48 +32,7 @@
             externalLink.style.display = "none";  //Hide if no link
         }
 
-        // //Fetch ratings(does not work yet)
-        // try {
-        //     const ratings = await getRatingsForProduct(productID);
-        //     const ratingDisplay = document.getElementById("rating-stars");
-        //     if (ratings && ratings.success && ratings.data && ratings.data.average != null) {
-        //         const avgRating = ratings.data.average;
-        //         ratingDisplay.textContent = `${avgRating.toFixed(1)} / 5`;
-        //     }
-        // } catch (error) {
-        //     console.error("Error loading ratings:", error);
-        // }
     });
-
-    // function getRatingsForProduct(productID) {
-    //     const body = {
-    //         type: 'GetRatings',
-    //         prod_id: productID
-    //     };
-    //     return sendRequest(body);
-    // }
-
-    // function sendRequest(body) {
-    //     return new Promise((resolve, reject) => {
-    //         const request = new XMLHttpRequest();
-
-    //         console.log(" " + this.responseText);
-    //         request.onreadystatechange = function () {
-    //             if (this.readyState === 4) {
-    //                 try {
-    //                     const response = JSON.parse(this.responseText);
-    //                     resolve(response);
-    //                 } catch (err) {
-    //                     reject("Invalid JSON from server");
-    //                 }
-    //             }
-    //         };
-
-    //         request.open("POST", "http://localhost/COS221-Assignment5/api/api.php", true);
-    //         request.setRequestHeader("Content-Type", "application/json");
-    //         request.send(JSON.stringify(body));
-    //     });
-    // }
 
 
     document.addEventListener("DOMContentLoaded", function () 
@@ -85,39 +44,6 @@
             ratingForm.style.display = "block";
         });
     });
-
-    // async function submitRating() {
-    //   const rating = document.getElementById("rating").value;
-    //   const comment = document.getElementById("comment").value;
-    //   const prod_id = new URLSearchParams(window.location.search).get("prod_id");
-    //   const apikey = sessionStorage.getItem("apikey");
-
-    // //   if (!apikey || !prod_id || !rating || comment.trim() === "") {
-    // //     alert("❌ Please fill in all fields.");
-    // //     return;
-    // //   }
-
-    //   const body = {
-    //     studentnum: "u24566170",
-    //     apikey: "36cf8d0b74a40ef80d4dad5817770faf",
-    //     type: "SubmitRating",
-    //     prod_id: 3,
-    //     rating: 4,
-    //     comment: "Good"
-    //   };
-
-    //   const res = await sendRequest(body);
-
-    //   if (res.status === "success") {
-    //     alert("✅ Rating successfully submitted!");
-    //     document.getElementById("ratingForm").style.display = "none";
-    //     document.getElementById("rating").value = "";
-    //     document.getElementById("comment").value = "";
-    //   } else {
-    //     alert("❌ " + res.message);
-    //   }
-    // }
-
 
 
     async function submitRating() {
