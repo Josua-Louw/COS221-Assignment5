@@ -39,7 +39,7 @@
       <div class="button-container">
        
 
-         <a href="Dashbored.php"   class="nav-link">Dashbored</a>
+         <a href="dashboard.php"   class="nav-link">dashbored</a>
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
       </div>
