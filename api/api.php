@@ -1465,7 +1465,7 @@ if ($_POST['type'] == 'GetStats'){
         while ($row = $result->fetch_assoc()) {
             $clickStats[] = $row;
         }
-        $stats['total_clicks'] = $clickStats;
+        $stats['clicksData'] = $clickStats;
 
         $stmt->close();
     } catch (mysqli_sql_exception $e) {
