@@ -296,6 +296,9 @@ function displayStores(stores) {
                             <h3>${product.title}</h3>
                             <p>${product.description}</p>
                             <p>Price: ${product.price}</p>
+                            <p>Category: ${product.category || 'N/A'}</p>
+                            <p>Brand: ${product.brand_name || 'N/A'}</p>
+                            <p>Launch Date: ${product.launch_date ? new Date(product.launch_date).toLocaleDateString() : 'N/A'}</p>
                             <a href="${product.product_link}" target="_blank">View Product</a>
                             <button class="btn-edit-product">Edit</button>
                             <button class="btn-delete-product">Delete</button>
@@ -311,7 +314,6 @@ function displayStores(stores) {
                                     <input type="text" name="description" value="${product.description}" required>
                                     <input type="text" name="thumbnail" value="${product.thumbnail || ''}">
                                     <input type="text" name="category" value="${product.category || ''}">
-                                    <input type="text" name="brand_name" value="${product.brand_name || ''}">
                                     <input type="date" name="launch_date" value="${product.launch_date ? product.launch_date.split('T')[0] : ''}" required>
                                     <div class="button-group">
                                         <button type="submit" class="submit-btn">Save</button>
