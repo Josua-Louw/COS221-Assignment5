@@ -120,29 +120,6 @@ if ($_POST['type'] == 'Login') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Invalid email format.",
-            "Type Handler" => 'Login',
-            "API Line" => __LINE__
-        ]);
-        exit();
-    }
-    /*
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
-            http_response_code(400);
-            echo json_encode([
-                "status" => "error",
-                "message" => "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
-                "Type Handler" => "Login",
-                "API Line" => __LINE__
-            ]);
-            exit();
-        }
-    */
-
     try {
         $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $userStmt->bind_param("s", $email);
