@@ -34,23 +34,16 @@
     </div>
       
       <div class="button-container">
+        <a href="dashboard.php" class="nav-link">Dashboard</a>
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
         <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
       </div>
       
       <div class="auth-container" id="auth-buttons">
-        <?php if (isset($_SESSION['user'])): ?>
-          <div class="user-dropdown" aria-haspopup="true">
-            <button class="user-btn" aria-expanded="false" aria-controls="user-menu">
-              <span class="user-avatar" aria-hidden="true">👤</span>
-              <span class="username"><?= htmlspecialchars($_SESSION['user']['username'] ?? 'Account') ?></span>
-              <span class="dropdown-arrow" aria-hidden="true">▼</span>
-            </button>
-            <ul class="user-menu" id="user-menu" role="menu">
-              <li role="none"><a href="account.php"       role="menuitem">My Account</a></li>
-              <li role="none"><a href="user_settings.php" role="menuitem">Settings</a></li>
-              <li role="none"><a href="logout.php"        role="menuitem">Logout</a></li>
+          <?php if (isset($_SESSION['apikey'])): ?> 
+            <a href="logout.php"    class="auth-link" id="logout-btn">Logout</a>
+            <a href="user_settings.php" class="auth-link">Settings</a>
             </ul>
           </div>
         <?php else: ?>

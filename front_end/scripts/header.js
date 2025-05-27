@@ -90,25 +90,6 @@ document.addEventListener('DOMContentLoaded', function () {
     console.warn('themeToggle checkbox not found');
   }
 
-  const dropdown = document.querySelector('.dropdown');
-  const dropbtn = document.querySelector('.dropbtn');
-
-  if (dropbtn && dropdown) {
-    dropbtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      const expanded = this.getAttribute('aria-expanded') === 'true';
-      this.setAttribute('aria-expanded', !expanded);
-      dropdown.classList.toggle('open');
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!dropdown.contains(e.target)) {
-        dropbtn.setAttribute('aria-expanded', 'false');
-        dropdown.classList.remove('open');
-      }
-    });
-  }
-
   const currentPage = window.location.pathname.split('/').pop() || 'index.php';
   const links = document.querySelectorAll('.nav-link, .auth-link');
   

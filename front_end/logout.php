@@ -3,7 +3,20 @@
 		session_start();
 	}
 	session_unset();
+    $_SESSION = [];
 	session_destroy();
-	window.location.replace('login.php');
-	exit();
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Logging out…</title>
+  <script>
+    sessionStorage.clear();
+    window.location.replace('index.php');
+  </script>
+</head>
+<body>
+
+</body>
+</html>
