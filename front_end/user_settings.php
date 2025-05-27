@@ -29,7 +29,7 @@ require_once 'header.php';
         </select>
     </div>
 
-    <?php if (isset($_SESSION['user'])): ?>
+    <?php if (isset($_SESSION['apikey'])): ?>
     <div class="form-group">
       <label for="current-email">Current Email<span class="required">*</span>:</label>
       <input type="email" id="current-email" name="current_email" required>
