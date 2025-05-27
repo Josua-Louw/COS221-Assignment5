@@ -197,10 +197,9 @@
                     const result = await response.json();
 
                     if (response.ok && result.status ==="success") {
-                        alert("Rating deleted successfully.");
                         loadRatings(prod_id); //refresh list after deletion
                     } else {
-                        alert("Failed to delete rating: " + (result.message || "Unknown error"));
+                        console.error("Failed to delete rating:", result.message || "Unknown error");
                     }
                 } catch (err) {
                     console.error("Delete error:", err);
