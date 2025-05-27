@@ -1211,6 +1211,11 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         $ownerStmt->execute();
         $ownerStmt->close();
 
+        $updateTypeStmt = $conn->prepare("UPDATE users SET user_type = 'store_owner' WHERE user_id = ?");
+        $updateTypeStmt->bind_param("i", $user_id);
+        $updateTypeStmt->execute();
+        $updateTypeStmt->close();
+
         $conn->commit();
         http_response_code(200);
         echo json_encode([
