@@ -592,20 +592,6 @@ if ($_POST['type'] == 'EditProduct')
 
 if ($_POST['type'] == 'GetFilteredProducts')
 {
-    if (!isset($_POST['apikey'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields",
-            "Type Handler" => "GetFilteredProducts",
-            "API Line" => __LINE__
-        ]);
-        exit();
-    }
-
-    $apikey = $_POST['apikey'];
-    $user_id = authenticate($conn, $apikey);
-
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
     $min_price = $_POST['min_price'] ?? null;
