@@ -19,11 +19,11 @@ async function sendRequest(body) {
     return await response.json();
   } catch (error) {
     console.error('Error in sendRequest:', error);
+  }
     return {
       status: 'error',
       message: error.message
     };
-  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
