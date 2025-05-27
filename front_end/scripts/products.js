@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.warn("No product ID found for:", product);
                     return;
                 }
-
+                makeUpdateStats(apiKey, productID);
                 const productData = {
                     prod_id: productID,
                     title: product.title,
@@ -221,6 +221,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             productList.appendChild(productElement);
         });
+    }
+
+    function makeUpdateStats(apikey, prod_id){
+        const body = {
+            type: 'UpdateStats',
+            apikey: apikey,
+            product_id: prod_id
+        };
+        sendRequest(body).then(data => {
+            console.log(data);
+        }).catch(err => {
+            console.log(err);
+        })
     }
 
 
@@ -330,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         if (prod_id !== undefined) body.prod_id = prod_id;
-        if (brand !== undefined) body.brand = brand;
+        if (brand !== undefined) body.brand_id = brand;
         if (category !== undefined) body.category = category;
         if (min_price !== undefined) body.min_price = min_price;
         if (max_price !== undefined) body.max_price = max_price;

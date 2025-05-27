@@ -1581,6 +1581,46 @@ if ($_POST['type'] == 'SavePreferences')
     exit();
 }
 
+//Gets the preferences of the user
+if ($_POST['type'] == 'GetPreferences')
+{
+    if (!isset($_POST['apikey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "GetPreferences",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+
+    try {
+        $stmt = $conn->prepare("SELECT theme, min_price, max_price FROM users WHERE apikey = ?");
+        $stmt->bind_param("s", $apikey);
+        $stmt->execute();
+        $prefResult = $stmt->get_result();
+        $result = $prefResult->fetch_assoc();
+        $stmt->close();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Preferences successfully retrieved",
+            "data" => $result
+        ]);
+
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetPreferences", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetPreferences", __LINE__);
+    }
+    exit();
+}
+
 /*
     This function generates an apikey that is unique.
 */
