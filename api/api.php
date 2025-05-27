@@ -1420,6 +1420,54 @@ function catchError($conn, $error, $type, $line, $rollback = false){
     exit();
 }
 
+//now we have the following for products(add/delete/edit/remove)
+if ($_POST['type'] == 'GetAllProducts')
+{
+    try {
+        $stmt = $conn->prepare("SELECT * FROM products");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $products = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $brandQuery = $conn->prepare("SELECT name FROM brand where brand_id = ?");
+            $brandQuery->bind_param("i", $row['brand_id']);
+            $brandQuery->execute();
+            $brandResult = $brandQuery->get_result();
+            if ($brandResult->num_rows === 0) {
+                $brand = "no brand";
+            } else {
+                $brandRow = $brandResult->fetch_assoc();
+                $brand = $brandRow['name'];
+            }
+            $brandQuery->close();
+            $products[] = [
+                'id' => $row['product_id'],
+                'title' => $row['title'],
+                'price' => $row['price'],
+                'product_link' => $row['product_link'],
+                'description' => $row['description'],
+                'launch_date' => $row['launch_date'],
+                'thumbnail' => $row['thumbnail'],
+                'category' => $row['category'],
+                'brand_name' => $brand
+            ];
+        }
+        $stmt->close();
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Products fetched successfully",
+            "data" => $products
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetAllProducts", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetAllProducts", __LINE__);
+    }
+    exit();
+}
+
 if ($_POST['type'] == 'SavePreferences')
 {
 
