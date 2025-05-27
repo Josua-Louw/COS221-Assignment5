@@ -37,7 +37,7 @@
         <a href="dashboard.php" class="nav-link">Dashboard</a>
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
-        <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
+        <a href="storeManagement.php"  class="nav-link">Manage Stores</a>
       </div>
       
       <div class="auth-container" id="auth-buttons">
