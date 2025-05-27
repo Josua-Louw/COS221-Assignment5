@@ -27,6 +27,11 @@ require_once 'header.php';
             
             <div class="filter-section">
 
+            <select class="Follow_products" id="Follow_products">
+            <option value="">Showing Products</option>
+            <option value="1">Products you follow</option>
+            </select>
+
             <select class="rating-filter" id="rating">
             <option value="">All Ratings</option>
             <option value="4">4 Stars & Up</option>
@@ -43,11 +48,6 @@ require_once 'header.php';
                 
                 <button class="apply-filters btn-primary">Apply Filters</button>
                 <button class="reset-filters btn-secondary">Reset</button>
-
-                <select class="Follow_products" id="Follow_products">
-                <option value="">Showing Products</option>
-                <option value="4">Products you follow</option>
-                </select>
 
             </div>
         </div>
