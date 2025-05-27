@@ -119,6 +119,7 @@ if ($_POST['type'] == 'Login') {
 
     $email = $_POST['email'];
     $password = $_POST['password'];
+
     try {
         $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $userStmt->bind_param("s", $email);
@@ -695,7 +696,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
 //now we have the following for rating
 if ($_POST['type'] == 'SubmitRating')
 {
-    
+
     if (!isset($_POST['apikey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         //http_response_code(400);
         echo json_encode([
@@ -1197,6 +1198,11 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         $ownerStmt->execute();
         $ownerStmt->close();
 
+        $updateTypeStmt = $conn->prepare("UPDATE users SET user_type = 'store_owner' WHERE user_id = ?");
+        $updateTypeStmt->bind_param("i", $user_id);
+        $updateTypeStmt->execute();
+        $updateTypeStmt->close();
+
         $conn->commit();
         http_response_code(200);
         echo json_encode([
@@ -1380,7 +1386,7 @@ if ($_POST['type'] == 'GetStats'){
 
     try {
         $stmt = $conn->prepare("
-            SELECT p.category, SUM(c.number_of_times_clicked) AS total_clicks
+            SELECT p.category, SUM(c.amount) AS total_clicks
             FROM clicks c
             JOIN products p ON c.product_id = p.product_id
             WHERE c.user_id = ?
@@ -1404,11 +1410,11 @@ if ($_POST['type'] == 'GetStats'){
     }
 
     try {
-        $dateStmt = $conn->prepare("SELECT date FROM users WHERE user_id = ?");
+        $dateStmt = $conn->prepare("SELECT date_registered, name, min_price, max_price FROM users WHERE user_id = ?");
         $dateStmt->bind_param("i", $user_id);
         $dateStmt->execute();
         $dateResult = $dateStmt->get_result();
-        $stats['date'] = $dateResult->fetch_assoc()['date'] ?? null;
+        $stats['user'] = $dateResult->fetch_assoc() ?? null;
         $dateStmt->close();
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "GetStats", __LINE__);
@@ -1611,6 +1617,46 @@ if ($_POST['type'] == 'SavePreferences')
         catchErrorSQL($conn, $e, "SavePreferences", __LINE__, true);
     } catch (Exception $e) {
         catchError($conn, $e, "SavePreferences", __LINE__, true);
+    }
+    exit();
+}
+
+//Gets the preferences of the user
+if ($_POST['type'] == 'GetPreferences')
+{
+    if (!isset($_POST['apikey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "GetPreferences",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+
+    try {
+        $stmt = $conn->prepare("SELECT theme, min_price, max_price FROM users WHERE apikey = ?");
+        $stmt->bind_param("s", $apikey);
+        $stmt->execute();
+        $prefResult = $stmt->get_result();
+        $result = $prefResult->fetch_assoc();
+        $stmt->close();
+
+        http_response_code(200);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Preferences successfully retrieved",
+            "data" => $result
+        ]);
+
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "GetPreferences", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "GetPreferences", __LINE__);
     }
     exit();
 }

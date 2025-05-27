@@ -1,4 +1,6 @@
 // All JavaScript files that use the API must be in a PHP file that requires header.php
+// const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
+
 // Call the API and return a JSON object of whatever the API returns
 async function sendRequest(body) {
   try {
