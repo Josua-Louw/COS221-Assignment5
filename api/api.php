@@ -721,6 +721,7 @@ if ($_POST['type'] == 'SubmitRating')
     $rating = sanitizeInput($_POST['rating']);
     $comment = sanitizeInput($_POST['comment']);
     $user_id = authenticate($conn, $apikey);
+    $date = date("Y-m-d");
 
     try {
         $stmt = $conn->prepare("SELECT * FROM ratings WHERE user_id_ratings = ? AND product_id = ?;");
@@ -748,8 +749,8 @@ if ($_POST['type'] == 'SubmitRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("INSERT INTO ratings (rating, comment,product_id,user_id_ratings) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isii", $rating, $comment,$prod_id,$user_id);
+        $stmt = $conn->prepare("INSERT INTO ratings (rating, comment,product_id,user_id_ratings, date) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("isiis", $rating, $comment,$prod_id,$user_id, $date);
         $stmt->execute();
         $stmt->close();
         $conn->commit();
