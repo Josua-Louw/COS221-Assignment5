@@ -80,7 +80,7 @@ body {
   
   .btn-follow {
     padding: 0.5rem 1rem;
-    background-color: var(--bg-container);
+    background-color: var(--primary-color);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -95,6 +95,16 @@ body {
     color: var(--link-hover);
   }
   
+  .btn-follow.unfollow {
+    background-color: #e0e0e0;
+    color: #000;
+  }
+  
+  html.dark-theme .btn-follow.unfollow {
+    background-color: #2979ff;
+    color: #fff;
+  }
+
   .search-container {
     margin-bottom: 2rem;
     display: flex;

@@ -391,3 +391,14 @@ footer {
 .Follow_products option {
     padding: 5px;
 }
+
+html.dark-theme .rating-filter {
+  background-color: var(--bg-input, #222);
+  color: #fff;
+  border-color: #555;
+}
+
+html.dark-theme .rating-filter option {
+  background-color: #1e1e1e;
+  color: #fff;
+}
