@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetFiltersBtn = document.querySelector('.reset-filters');
     const searchInput = document.querySelector('.search-input');
     const ratingFilter = document.querySelector('.rating-filter');
-    const followProductsFilter = document.querySelector('.Follow-products');
+    const followProductsFilter = document.querySelector('.Follow_products');
     let searchTimeout;
 
     if (searchInput) {
@@ -115,7 +115,7 @@ async function fetchProductsWithFilters() {
             min_rating: getValue(ratingFilter?.value) ? parseFloat(ratingFilter.value) : undefined,
             follow: getValue(followProductsFilter?.value) ? parseInt(followProductsFilter.value) : undefined
         };
-
+        //console.log(followProductsFilter.value);
             if (filters.min_rating !== undefined && (filters.min_rating < 1 || filters.min_rating > 5)) {
             throw new Error('Rating filter must be between 1 and 5');
         }
@@ -369,7 +369,7 @@ function generateStarRating(rating) {
 
     async function getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store_id, min_rating, follow) {
         if (follow !== undefined && follow === 1) {
-            return filterProductsOnStoresUserFollows(prod_id, brand, category, min_price, max_price, search, min_rating)
+            return await filterProductsOnStoresUserFollows(prod_id, brand, category, min_price, max_price, search, min_rating)
         }
         const body = {
             type: 'GetFilteredProducts'
@@ -394,18 +394,18 @@ function generateStarRating(rating) {
             type: 'GetFollowing',
             apikey: sessionStorage.getItem('apikey')
         }
-        const stores = sendRequest(body);
-        if (stores.status != 'success') {
+        const stores = await sendRequest(body);
+        if (stores.status !== 'success') {   
             return stores;
         }
-
+        console.log('getting filters');
         const storesData = stores.data;
         const returnData = {
             status: 'success',
             data: []
         }
-        storesData.forEach(store => {
-            const requestData = getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store.store_id, undefined);
+        await storesData.forEach(async store => {
+            const requestData = await getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store.store_id, min_rating);
             if (requestData.status != 'success') {
                 return data;
             }
