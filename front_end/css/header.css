@@ -54,8 +54,9 @@
     display: flex;
     gap: 1rem;
     margin: 0; 
-    height: 38px;
     align-items: center;
+    justify-content: center;
+    flex: 1;  
   }
   
   .nav-link, .auth-link {

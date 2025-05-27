@@ -43,3 +43,15 @@ footer {
   padding: 0.5rem 0;
   box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
 }
+
+#logoLight, #logoDark {
+  display: none !important;
+}
+
+html:not(.dark-theme) #logoLight {
+  display: block !important;
+}
+
+html.dark-theme #logoDark {
+  display: block !important;
+}

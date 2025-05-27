@@ -1,3 +1,8 @@
+:root {
+  --input-bg: #ffffff;
+  --text-color: #333333;
+  --border-color: #ccc;
+}
 
 .product-meta {
     display: flex;
@@ -53,6 +58,8 @@
     padding: 1rem;
     background: var(--input-bg);
     border-radius: 8px;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
 .filter-section {
@@ -165,11 +172,8 @@ h1 {
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.3s ease;
-}
-
-.apply-filters {
+  color: var(--text-color);
   background-color: var(--primary-color);
-  color: white;
 }
 
 .apply-filters:hover {
@@ -178,7 +182,7 @@ h1 {
 
 .reset-filters {
   background-color: var(--secondary-color);
-  color: white;
+  color: var(--text-color);
 }
 
 .reset-filters:hover {
@@ -348,4 +352,28 @@ footer {
    padding: 0.5rem 0;
    box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
    font-family: Arial, sans-serif;
+    }
+
+    html.dark-theme .search-container {
+      background-color: var(--bg-header); 
+    }
+    
+    .rating-filter,
+    .search-input,
+    .brand-filter,
+    .category-filter,
+    .price-range input {
+      border: 1px solid var(--border-color);
+    }
+    
+    .rating-filter option,
+    .brand-filter option,
+    .category-filter option {
+      background-color: var(--bg-input);
+      color: var(--text-color);
+    }
+
+    html.dark-theme .apply-filters,
+    html.dark-theme .reset-filters {
+      color: white;
     }
