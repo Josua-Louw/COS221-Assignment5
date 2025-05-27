@@ -46,6 +46,7 @@ login.onload = function () {
         if (data.status === 'success' && data.user) {
           sessionStorage.setItem('user', JSON.stringify(data.user));
           sessionStorage.setItem('apikey', data.user.apiKey || data.user.apikey);
+          localStorage.setItem('LoggedIn', 'true');
           window.location.href = 'index.php';
         } else {
           showError(data.message || 'Login failed');
