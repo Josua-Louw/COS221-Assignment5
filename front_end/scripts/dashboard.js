@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
     const apikey = sessionStorage.getItem('apikey');
-
+    console.log("key: ",sessionStorage.getItem('apikey'));
     if (!apikey) {
         console.warn('No API key found in sessionStorage.');
         return;

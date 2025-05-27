@@ -1613,7 +1613,7 @@ if ($_POST['type'] == 'GetAllProducts')
 if ($_POST['type'] == 'SavePreferences')
 {
 
-    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['current_email']) || !isset($_POST['current_password'])) {
+    if (!isset($_POST['theme']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['current_email']) || !isset($_POST['current_password'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -1623,8 +1623,8 @@ if ($_POST['type'] == 'SavePreferences')
     }
 
     $theme = sanitizeInput($_POST['theme']);
-    $min_price = sanitizeInput($_POST['min_price']);
-    $max_price = sanitizeInput($_POST['max_price']);
+    $min_price = $_POST['min_price'];
+    $max_price = $_POST['max_price'];
     $apikey = sanitizeInput($_POST['apikey']);
     $email = sanitizeInput($_POST['email']);
     $password = sanitizeInput($_POST['password']);
