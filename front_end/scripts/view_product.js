@@ -2,7 +2,7 @@
     const apiUrl = "http://localhost/COS221-Assignment5/api/api.php"; // Replace with actual API URL
 
     var allStores = [];
-    const apiKey = sessionStorage.getItem('apiKey');
+    const apiKey = sessionStorage.getItem('apikey');
     const user_id = JSON.parse(sessionStorage.getItem('user')).user_id;
 
     
@@ -245,6 +245,45 @@
                 let button_rating = document.getElementById("rating_button_submit");
                 button_rating.textContent = "Edit Rating";
             }
+
+            if (r.user_id === user_id) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+                deleteBtn.classList.add("delete-rating-btn");
+
+            deleteBtn.addEventListener("click", async () => {
+                const confirmDelete = confirm("Are you sure you want to delete your rating?");
+                if (!confirmDelete) return;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            type: "DeleteRating",
+                            apikey: apiKey,
+                            rating_id: r.rating_id
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.status ==="success") {
+                        alert("Rating deleted successfully.");
+                        loadRatings(prod_id); //refresh list after deletion
+                    } else {
+                        alert("Failed to delete rating: " + (result.message || "Unknown error"));
+                    }
+                } catch (err) {
+                    console.error("Delete error:", err);
+                    alert("An error occurred while deleting the rating.");
+                }
+            });
+
+            p.appendChild(deleteBtn);
+        }
         });
 
     } else {
