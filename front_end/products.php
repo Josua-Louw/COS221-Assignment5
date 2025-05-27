@@ -42,6 +42,12 @@ require_once 'header.php';
                 
                 <button class="apply-filters btn-primary">Apply Filters</button>
                 <button class="reset-filters btn-secondary">Reset</button>
+
+                    <select class="rating-filter" id="rating">
+                    <option value="">Showing Products</option>
+                    <option value="4">Products you follow</option>
+                    </select>
+
             </div>
         </div>
 
