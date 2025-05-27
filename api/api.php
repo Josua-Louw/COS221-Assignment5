@@ -72,40 +72,6 @@ if (!isset($_POST['type'])) {
 
 //For user we have the following login and registration
 if ($_POST['type'] == 'Login') {
-    //count login attempts
-    session_start();
-    if (isset($_SESSION["LoginBlock"])) {
-        if (time() - $_SESSION["LoginBlock"] >= 60) {//can be extended but for demo cases we will keep it short
-            $_SESSION["LoginAttempts"] = 0; 
-            unset($_SESSION['LoginBlock']);
-        } else {
-            http_response_code(401);
-            echo json_encode([
-                "status" => "error",
-                "message" => "Login is still blocked just wait a bit longer.",
-                "Type Handler" => "Login",
-                "API Line" => __LINE__
-            ]);
-            exit();
-        }
-    }
-    if (!isset($_SESSION["LoginAttempts"])) {
-       $_SESSION["LoginAttempts"] = 0; 
-    } else {
-        $_SESSION["LoginAttempts"] += 1;
-        if ($_SESSION["LoginAttempts"] >= 5) {
-            http_response_code(401);
-            echo json_encode([
-                "status" => "error",
-                "message" => "Too many failed attempts. Try again in a minute.",
-                "Type Handler" => "Login",
-                "API Line" => __LINE__
-            ]);
-            $_SESSION["LoginBlock"] = time();
-            exit();
-        }
-    }
-    
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         http_response_code(400);
         echo json_encode([
@@ -150,8 +116,9 @@ if ($_POST['type'] == 'Login') {
             exit();
         }
 
+        session_start();
         $_SESSION["apikey"] = $user['apikey'];
-        $_SESSION["LoginAttempts"] = 0; 
+        
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -174,136 +141,119 @@ if ($_POST['type'] == 'Login') {
 
 //registration
 if ($_POST['type'] == 'Register') {
-
-    if (!isset($_POST['name']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['user_type'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields",
-            "Type Handler" => "Register",
-            "API Line" => __LINE__
-        ]);
-        exit();
+    $required = ['name', 'email', 'password', 'user_type'];
+    foreach ($required as $field) {
+        if (!isset($_POST[$field])) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Missing required field: $field"
+            ]);
+            exit();
+        }
     }
 
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $user_type = $_POST['user_type'];
+    $user_type = strtolower(trim($_POST['user_type'])); // convert to lowercase for enum match
+    $registrationNo = $_POST['registrationNo'] ?? null;
+
+    if (!in_array($user_type, ['customer', 'store_owner', 'admin'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid user type"
+        ]);
+        exit();
+    }
 
     try {
-        $check = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $check = $conn->prepare("SELECT email FROM users WHERE email = ?");
         $check->bind_param("s", $email);
         $check->execute();
-        $checkResult = $check->get_result();
 
-        if ($checkResult->num_rows > 0) {
-            http_response_code(401);
+        if ($check->get_result()->num_rows > 0) {
+            http_response_code(409);
             echo json_encode([
                 "status" => "error",
-                "message" => "User with similar details already exists.",
-                "Type Handler" => "Register",
+                "message" => "Email already registered"
             ]);
-            $check->close();
             exit();
         }
         $check->close();
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "Register", __LINE__);
-    } catch (Exception $e) {
-        catchError($conn, $e, "Register", __LINE__);
-    }
 
-    $salt = bin2hex(random_bytes(127));
-    $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
-    try {
-        $apikey = generateApikey();
-    } catch (Exception $e) {
-        
-    }
-    
-
-    try {
+        $salt = bin2hex(random_bytes(16)); // Required field
+        $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
+        $apikey = bin2hex(random_bytes(32));
+        $date_registered = date("Y-m-d");
 
         $conn->begin_transaction();
 
+        // Include `salt` and `date_registered`
         $stmt = $conn->prepare("
-                INSERT INTO users (name, email, password, salt, user_type, apikey)
-                VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $name, $email, $hashedPassword, $salt, $user_type, $apikey);
+            INSERT INTO users (name, email, password, salt, user_type, apikey, date_registered)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("sssssss", $name, $email, $hashedPassword, $salt, $user_type, $apikey, $date_registered);
         $stmt->execute();
         $user_id = $stmt->insert_id;
         $stmt->close();
 
-        $customerStmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
-        $customerStmt->bind_param("i", $user_id);
-        $customerStmt->execute();
-        $customerStmt->close();
+        if ($user_type === 'customer') {
+            $stmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $stmt->close();
+        } else if ($user_type === 'store_owner') {
+            if (empty($registrationNo)) {
+                throw new Exception("Registration number required for store owners");
+            }
+            $stmt = $conn->prepare("INSERT INTO store_owner (user_id, registration_no) VALUES (?, ?)");
+            $stmt->bind_param("is", $user_id, $registrationNo);
+            $stmt->execute();
+            $stmt->close();
+        }
 
         $conn->commit();
 
-        http_response_code(200);
+        http_response_code(201);
         echo json_encode([
             "status" => "success",
-            "message" => "User registered successfully."
+            "message" => "Registration successful",
+            "user_id" => $user_id
         ]);
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "Register", __LINE__, true);
+
     } catch (Exception $e) {
-        catchError($conn, $e, "Register", __LINE__, true);
+        $conn->rollback();
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Registration failed: " . $e->getMessage()
+        ]);
     }
     exit();
 }
 
-//now we have the following for products(add/delete/edit/remove)
-if ($_POST['type'] == 'GetAllProducts')
-{
-    try {
-        $stmt = $conn->prepare("SELECT * FROM products");
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $products = [];
 
-        while ($row = $result->fetch_assoc()) {
-            $brandQuery = $conn->prepare("SELECT name FROM brand where brand_id = ?");
-            $brandQuery->bind_param("i", $row['brand_id']);
-            $brandQuery->execute();
-            $brandResult = $brandQuery->get_result();
-            if ($brandResult->num_rows === 0) {
-                $brand = "no brand";
-            } else {
-                $brandRow = $brandResult->fetch_assoc();
-                $brand = $brandRow['name'];
-            }
-            $brandQuery->close();
-            $products[] = [
-                'id' => $row['product_id'],
-                'title' => $row['title'],
-                'price' => $row['price'],
-                'product_link' => $row['product_link'],
-                'description' => $row['description'],
-                'launch_date' => $row['launch_date'],
-                'thumbnail' => $row['thumbnail'],
-                'category' => $row['category'],
-                'brand_name' => $brand
-            ];
-        }
-        $stmt->close();
-        http_response_code(200);
-        echo json_encode([
-            "status" => "success",
-            "message" => "Products fetched successfully",
-            "data" => $products
-        ]);
-    } catch (mysqli_sql_exception $e) {
-        catchErrorSQL($conn, $e, "GetAllProducts", __LINE__);
-    } catch (Exception $e) {
-        catchError($conn, $e, "GetAllProducts", __LINE__);
-    }
+if ($_POST['type'] == 'GetProductsWithRatings') {
+    $stmt = $conn->prepare("
+        SELECT p.*, AVG(r.rating) as average_rating 
+        FROM products p
+        LEFT JOIN ratings r ON p.product_id = r.product_id
+        GROUP BY p.product_id
+    ");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $products = $result->fetch_all(MYSQLI_ASSOC);
+    
+    echo json_encode([
+        "status" => "success",
+        "products" => $products
+    ]);
     exit();
 }
 
-//add product
 if ($_POST['type'] == 'AddProduct') {
 
     $validFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category', 'store_id', 'apikey', 'type'];
@@ -609,54 +559,81 @@ if ($_POST['type'] == 'EditProduct')
     exit();
 }
 
-//filter products
 if ($_POST['type'] == 'GetFilteredProducts')
 {
+    if (!isset($_POST['apikey'])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields",
+            "Type Handler" => "GetFilteredProducts",
+            "API Line" => __LINE__
+        ]);
+        exit();
+    }
+
+    $apikey = $_POST['apikey'];
+    $user_id = authenticate($conn, $apikey);
+
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
     $min_price = $_POST['min_price'] ?? null;
     $max_price = $_POST['max_price'] ?? null;
     $search = $_POST['search'] ?? null;
     $store_id = $_POST['store_id'] ?? null;
+    $min_rating = $_POST['min_rating'] ?? null;
 
-    $sql = "SELECT * FROM products WHERE 1=1";
+    $sql = "SELECT p.* FROM products p WHERE 1=1";
     $params = [];
     $types = "";
 
+    if (!empty($min_rating)) {
+        $sql = "SELECT p.*, AVG(r.rating) as average_rating 
+                FROM products p
+                LEFT JOIN ratings r ON p.product_id = r.product_id
+                WHERE 1=1";
+    }
+
     if (!empty($brand_id)) {
-        $sql .= " AND brand_id = ?";
+        $sql .= " AND p.brand_id = ?";
         $params[] = $brand_id;
         $types .= "i";
     }
 
     if (!empty($category)) {
-        $sql .= " AND category = ?";
+        $sql .= " AND p.category = ?";
         $params[] = $category;
         $types .= "s";
     }
 
     if (!empty($min_price)) {
-        $sql .= " AND price >= ?";
+        $sql .= " AND p.price >= ?";
         $params[] = $min_price;
         $types .= "d";
     }
 
     if (!empty($max_price)) {
-        $sql .= " AND price <= ?";
+        $sql .= " AND p.price <= ?";
         $params[] = $max_price;
         $types .= "d";
     }
 
     if (!empty($search)) {
-        $sql .= " AND title LIKE ?";
+        $sql .= " AND p.title LIKE ?";
         $params[] = '%' . $search . '%';
         $types .= "s";
     }
 
     if (!empty($store_id)) {
-        $sql .= " AND store_id = ?";
+        $sql .= " AND p.store_id = ?";
         $params[] = $store_id;
         $types .= "i";
+    }
+
+    if (!empty($min_rating)) {
+        $sql .= " GROUP BY p.product_id HAVING average_rating >= ?";
+        $params[] = $min_rating;
+        $types .= "d";
     }
 
     try {
