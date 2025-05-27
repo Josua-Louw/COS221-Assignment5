@@ -21,28 +21,13 @@
         document.getElementById("main-image").src = productData.thumbnail || "https://via.placeholder.com/300";
 
         //set up external online store link if it is available
-        // const externalLink = document.getElementById("external-link");
-        // if (productData.product_link) {
-        //     externalLink.href = productData.product_link;
-        //     externalLink.style.display = "inline-block"; //Show button if link available
-        // } else{
-        //     externalLink.style.display = "none";  //Hide if no link
-        // }
-
-        // const thumbnailContainer = document.getElementById("thumbnail-container");
-        // if (productData.images && productData.images.length > 0) {
-        //     productData.images.forEach((src) => {
-        //         const img = document.createElement("img");
-        //         img.src = src;
-        //         img.alt = "Thumbnail";
-        //         img.width = 100;
-        //         img.style.cursor = "pointer";
-        //         img.addEventListener("click", () => {
-        //             document.getElementById("main-image").src = src;
-        //         });
-        //         thumbnailContainer.appendChild(img);
-        //     });
-        // }
+        const externalLink = document.getElementById("external-link");
+        if (productData.product_link) {
+            externalLink.href = productData.product_link;
+            externalLink.style.display = "inline-block"; //Show button if link available
+        } else{
+            externalLink.style.display = "none";  //Hide if no link
+        }
 
         // //Fetch ratings(does not work yet)
         // try {
