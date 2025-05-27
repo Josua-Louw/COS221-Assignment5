@@ -1481,7 +1481,7 @@ function catchErrorSQL($conn, $error, $type , $line , $rollback = false){
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database errorsssssffff",
+        "message" => "Database error",
         "Type Handler" => $type,
         "API Line" => $line
     ]);
