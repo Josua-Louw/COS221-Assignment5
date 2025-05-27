@@ -32,7 +32,7 @@
                 <option value="Wholesale">Wholesale</option>
                 <option value="Omnichannel">Omnichannel</option>
             </select>
-                <button class = "submit-btn" id = "submit-btn" type="submit" onclick = "registerStoreOwner()">Submit</button>
+                <button class = "submit-btn" id = "submit-btn" type="submit">Submit</button>
                 <button class = "cancel-btn" type="button" onclick="closePopup()">Cancel</button>
             </form>
         </div>

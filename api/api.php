@@ -941,16 +941,15 @@ if ($_POST['type'] == "GetUsersStore"){
         $ownerStmt->execute();
         $ownerResult = $ownerStmt->get_result();
 
-        if ($ownerResult->num_rows == 0){
-            http_response_code(400);
-            echo json_encode([
-                "status" => "error",
-                "message" => "This user is not a store owner",
-                "Type Handler" => "GetUsersStore",
-                "API Line" => __LINE__
-            ]);
-            exit();
-        }
+        if ($ownerResult->num_rows == 0) {
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "User has no store",
+        "data" => null
+    ]);
+    exit();
+}
 
         $storeID = $ownerResult->fetch_assoc()['store_id'];
         $ownerStmt->close();
@@ -1175,12 +1174,38 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     $type = $_POST['store_type'];
     $registrationNo = $_POST['registrationNo'];
     $user_id = authenticate($conn, $apikey);
+    if (!$user_id) {
+    http_response_code(400);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Invalid or missing API key"
+    ]);
+    exit();
+}
+    //Check to see if user alreadt has a store
+    $checkStmt = $conn->prepare("SELECT COUNT(*) FROM store_owner WHERE user_id = ?");
+    $checkStmt->bind_param("i", $user_id);
+    $checkStmt->execute();
+    $checkStmt->bind_result($storeCount);
+    $checkStmt->fetch();
+    $checkStmt->close();
 
+    if ($storeCount > 0) {
+        error_log("RegisterStoreOwner: User $user_id already owns a store.");
+        http_response_code(409); // Conflict
+        echo json_encode([
+            "status" => "error",
+            "message" => "User already owns a store",
+            "Type Handler" => "RegisterStoreOwner",
+            "API Line" => __LINE__
+    ]);
+    exit();
+}
     //Add store to database
     try {
         $conn->begin_transaction();
 
-        $storeStmt = $conn->prepare("INSERT INTO store (store_name, store_url, store_type) VALUES (?, ?, ?)");
+        $storeStmt = $conn->prepare("INSERT INTO store (name, url, type) VALUES (?, ?, ?)");
         $storeStmt->bind_param("sss", $store_name, $store_url, $type);
         $storeStmt->execute();
         $store_id = $storeStmt->insert_id;
@@ -1193,7 +1218,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     }
 
     try {
-        $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id, registrationNo) VALUES (?, ?, ?)");
+        $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id, registration_no) VALUES (?, ?, ?)");
         $ownerStmt->bind_param("iii", $user_id, $store_id, $registrationNo);;
         $ownerStmt->execute();
         $ownerStmt->close();

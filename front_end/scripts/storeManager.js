@@ -1,13 +1,13 @@
-
+const apiUrl = "http://localhost/COS221-Assignment5/api/api.php";
 const apiKey = sessionStorage.getItem('apikey');
 //Pop up functionality
- function openPopup() {
-            document.getElementById("popup").style.display = "flex";
-        }
+function openPopup() {
+    document.getElementById("popup").style.display = "flex";
+}
 
 function closePopup() {
-            document.getElementById("popup").style.display = "none";
-        }
+    document.getElementById("popup").style.display = "none";
+}
 
 
 //For initial creation of store
@@ -19,12 +19,16 @@ function registerStoreOwner(apikey, store_name, store_url, store_type, registrat
         store_url: store_url,
         store_type: store_type,
         registrationNo: registrationNo
-    }
-    sendRequest(body).then(data => {
-            console.log(data);
-        }).catch(err => {
-            console.log(err);
-        })
+    };
+    console.log({
+        apikey,
+        store_name,
+        store_url,
+        store_type,
+        registrationNo
+    });
+
+    return sendRequest(body);
 }
 
 //filters products based on the stores products
@@ -88,6 +92,84 @@ function getStoreUserOwns(apiKey) {
     }
     return sendRequest(body);
 }
+async function fetchFollowedStores() {
+    if (!apiKey) return [];
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'GetFollowing', apikey: apiKey })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.status === 'success') {
+                // Return the IDs here
+                return result.data.map(store => store.store_id);
+            } else {
+                console.error("Error fetching followed stores:", result.message);
+                return [];
+            }
+        } else {
+            console.error("Failed to fetch followed stores");
+            return [];
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        return [];
+    }
+}
+
+let followedStoreIds = [];
+function attachFollowListeners() {
+    document.querySelectorAll('.btn-follow').forEach(button => {
+        button.addEventListener('click', async function () {
+            const storeId = this.getAttribute('data-store-id');
+            const isFollowing = followedStoreIds.includes(parseInt(storeId));
+
+
+            if (!apiKey) {
+                alert('Log in to be able to follow');
+                return;
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: isFollowing ? 'Unfollow' : 'Follow',
+                        apikey: apiKey,
+                        store_id: storeId
+                    })
+                });
+
+                if (response.ok) {
+
+                    if (isFollowing) {
+                        this.textContent = 'Follow';
+                        this.style.backgroundColor = '';
+                        followedStoreIds = followedStoreIds.filter(id => id != storeId);
+                        console.log('Unfollowed store:', storeId);
+                    } else {
+                        this.textContent = 'Unfollow';
+                        this.style.backgroundColor = '#e0e0e0';
+                        followedStoreIds.push(parseInt(storeId));
+                        console.log('Followed store:', storeId);
+                    }
+                } else {
+                    console.log(`${isFollowing ? 'Unfollow' : 'Follow'} request error`);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        });
+    });
+}
+
 function displayStores(stores) {
 
     const container = document.querySelector('.store-list');
@@ -116,20 +198,19 @@ function displayStores(stores) {
     attachFollowListeners();
 }
 
-
-getStoreUserOwns(apiKey)
-    .then(result => {
-        if (result.status === "success") {
-            console.log("User owns a store:", result.data);
-            displayStores(result.data);
-        } else if (
-            result.status === "error" &&
-            result.message === "This user is not a store owner"
-        ) {
-            console.log("User does not own a store.");
-           
+Promise.all([getStoreUserOwns(apiKey), fetchFollowedStores()])
+    .then(([storeResult, followedIds]) => {
+        if (storeResult.status === "success") {
+            followedStoreIds = followedIds || [];
+            if (Array.isArray(storeResult.data)) {
+                displayStores(storeResult.data);
+            } else if (storeResult.data !== null) {
+                displayStores([storeResult.data]);
+            } else {
+                displayStores([]);
+            }
         } else {
-            console.error("Unexpected error:", result.message);
+            console.error("Unexpected error:", storeResult.message);
         }
     })
     .catch(error => {
@@ -139,27 +220,62 @@ getStoreUserOwns(apiKey)
 document.getElementById('submit-btn').addEventListener('click', function (e) {
     e.preventDefault();
 
-    
     const store_name = document.getElementById("store_name").value;
     const store_url = document.getElementById("store_url").value;
     const store_type = document.getElementById("filter-dropdown").value;
     const registrationNo = document.getElementById("store_reg").value;
 
-    console.log("Submitting with:", { store_name, store_url, store_type, registrationNo });
-
-    
     if (!store_name || !store_url || !store_type || !registrationNo) {
         alert("Please fill in all fields.");
         return;
     }
 
     registerStoreOwner(apiKey, store_name, store_url, store_type, registrationNo)
-        .then(result => {
-            console.log(result);
-            getStoreUserOwns(apiKey);
-        })
-        .catch(error => {
-            console.error("Error registering store owner:", error);
-        });
+  .then(result => {
+    console.log("Store registration result:", result);
+
+    if (result.status === "success") {
+      // Clear form inputs
+      document.getElementById("store_name").value = "";
+      document.getElementById("store_url").value = "";
+      document.getElementById("filter-dropdown").value = "";
+      document.getElementById("store_reg").value = "";
+
+      closePopup();
+
+      // Fetch the store the user owns
+      return getStoreUserOwns(apiKey);
+    } else {
+      // Error-specific handling
+      if (result.message?.toLowerCase().includes("already owns a store")) {
+        alert("You already have a store registered.");
+      } else {
+        alert("Failed to register store: " + result.message);
+      }
+
+      // Prevent next .then from running
+      return null;
+    }
+  })
+  .then(result => {
+    if (!result) return; // skip if previous step failed
+
+    if (result.status === "success") {
+      const stores = Array.isArray(result.data)
+        ? result.data
+        : result.data !== null
+          ? [result.data]
+          : [];
+
+      displayStores(stores);
+    } else {
+      alert("Failed to fetch your store data after registration.");
+      console.error("Store fetch error:", result);
+    }
+  })
+  .catch(error => {
+    console.error("Unexpected error during store registration or fetch:", error);
+    alert("An unexpected error occurred. Please try again later.");
+  });
 });
 
