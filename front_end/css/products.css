@@ -41,8 +41,7 @@
 }
 
 .products-container {
-    max-width: 1200px;
-    margin: 2rem auto;
+    margin: 2rem;
     padding: 2rem;
     background: var(--card-bg);
     border-radius: 8px;

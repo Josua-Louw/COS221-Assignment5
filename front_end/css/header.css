@@ -53,7 +53,9 @@
   .button-container {
     display: flex;
     gap: 1rem;
-    margin: 0 auto; 
+    margin: 0; 
+    height: 38px;
+    align-items: center;
   }
   
   .nav-link, .auth-link {
@@ -136,22 +138,6 @@
     font-size: 0.9rem;
     color: var(--text-primary);
     user-select: none;
-  }
-  
-  .dropbtn {
-    background: none;
-    border: none;
-    color: #333;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-  }
-  
-  .dropbtn:hover, .dropbtn.active {
-    background-color: var(--link-active-bg);
-    color: var(--link-hover);
-    border-color: var(--link-hover);
   }
   
   @media (max-width: 768px) {
