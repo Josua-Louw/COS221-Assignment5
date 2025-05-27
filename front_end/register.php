@@ -26,8 +26,8 @@
                 <label for="user_type">User Type</label>
                 <select id="user_type" name="user_type" required>
                     <option value="">Select user type</option>
-                    <option value="Customer">Customer</option>
-                    <option value="Store Owner">Store Owner</option>
+                    <option value="customer">Customer</option>
+                    <option value="store_owner">Store Owner</option>
                 </select>
             </div>
             <div class="form-group" id="registrationNoField">
