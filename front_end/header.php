@@ -1,4 +1,4 @@
-<?php session_start(); ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,12 +30,16 @@
       <!-- LOGO (slightly reduced padding/font in CSS) -->
       <div class="logo-container">
         <a href="index.php" class="logo-link" aria-label="CompareIt Home">
-          <h1>CompareIt</h1>
+         
+           <img src="img/logo.png" alt="Logo" style="width: 100px; height: auto;">
         </a>
       </div>
       
       <!-- CENTERED: Products / Stores -->
       <div class="button-container">
+       
+
+         <a href="Dashbored.php"   class="nav-link">Dashbored</a>
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
       </div>
