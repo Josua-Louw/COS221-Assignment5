@@ -10,7 +10,7 @@
 <body>
     <div class="stores-container">
         <h1>Your Store</h1>
-        <button onclick = "openPopup()">Add Store</button>
+        <button id = "btn-add-store" class = "btn-add-store" onclick = "openPopup()">Add Store</button>
         
 
         <div class="store-list">
@@ -33,7 +33,7 @@
                 <option value="Omnichannel">Omnichannel</option>
             </select>
                 <button class = "submit-btn" id = "submit-btn" type="submit">Submit</button>
-                <button class = "cancel-btn" type="button" onclick="closePopup()">Cancel</button>
+                <button class = "cancel-btn" id = "cancel-btn"type="button" onclick="closePopup()">Cancel</button>
             </form>
         </div>
     </div>
