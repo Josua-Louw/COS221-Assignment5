@@ -24,6 +24,12 @@ require_once __DIR__ . '/../api/config.php';
                 <option value="Wholesale">Wholesale</option>
                 <option value="Omnichannel">Omnichannel</option>
             </select>
+
+            <select class="Follow_products" id="Follow_products">
+            <option value="">Showing Stores</option>
+            <option value="1">Stores you follow</option>
+            </select>
+            
         </div>
 
         <div class="store-list">

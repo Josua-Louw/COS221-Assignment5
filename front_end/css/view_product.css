@@ -7,7 +7,7 @@
     --primary-hover: #0056b3;
 }
 
-body {
+body{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 2rem;
@@ -20,6 +20,7 @@ body {
     color: var(--text-dark);
 }
 
+
 .product-container {
     background-color: #fff;
     border-radius: 8px;
@@ -27,12 +28,15 @@ body {
     max-width: 900px;
     margin: auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    margin-top: 30px;
 }
 
-.dark-theme .product-container {
+.dark-theme .product-container{
     background-color: #2c2c2c;
     color: var(--text-dark);
 }
+
 
 #product-title {
     font-size: 2rem;
@@ -40,6 +44,7 @@ body {
     font-weight: bold;
     border-bottom: 1px solid #ddd;
     padding-bottom: 0.5rem;
+    text-align: center;
 }
 
 .image-section {
@@ -81,16 +86,34 @@ body {
     font-size: 1.5rem;
     color: #28a745;
     font-weight: bold;
+    text-align: center;
+}
+
+.average-rating-container {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+#average-rating{
+    display: inline-block;
+    color: #ffc107; 
+}
+
+.dark-theme #average-rating{
+    color: #ffc107;
+}
+
+.review-count {
+    font-size: 0.85rem;
+    color: #ffaa00;
+    font-weight: normal;
 }
 
 .description {
     font-size: 1rem;
     margin: 1rem 0;
-}
-
-.rating {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
+    text-align: center;
 }
 
 .external-link-btn {
@@ -103,49 +126,170 @@ body {
     font-weight: 500;
     margin-top: 1rem;
     transition: background-color 0.3s ease;
+    margin-left: 350px;
 }
 
 .external-link-btn:hover {
     background-color: var(--primary-hover);
 }
 
-/* Review Section */
-#reviews {
-    margin-top: 2rem;
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+
+/*Add Rating Button */
+.Add_rating {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+    margin-left: 380px;
 }
 
-#reviews h3 {
-    margin-bottom: 1rem;
+.Add_rating:hover {
+    background-color: #45a049;
+    transform: scale(1.03);
 }
 
-#review-form {
+.Add_rating:active {
+    transform: scale(0.98);
+}
+
+
+/*Ratings Display Section */
+.All_Rating {
+    text-align: left;
+}
+
+.product-container-for-rating {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 900px;
+    margin: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    margin-top: 30px;
+    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 1rem;
 }
 
-#review-text {
-    width: 100%;
-    min-height: 80px;
-    padding: 10px;
+.product-container-for-rating label {
+    font-weight: bold;
     font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
 }
 
 #rating {
+    font-family: 'Poppins', sans-serif;
     padding: 0.5rem;
     font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
 }
 
-#review-list div {
-    padding: 10px;
-    background: #f0f0f0;
-    border-radius: 4px;
-    margin-bottom: 10px;
+#comment {
+    width: 100%;
+    max-width: 600px;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    margin: auto;
 }
+
+/* Submit Button */
+#submitRating {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#submitRating:hover {
+    background-color: #0056b3;
+    transform: scale(1.03);
+}
+
+#submitRating:active {
+    transform: scale(0.97);
+}
+
+/*dark theme for rating form*/
+.dark-theme .product-container-for-rating {
+    background-color: #2c2c2c;
+    color: var(--text-dark);
+}
+
+.dark-theme .product-container-for-rating select,
+.dark-theme .product-container-for-rating textarea {
+    background-color: #3a3a3a;
+    color: var(--text-dark);
+    border: 1px solid #666;
+}
+
+.dark-theme .product-container-for-rating label {
+    color: var(--text-dark);
+}
+
+.dark-theme #submitRating {
+    background-color: #0056b3;
+}
+
+.dark-theme #submitRating:hover {
+    background-color: #003f85;
+}
+
+/*container styling */
+.product-containers {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 900px;
+    margin: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    margin-top: 30px;
+}
+
+.delete-rating-btn {
+    background-color: #dc3545; /* red */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.delete-rating-btn:hover {
+    background-color: #c82333; /* darker red */
+    transform: scale(1.05);
+}
+
+.delete-rating-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.5);
+}
+
+.dark-theme .delete-rating-btn {
+    background-color: #b02a37;
+}
+
+.dark-theme .delete-rating-btn:hover {
+    background-color: #891f2b;
+}
+

@@ -1,0 +1,13 @@
+
+.site-footer {
+    background-color: #f0f0f0;
+    text-align: center;
+    padding: 20px 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+

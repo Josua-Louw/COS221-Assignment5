@@ -1,7 +1,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: var(--bg-page);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -10,7 +10,7 @@ body {
   
   .settings-container {
     margin: auto;          
-    background-color: white;
+    background-color: var(--bg-container);
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -20,8 +20,8 @@ body {
   .settings-container button {
     width: 100%;
     padding: 0.75rem;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--link-hover);
+    color: var(--text-invert);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -30,10 +30,11 @@ body {
   }
   
   .settings-container button:hover {
-    background-color: #0056b3;
+    background-color: var(--link-active-bg);
   }
 
   .settings-container h2 {
+    color: var(--text-primary);
     text-align: center;
     margin-bottom: 1.5rem;
   }
@@ -45,6 +46,7 @@ body {
   label {
     display: block;
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
   }
   
   input[type="email"],
@@ -52,9 +54,11 @@ body {
   select {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     box-sizing: border-box;
+    background-color: var(--bg-input); 
+    color: var(--text-primary);
   }
 
   .error-message {
@@ -62,10 +66,16 @@ body {
     text-align: center;
     margin-top: 1rem;
   }
-  
+
+  html.dark-theme input[type="email"], html.dark-theme input[type="password"],
+  html.dark-theme select {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+}
+
   footer {
     margin-top: auto;       
-    background: white;
+    background: var(--bg-container);
     text-align: center;
     padding: 0.5rem 0;
     box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
