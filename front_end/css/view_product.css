@@ -104,6 +104,12 @@ body{
     color: #ffc107;
 }
 
+.review-count {
+    font-size: 0.85rem;
+    color: #ffaa00;
+    font-weight: normal;
+}
+
 .description {
     font-size: 1rem;
     margin: 1rem 0;
