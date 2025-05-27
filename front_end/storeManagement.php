@@ -38,6 +38,21 @@
         </div>
     </div>
     <div class = "product-list"></div>
+    <div class="popup-bg" id="product-popup">
+    <div class="popup-form" id="product-popup-form">
+        <!-- Form content will be injected by JS -->
+    </div>
+</div>
+    <div class="popup-bg" id="delete-popup">
+        <div class="popup-form">
+            <h3>Delete Product</h3>
+            <p>Are you sure you want to delete this product?</p>
+            <div class="button-group">
+                <button class="submit-btn" id="confirm-delete-btn">Yes, Delete</button>
+                <button class="cancel-btn" id="cancel-delete-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script src = "scripts/storeManager.js"></script>
 </body>

@@ -41,7 +41,7 @@ function getStoresProducts(store_id) {
     return sendRequest(body);
 }
 
-function addProductToStore(title, price, product_link, description, thumbnail, category, brand_name, store_id, apikey) {
+function addProductToStore(title, price, product_link, description, thumbnail, category, brand_name,launch_date, store_id, apikey) {
     const body = {
         type: 'AddProduct',
         title: title,
@@ -51,6 +51,7 @@ function addProductToStore(title, price, product_link, description, thumbnail, c
         thumbnail: thumbnail,
         category: category,
         brand_name: brand_name,
+        launch_date: launch_date,
         store_id: store_id,
         apikey: apikey
     }
@@ -67,7 +68,7 @@ function deleteProductFromStore(prod_id, store_id, apikey) {
     return sendRequest(body);
 }
 
-function editProductInStore(prod_id, title, price, product_link, description, thumbnail, category, brand_name, store_id, apikey) {
+function editProductInStore(prod_id, title, price, product_link, description, thumbnail, category, brand_name,launch_date, store_id, apikey) {
     const body = {
         type: 'EditProduct',
         prod_id: prod_id,
@@ -81,7 +82,7 @@ function editProductInStore(prod_id, title, price, product_link, description, th
     if (thumbnail != undefined) body.thumbnail = thumbnail;
     if (category != undefined) body.category = category;
     if (brand_name != undefined) body.brand_name = brand_name;
-
+    if (launch_date != undefined) body.launch_date = launch_date;
     return sendRequest(body);
 }
 
@@ -171,29 +172,199 @@ function attachFollowListeners() {
     });
 }
 
-function displayStores(stores) {
+// Utility to open/close product popup
+function openProductPopup(html, onSubmit, onCancel) {
+    const popupBg = document.getElementById('product-popup');
+    const popupForm = document.getElementById('product-popup-form');
+    popupForm.innerHTML = html;
+    popupBg.style.display = 'flex';
 
+    const form = popupForm.querySelector('form');
+    if (form && onSubmit) {
+        form.onsubmit = onSubmit;
+    }
+    const cancelBtn = popupForm.querySelector('.btn-cancel');
+    if (cancelBtn && onCancel) {
+        cancelBtn.onclick = onCancel;
+    }
+}
+function closeProductPopup() {
+    document.getElementById('product-popup').style.display = 'none';
+}
+
+// Utility for delete confirmation popup
+function openDeletePopup(onConfirm, onCancel) {
+    const popupBg = document.getElementById('delete-popup');
+    popupBg.style.display = 'flex';
+    document.getElementById('confirm-delete-btn').onclick = function(e) {
+        e.preventDefault();
+        popupBg.style.display = 'none';
+        onConfirm();
+    };
+    document.getElementById('cancel-delete-btn').onclick = function(e) {
+        e.preventDefault();
+        popupBg.style.display = 'none';
+        if (onCancel) onCancel();
+    };
+}
+
+function displayStores(stores) {
     const container = document.querySelector('.store-list');
     container.innerHTML = '';
-    console.log(stores);
     stores.forEach(store => {
         const storeCard = document.createElement('div');
         storeCard.classList.add('store-card');
+
+        // Store info section
+        const storeInfo = document.createElement('div');
+        storeInfo.className = 'store-info';
         const isFollowing = followedStoreIds.includes(store.store_id);
-        storeCard.innerHTML = `
-            <div class="store-info">
-                <h2 class="store-name">${store.name}</h2>
-                <span class="store-type">${store.type}</span>
-                <p>Explore a wide range of Stores at ${store.name}.</p>
-                <div class="store-actions">
-                    <a href="${store.url}" target="_blank" class="btn btn-visit">Visit Store</a>
-                    <button class="btn btn-follow" data-store-id="${store.store_id}" style="background-color: ${isFollowing ? '#e0e0e0' : ''}">
-                        ${isFollowing ? 'Unfollow' : 'Follow'}
-                    </button>
-                </div>
+        storeInfo.innerHTML = `
+            <h2 class="store-name">${store.name}</h2>
+            <span class="store-type">${store.type}</span>
+            <p>Explore a wide range of Stores at ${store.name}.</p>
+            <div class="store-actions">
+                <a href="${store.url}" target="_blank" class="btn btn-visit">Visit Store</a>
+                <button class="btn btn-follow" data-store-id="${store.store_id}" style="background-color: ${isFollowing ? '#e0e0e0' : ''}">
+                    ${isFollowing ? 'Unfollow' : 'Follow'}
+                </button>
             </div>
         `;
+
+        // Product list section (sub-card)
+        const productList = document.createElement('div');
+        productList.className = 'product-list';
+
+        // Add Product Button (always visible)
+        const addProductBtn = document.createElement('button');
+        addProductBtn.textContent = 'Add Product';
+        addProductBtn.className = 'btn btn-add-product';
+        productList.appendChild(addProductBtn);
+
+        addProductBtn.onclick = () => {
+            openProductPopup(`
+                <form>
+                    <h3>Add Product</h3>
+                    <input type="text" name="title" placeholder="Title" required>
+                    <input type="text" name="price" placeholder="Price" required>
+                    <input type="text" name="product_link" placeholder="Product Link" required>
+                    <input type="text" name="description" placeholder="Description" required>
+                    <input type="text" name="thumbnail" placeholder="Thumbnail URL">
+                    <input type="text" name="category" placeholder="Category">
+                    <input type="text" name="brand_name" placeholder="Brand Name">
+                    <input type="date" name="launch_date" placeholder="Launch Date" required>
+                    <div class="button-group">
+                        <button type="submit" class="submit-btn">Add</button>
+                        <button type="button" class="cancel-btn btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            `, async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                await addProductToStore(
+                    formData.get('title'),
+                    formData.get('price'),
+                    formData.get('product_link'),
+                    formData.get('description'),
+                    formData.get('thumbnail'),
+                    formData.get('category'),
+                    formData.get('brand_name'),
+                    formData.get('launch_date'),
+                    store.store_id,
+                    apiKey
+                );
+                closeProductPopup();
+                refreshProducts();
+            }, closeProductPopup);
+        };
+
+        // Append both sections to the store card
+        storeCard.appendChild(storeInfo);
+        storeCard.appendChild(productList);
         container.appendChild(storeCard);
+
+        // Function to refresh products for this store
+        function refreshProducts() {
+            getStoresProducts(store.store_id).then(result => {
+                // Remove old product cards (but keep the add button)
+                productList.querySelectorAll('.product-card').forEach(card => card.remove());
+                if (result.status === "success" && Array.isArray(result.data) && result.data.length > 0) {
+                    result.data.forEach(product => {
+                        const productCard = document.createElement('div');
+                        productCard.classList.add('product-card');
+                        productCard.innerHTML = `
+                            <h3>${product.title}</h3>
+                            <p>${product.description}</p>
+                            <p>Price: ${product.price}</p>
+                            <a href="${product.product_link}" target="_blank">View Product</a>
+                            <button class="btn-edit-product">Edit</button>
+                            <button class="btn-delete-product">Delete</button>
+                        `;
+                        // Edit functionality
+                        productCard.querySelector('.btn-edit-product').onclick = () => {
+                            openProductPopup(`
+                                <form>
+                                    <h3>Edit Product</h3>
+                                    <input type="text" name="title" value="${product.title}" required>
+                                    <input type="text" name="price" value="${product.price}" required>
+                                    <input type="text" name="product_link" value="${product.product_link}" required>
+                                    <input type="text" name="description" value="${product.description}" required>
+                                    <input type="text" name="thumbnail" value="${product.thumbnail || ''}">
+                                    <input type="text" name="category" value="${product.category || ''}">
+                                    <input type="text" name="brand_name" value="${product.brand_name || ''}">
+                                    <input type="date" name="launch_date" value="${product.launch_date ? product.launch_date.split('T')[0] : ''}" required>
+                                    <div class="button-group">
+                                        <button type="submit" class="submit-btn">Save</button>
+                                        <button type="button" class="cancel-btn btn-cancel">Cancel</button>
+                                    </div>
+                                </form>
+                            `, async function(e) {
+                                e.preventDefault();
+                                const formData = new FormData(this);
+                                await editProductInStore(
+                                    product.product_id,
+                                    formData.get('title'),
+                                    formData.get('price'),
+                                    formData.get('product_link'),
+                                    formData.get('description'),
+                                    formData.get('thumbnail'),
+                                    formData.get('category'),
+                                    formData.get('brand_name'),
+                                    formData.get('launch_date'),
+                                    store.store_id,
+                                    apiKey
+                                );
+                                closeProductPopup();
+                                refreshProducts();
+                            }, closeProductPopup);
+                        };
+                        // Delete functionality
+                        productCard.querySelector('.btn-delete-product').onclick = () => {
+                            openDeletePopup(async () => {
+                                await deleteProductFromStore(product.product_id, store.store_id, apiKey);
+                                refreshProducts();
+                            });
+                        };
+                        productList.appendChild(productCard);
+                    });
+                } else {
+                    // Show message if there are no products
+                    if (productList.querySelectorAll('.product-card').length === 0) {
+                        const noProductsMsg = document.createElement('p');
+                        noProductsMsg.textContent = 'No products available for this store.';
+                        productList.appendChild(noProductsMsg);
+                    }
+                }
+            }).catch(error => {
+                const errorMsg = document.createElement('p');
+                errorMsg.textContent = 'Error loading products.';
+                productList.appendChild(errorMsg);
+                console.error(error);
+            });
+        }
+
+        // Initial load of products
+        refreshProducts();
     });
 
     attachFollowListeners();
@@ -227,19 +398,6 @@ function displayProducts(products) {
 // After displaying the store, fetch and display its products
 function displayStoreAndProducts(store) {
     displayStores([store]);
-    console.log("displayStoreAndProducts store object:", store);
-    getStoresProducts(store.store_id)
-        .then(result => {
-            if (result.status === "success" && Array.isArray(result.data)) {
-                displayProducts(result.data);
-            } else {
-                displayProducts([]);
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching products:", error);
-            displayProducts([]);
-        });
 }
 
 Promise.all([getStoreUserOwns(apiKey), fetchFollowedStores()])

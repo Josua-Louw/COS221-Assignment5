@@ -311,8 +311,10 @@ if ($_POST['type'] == 'AddProduct') {
 
         $brandStmt->close();
     } catch (mysqli_sql_exception $e) {
+        
         catchErrorSQL($conn, $e, "AddProduct", __LINE__, true);
     } catch (Exception $e) {
+        
         catchError($conn, $e, "AddProduct", __LINE__, true);
     }
 
@@ -334,16 +336,18 @@ if ($_POST['type'] == 'AddProduct') {
         }
         $ownerStmt->close();
     } catch (mysqli_sql_exception $e) {
+        
         catchErrorSQL($conn, $e, "AddProduct", __LINE__);
     } catch (Exception $e) {
+        
         catchError($conn, $e,"AddProduct", __LINE__);
     }
 
     try {
         $stmt = $conn->prepare("
-        INSERT INTO products (title, price, product_link, description, launch_date, thumbnail, category, brand_id, store_id)
+        INSERT INTO products (title, thumbnail,launch_date, product_link,price,  description,  category,  store_id,brand_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sdssssssi", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id);
+        $stmt->bind_param("ssssdssii", $title, $thumbnail, $launch_date,$product_link, $price, $description,  $category, $store_id,$brand_id);
         $stmt->execute();
         $stmt->close();
 
@@ -354,8 +358,10 @@ if ($_POST['type'] == 'AddProduct') {
             "message" => "Product successfully added to the database."
         ]);
     } catch (mysqli_sql_exception $e) {
+       
         catchErrorSQL($conn, $e, "AddProduct", __LINE__, true);
     } catch (Exception $e) {
+       
         catchError($conn, $e, "AddProduct", __LINE__, true);
     }
     exit();
@@ -406,7 +412,7 @@ if ($_POST['type'] == 'DeleteProduct')
     }
 
     try {
-        $productCheck = $conn->prepare("SELECT * FROM products WHERE prod_id = ? AND store_id = ?");
+        $productCheck = $conn->prepare("SELECT * FROM products WHERE product_id = ? AND store_id = ?");
         $productCheck->bind_param("ii", $prod_id, $store_id);
         $productCheck->execute();
         $productCheck->store_result();
@@ -430,7 +436,7 @@ if ($_POST['type'] == 'DeleteProduct')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("DELETE FROM products WHERE prod_id = ?");
+        $stmt = $conn->prepare("DELETE FROM products WHERE product_id = ?");
         $stmt->bind_param("i", $prod_id);
         $stmt->execute();
         $stmt->close();
@@ -495,7 +501,7 @@ if ($_POST['type'] == 'EditProduct')
     }
 
     try {
-        $productCheck = $conn->prepare("SELECT * FROM products WHERE prod_id = ? AND store_id = ?");
+        $productCheck = $conn->prepare("SELECT * FROM products WHERE product_id = ? AND store_id = ?");
         $productCheck->bind_param("ii", $prod_id, $store_id);
         $productCheck->execute();
         $productResult = $productCheck->get_result();
@@ -534,7 +540,7 @@ if ($_POST['type'] == 'EditProduct')
 
         $stmt = $conn->prepare("UPDATE products
         SET title = ?, price = ?, product_link = ?, description = ?, launch_date = ?, thumbnail = ?, category = ?, brand_id = ?, store_id = ?
-        WHERE prod_id = ?");
+        WHERE product_id = ?");
         $stmt->bind_param("sdsssssiii", $title, $price, $product_link, $description, $launch_date, $thumbnail, $category, $brand_id, $store_id, $prod_id);;
         $stmt->execute();
     } catch (mysqli_sql_exception $e) {
@@ -1478,7 +1484,7 @@ function createBrand($conn, $brand_name, $transaction = true)
     }
 
     try {
-        $stmt = $conn->prepare("INSERT INTO brand (brand_name) VALUES (?)");
+        $stmt = $conn->prepare("INSERT INTO brand (name) VALUES (?)");
         $stmt->bind_param("s", $brand_name);
         $stmt->execute();
 
