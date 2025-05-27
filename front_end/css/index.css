@@ -29,13 +29,24 @@ body {
 
 .welcome-container {
   max-width: 900px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 3rem auto;          
+  padding: 2rem 2rem;         
   text-align: center;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1.2rem;          
+  line-height: 1.8;           
+  color: #333;                
+  background-color: #f9f9f9;  
+  border-radius: 8px;         
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.02em;     
+  word-wrap: break-word;      
+  user-select: text;         
+  transition: box-shadow 0.3s ease;
 }
-
+.welcome-container:hover {
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* lift effect on hover */
+}
 footer {
   margin-top: auto;
   background: var(--bg-container);
