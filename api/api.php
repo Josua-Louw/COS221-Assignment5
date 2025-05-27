@@ -15,7 +15,7 @@ try {
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database errorsssss",
+        "message" => "Database error",
         "Type Handler" => "creating connection",
         "API Line" => __LINE__
     ]);
@@ -136,7 +136,7 @@ if ($_POST['type'] == 'Login') {
 
 //registration
 if ($_POST['type'] == 'Register') {
-    $required = ['name', 'email', 'password', 'user_type'];
+    $required = ['name', 'email', 'password'];
     foreach ($required as $field) {
         if (!isset($_POST[$field])) {
             http_response_code(400);
@@ -151,17 +151,7 @@ if ($_POST['type'] == 'Register') {
     $name = sanitizeInput($_POST['name']);
     $email = sanitizeInput($_POST['email']);
     $password = sanitizeInput($_POST['password']);
-    $user_type = sanitizeInput(strtolower(trim($_POST['user_type']))); // convert to lowercase for enum match
-    $registrationNo = sanitizeInput($_POST['registrationNo'] ?? null);
-
-    if (!in_array($user_type, ['customer', 'store_owner', 'admin'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Invalid user type"
-        ]);
-        exit();
-    }
+    $user_type = "customer";
 
     try {
         $check = $conn->prepare("SELECT email FROM users WHERE email = ?");
@@ -195,37 +185,23 @@ if ($_POST['type'] == 'Register') {
         $user_id = $stmt->insert_id;
         $stmt->close();
 
-        if ($user_type === 'customer') {
-            $stmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $stmt->close();
-        } else if ($user_type === 'store_owner') {
-            if (empty($registrationNo)) {
-                throw new Exception("Registration number required for store owners");
-            }
-            $stmt = $conn->prepare("INSERT INTO store_owner (user_id, registration_no) VALUES (?, ?)");
-            $stmt->bind_param("is", $user_id, $registrationNo);
-            $stmt->execute();
-            $stmt->close();
-        }
+        $stmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
 
         $conn->commit();
 
         http_response_code(201);
         echo json_encode([
             "status" => "success",
-            "message" => "Registration successful",
-            "user_id" => $user_id
+            "message" => "Registration successful"
         ]);
 
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Register", __LINE__, true);
     } catch (Exception $e) {
-        $conn->rollback();
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Registration failed: " . $e->getMessage()
-        ]);
+        catchError($conn, $e, "Register", __LINE__, true);
     }
     exit();
 }
