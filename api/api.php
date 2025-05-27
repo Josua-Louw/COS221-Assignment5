@@ -604,13 +604,13 @@ if ($_POST['type'] == 'EditProduct')
 
 if ($_POST['type'] == 'GetFilteredProducts')
 {
-    $brand_id = sanitizeInput($_POST['brand_id']) ?? null;
-    $category = sanitizeInput($_POST['category']) ?? null;
-    $min_price = sanitizeInput($_POST['min_price']) ?? null;
-    $max_price = sanitizeInput($_POST['max_price']) ?? null;
-    $search = sanitizeInput($_POST['search']) ?? null;
-    $store_id = sanitizeInput($_POST['store_id']) ?? null;
-    $min_rating = sanitizeInput($_POST['min_rating']) ?? null;
+    $brand_id = $_POST['brand_id'] ?? null;
+    $category = $_POST['category'] ?? null;
+    $min_price = $_POST['min_price'] ?? null;
+    $max_price = $_POST['max_price'] ?? null;
+    $search = $_POST['search'] ?? null;
+    $store_id = $_POST['store_id'] ?? null;
+    $min_rating = $_POST['min_rating'] ?? null;
 
     // Unified query selecting brand and rating info
     $sql = "SELECT p.*, b.name AS brand_name, AVG(r.rating) AS average_rating
@@ -1248,7 +1248,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
 
     try {
         $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id, registration_no) VALUES (?, ?, ?)");
-        $ownerStmt->bind_param("iii", $user_id, $store_id, $registrationNo);;
+        $ownerStmt->bind_param("iii", $user_id, $store_id, $registrationNo);
         $ownerStmt->execute();
         $ownerStmt->close();
 
