@@ -233,3 +233,54 @@ html.dark-theme select {
   color: var(--text-primary);
   border-color: var(--border-color);
 }
+
+
+.add-btn, .submit-btn, btn-edit-product, . {
+  border-radius: 4px !important;
+  padding: 0.5rem 1.2rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.add-btn, .submit-btn {
+  background-color: #28a745 !important;
+  color: #fff !important;
+  border: 1.5px solid #28a745 !important;
+}
+.add-btn:hover, .submit-btn:hover {
+  background-color: #218838 !important;
+  border-color: #218838 !important;
+}
+
+
+.btn-edit-product {
+  background-color: #007bff !important;
+  color: #fff !important;
+  border: 1.5px solid #007bff !important;
+  border-radius: 4px !important;
+  padding: 0.5rem 1.2rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+.btn-edit-product:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+
+.btn-delete-product {
+  background-color: #007bff !important;
+  color: #fff !important;
+  border: 1.5px solid #007bff !important;
+  border-radius: 4px !important;
+  padding: 0.5rem 1.2rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+.btn-delete-product:hover {
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+}

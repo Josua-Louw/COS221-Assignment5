@@ -33,7 +33,7 @@
                 <option value="Omnichannel">Omnichannel</option>
             </select>
                 <button class = "submit-btn" id = "submit-btn" type="submit">Submit</button>
-                <button class = "cancel-btn" type="button" onclick="closePopup()">Cancel</button>
+                <button class = "cancel-btn" id = "cancel-btn"type="button" onclick="closePopup()">Cancel</button>
             </form>
         </div>
     </div>
