@@ -72,6 +72,40 @@ if (!isset($_POST['type'])) {
 
 //For user we have the following login and registration
 if ($_POST['type'] == 'Login') {
+    //count login attempts
+    session_start();
+    if (isset($_SESSION["LoginBlock"])) {
+        if (time() - $_SESSION["LoginBlock"] >= 60) {//can be extended but for demo cases we will keep it short
+            $_SESSION["LoginAttempts"] = 0; 
+            unset($_SESSION['LoginBlock']);
+        } else {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Login is still blocked just wait a bit longer.",
+                "Type Handler" => "Login",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    }
+    if (!isset($_SESSION["LoginAttempts"])) {
+       $_SESSION["LoginAttempts"] = 0; 
+    } else {
+        $_SESSION["LoginAttempts"] += 1;
+        if ($_SESSION["LoginAttempts"] >= 5) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Too many failed attempts. Try again in a minute.",
+                "Type Handler" => "Login",
+                "API Line" => __LINE__
+            ]);
+            $_SESSION["LoginBlock"] = time();
+            exit();
+        }
+    }
+    
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         http_response_code(400);
         echo json_encode([
@@ -116,9 +150,8 @@ if ($_POST['type'] == 'Login') {
             exit();
         }
 
-        session_start();
         $_SESSION["apikey"] = $user['apikey'];
-        
+        $_SESSION["LoginAttempts"] = 0; 
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -579,20 +612,6 @@ if ($_POST['type'] == 'EditProduct')
 //filter products
 if ($_POST['type'] == 'GetFilteredProducts')
 {
-    if (!isset($_POST['apikey'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields",
-            "Type Handler" => "GetFilteredProducts",
-            "API Line" => __LINE__
-        ]);
-        exit();
-    }
-
-    $apikey = $_POST['apikey'];
-    $user_id = authenticate($conn, $apikey);
-
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
     $min_price = $_POST['min_price'] ?? null;

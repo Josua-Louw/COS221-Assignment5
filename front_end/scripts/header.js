@@ -79,13 +79,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   setTheme(theme);
 
-  const toggleBtn = document.getElementById('themeToggleBtn');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const currentTheme = sessionStorage.getItem('theme') || 'light';
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  const checkbox = document.getElementById('themeToggle');
+  if (checkbox) {
+    checkbox.checked = (theme === 'dark');
+    checkbox.addEventListener('change', () => {
+      const newTheme = checkbox.checked ? 'dark' : 'light';
       setTheme(newTheme);
     });
+  } else {
+    console.warn('themeToggle checkbox not found');
   }
 
   const dropdown = document.querySelector('.dropdown');

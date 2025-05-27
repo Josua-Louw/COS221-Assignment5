@@ -1,27 +1,27 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CompareIt - Compare prices across multiple stores to find the best deals">
-    <title>CompareIt - Price Comparison</title>
-    <link rel="stylesheet" href="css/header.css">
-    <style>
-        .auth-container {
-            display: flex;
-            align-items: center;
-            gap: 12px; 
-        }
-        
-        .auth-links {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .theme-toggle {
-            margin-left: 8px; 
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="CompareIt - Compare prices across multiple stores to find the best deals">
+  <title>CompareIt - Price Comparison</title>
+  <link rel="stylesheet" href="css/header.css">
+  <style>
+    /* your existing small overrides */
+    .auth-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .auth-links {
+      display: flex;
+      gap: 10px;
+    }
+    .theme-toggle {
+      margin-left: 8px;
+    }
+  </style>
 </head>
 <body>
   <header role="banner">
@@ -71,8 +71,6 @@
     </nav>
   </header>
 
-    <main>
-    
-    <script src="scripts/header.js"></script>
+  <script src="scripts/header.js"></script>
 </body>
 </html>
