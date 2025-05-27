@@ -1118,7 +1118,6 @@ if ($_POST['type'] == 'GetFollowing') {
             exit();
         }
 
-        //******************* Check if this code is fine ***********************//
         $placeholders = implode(',', array_fill(0, count($followedStoreIds), '?'));
         $types = str_repeat('i', count($followedStoreIds));
 
@@ -1215,7 +1214,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     ]);
     exit();
 }
-    //Check to see if user alreadt has a store
+    //Check to see if user already has a store
     $checkStmt = $conn->prepare("SELECT COUNT(*) FROM store_owner WHERE user_id = ?");
     $checkStmt->bind_param("i", $user_id);
     $checkStmt->execute();
@@ -1327,7 +1326,6 @@ if ($_POST['type'] == 'AddBrand'){
     $apikey = sanitizeInput($_POST['apikey']);
     $brand_name = sanitizeInput($_POST['brand_name']);
     $user_id = authenticate($conn, $apikey);
-    //************************************** admin ************************************//
 
     try {
         $conn->begin_transaction();
@@ -1365,7 +1363,6 @@ if ($_POST['type'] == 'RemoveBrand'){
     $apikey = sanitizeInput($_POST['apikey']);
     $brand_id = sanitizeInput($_POST['brand_id']);
     $user_id = authenticate($conn, $apikey);
-    //************************************* Admin **********************************//
 
     try {
         $conn->begin_transaction();
@@ -1643,7 +1640,7 @@ if ($_POST['type'] == 'GetAllProducts')
 if ($_POST['type'] == 'SavePreferences')
 {
 
-    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password'])){
+    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['current_email']) || !isset($_POST['current_password'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -1658,6 +1655,8 @@ if ($_POST['type'] == 'SavePreferences')
     $apikey = sanitizeInput($_POST['apikey']);
     $email = sanitizeInput($_POST['email']);
     $password = sanitizeInput($_POST['password']);
+    $current_email = sanitizeInput($_POST['current_email']);
+    $current_password = sanitizeInput($_POST['current_password']);
 
     $user_id = authenticate($conn, $apikey);
 
@@ -1666,8 +1665,33 @@ if ($_POST['type'] == 'SavePreferences')
         $getUserStmt->bind_param("s", $apikey);
         $getUserStmt->execute();
         $result = $getUserStmt->get_result();
+        $user = $result->fetch_assoc();
 
-        $salt = $result->fetch_assoc()['salt'];
+        if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Invalid API key",
+                "Type Handler" => "SubmitPreferences",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $salt = $user['salt'];
+        $currentHashed = hash_pbkdf2("sha256", $current_password, $salt, 10000, 127);
+
+        if ($currentHashed !== $user['password'] || $current_email !== $user['email']) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Incorrect credentials",
+                "Type Handler" => "SubmitPreferences",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
         $getUserStmt->close();
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "SavePreferences", __LINE__);
