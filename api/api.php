@@ -1248,7 +1248,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
 
     try {
         $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id, registration_no) VALUES (?, ?, ?)");
-        $ownerStmt->bind_param("iii", $user_id, $store_id, $registrationNo);
+        $ownerStmt->bind_param("iis", $user_id, $store_id, $registrationNo);
         $ownerStmt->execute();
         $ownerStmt->close();
 
