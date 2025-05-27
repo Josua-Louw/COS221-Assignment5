@@ -130,18 +130,18 @@ if ($_POST['type'] == 'Login') {
         ]);
         exit();
     }
-
-    if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
-            "Type Handler" => "Login",
-            "API Line" => __LINE__
-        ]);
-        exit();
-    }
-
+    /*
+        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+                "Type Handler" => "Login",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    */
 
     try {
         $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -732,7 +732,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
 //now we have the following for rating
 if ($_POST['type'] == 'SubmitRating')
 {
-    
+
     if (!isset($_POST['apikey']) || !isset($_POST['prod_id']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         //http_response_code(400);
         echo json_encode([
@@ -1417,7 +1417,7 @@ if ($_POST['type'] == 'GetStats'){
 
     try {
         $stmt = $conn->prepare("
-            SELECT p.category, SUM(c.number_of_times_clicked) AS total_clicks
+            SELECT p.category, SUM(c.amount) AS total_clicks
             FROM clicks c
             JOIN products p ON c.product_id = p.product_id
             WHERE c.user_id = ?
@@ -1441,11 +1441,11 @@ if ($_POST['type'] == 'GetStats'){
     }
 
     try {
-        $dateStmt = $conn->prepare("SELECT date FROM users WHERE user_id = ?");
+        $dateStmt = $conn->prepare("SELECT date_registered, name, min_price, max_price FROM users WHERE user_id = ?");
         $dateStmt->bind_param("i", $user_id);
         $dateStmt->execute();
         $dateResult = $dateStmt->get_result();
-        $stats['date'] = $dateResult->fetch_assoc()['date'] ?? null;
+        $stats['user'] = $dateResult->fetch_assoc() ?? null;
         $dateStmt->close();
     } catch (mysqli_sql_exception $e) {
         catchErrorSQL($conn, $e, "GetStats", __LINE__);
