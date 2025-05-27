@@ -8,7 +8,6 @@
   <title>CompareIt - Price Comparison</title>
   <link rel="stylesheet" href="css/header.css">
   <style>
-    /* your existing small overrides */
     .auth-container {
       display: flex;
       align-items: center;
@@ -27,32 +26,24 @@
   <header role="banner">
     <nav class="main-nav" aria-label="Main navigation">
       
-      <!-- LOGO (slightly reduced padding/font in CSS) -->
-      <div class="logo-container">
-        <a href="index.php" class="logo-link" aria-label="CompareIt Home">
-          <h1>CompareIt</h1>
-        </a>
-      </div>
+    <div class="logo-container">
+      <a href="index.php" class="logo-link" aria-label="CompareIt Home">
+        <img src="img/logo-light.png" alt="CompareIt" id="logoLight">
+        <img src="img/logo-dark.png"  alt="CompareIt" id="logoDark">
+      </a>
+    </div>
       
-      <!-- CENTERED: Products / Stores -->
       <div class="button-container">
+        <a href="dashboard.php" class="nav-link">Dashboard</a>
         <a href="products.php" class="nav-link">Products</a>
         <a href="stores.php"   class="nav-link">Stores</a>
+        <a href="manage_stores.php"  class="nav-link">Manage Stores</a>
       </div>
       
-      <!-- RIGHT: Auth links + Theme switch -->
       <div class="auth-container" id="auth-buttons">
-        <?php if (isset($_SESSION['user'])): ?>
-          <div class="user-dropdown" aria-haspopup="true">
-            <button class="user-btn" aria-expanded="false" aria-controls="user-menu">
-              <span class="user-avatar" aria-hidden="true">👤</span>
-              <span class="username"><?= htmlspecialchars($_SESSION['user']['username'] ?? 'Account') ?></span>
-              <span class="dropdown-arrow" aria-hidden="true">▼</span>
-            </button>
-            <ul class="user-menu" id="user-menu" role="menu">
-              <li role="none"><a href="account.php"       role="menuitem">My Account</a></li>
-              <li role="none"><a href="user_settings.php" role="menuitem">Settings</a></li>
-              <li role="none"><a href="logout.php"        role="menuitem">Logout</a></li>
+          <?php if (isset($_SESSION['apikey'])): ?> 
+            <a href="logout.php"    class="auth-link" id="logout-btn">Logout</a>
+            <a href="user_settings.php" class="auth-link">Settings</a>
             </ul>
           </div>
         <?php else: ?>
@@ -63,11 +54,10 @@
           </div>
         <?php endif; ?>
         
-        <!-- THEME SLIDER + LABEL -->
         <label class="theme-switch">
           <input type="checkbox" id="themeToggle" aria-label="Toggle dark mode">
           <span class="slider"></span>
-          <span id="themeLabel"></span> <!-- will show “Light” or “Dark” -->
+          <span id="themeLabel"></span> 
         </label>
       </div>
     </nav>

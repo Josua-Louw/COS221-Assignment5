@@ -1,10 +1,8 @@
 // All JavaScript files that use the API must be in a PHP file that requires header.php
-const API_Location = "http://localhost/COS221-Assignment5/api/api.php";
-
 // Call the API and return a JSON object of whatever the API returns
 async function sendRequest(body) {
   try {
-    const response = await fetch(API_Location, {
+    const response = await fetch("http://localhost/COS221-Assignment5/api/api.php", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -32,8 +30,22 @@ document.addEventListener('DOMContentLoaded', function () {
     document.documentElement.classList.remove('light-theme', 'dark-theme');
     document.documentElement.classList.add(`${theme}-theme`);
     sessionStorage.setItem('theme', theme);
+  
     const lbl = document.getElementById('themeLabel');
     if (lbl) lbl.textContent = theme[0].toUpperCase() + theme.slice(1);
+  
+    const logoLight = document.getElementById('logoLight');
+    const logoDark = document.getElementById('logoDark');
+    if (logoLight && logoDark) {
+      if (theme === 'dark') {
+        logoLight.style.display = 'none';
+        logoDark.style.display = 'block';
+      } else {
+        logoLight.style.display = 'block';
+        logoDark.style.display = 'none';
+      }
+    }
+  
     const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
     if (storedUser) {
       try {
@@ -48,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   }
-
+  
   let theme = sessionStorage.getItem('theme');
   if (!theme) {
     const storedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
@@ -74,25 +86,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   } else {
     console.warn('themeToggle checkbox not found');
-  }
-
-  const dropdown = document.querySelector('.dropdown');
-  const dropbtn = document.querySelector('.dropbtn');
-
-  if (dropbtn && dropdown) {
-    dropbtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      const expanded = this.getAttribute('aria-expanded') === 'true';
-      this.setAttribute('aria-expanded', !expanded);
-      dropdown.classList.toggle('open');
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!dropdown.contains(e.target)) {
-        dropbtn.setAttribute('aria-expanded', 'false');
-        dropdown.classList.remove('open');
-      }
-    });
   }
 
   const currentPage = window.location.pathname.split('/').pop() || 'index.php';

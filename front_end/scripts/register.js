@@ -1,20 +1,4 @@
-const typeEl = document.getElementById('user_type');
-const regNoField = document.getElementById('registrationNoField');
 
-// Initialize visibility based on current value
-updateRegistrationNoVisibility();
-
-typeEl.addEventListener('change', updateRegistrationNoVisibility);
-
-function updateRegistrationNoVisibility() {
-    if (typeEl.value === 'store_owner') {
-        regNoField.style.display = 'block';
-        document.getElementById('registrationNo').setAttribute('required', '');
-    } else {
-        regNoField.style.display = 'none';
-        document.getElementById('registrationNo').removeAttribute('required');
-    }
-}
 
 function showError(message) {
     const errorEl = document.getElementById('errorMessage');
@@ -25,39 +9,24 @@ function showError(message) {
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const user_type = typeEl.value;
-    const registrationNo = (user_type === 'store_owner') 
-        ? document.getElementById('registrationNo').value.trim()
-        : '';
-    
-    showError('');
+  const name  = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+ 
+  showError('');
 
-    // Basic validation
-    if (!name || !email || !password || !user_type) {
-        showError('Please fill in all required fields.');
-        return;
-    }
+  if (!name || !email || !password) {
+    showError('Please fill in all required fields.');
+    return;
+  }
 
-    // Additional validation for store owners
-    if (user_type === 'store_owner' && !registrationNo) {
-        showError('Registration number is required for store owners.');
-        return;
-    }
-
-    const registerBody = {
-        'type': 'Register',
-        'name': name,
-        'email': email,
-        'password': password,
-        'user_type': user_type
-    };
-
-    if (user_type === 'store_owner') {
-        registerBody.registrationNo = registrationNo;
-    }
+  const registerBody = {
+    'type': 'Register',
+    'name': name,
+    'email': email,
+    'password': password,
+    'user_type': 'Customer'
+  }
 
     const register = new XMLHttpRequest();
 

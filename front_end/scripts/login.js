@@ -44,7 +44,7 @@ login.onload = function () {
       try {
         const data = JSON.parse(this.responseText);
         if (data.status === 'success' && data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
+          sessionStorage.setItem('user', JSON.stringify(data.user));
           sessionStorage.setItem('apikey', data.user.apiKey || data.user.apikey);
           window.location.href = 'index.php';
         } else {

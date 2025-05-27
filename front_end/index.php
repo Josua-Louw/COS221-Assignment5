@@ -6,13 +6,14 @@ require_once 'header.php';
 <head>
     <meta charset="UTF-8" />
     <title>Home</title>
-    <link rel = "stylesheet" href = "css/index.css">
-    
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/index.css">
+
 </head>
 <body>
     <div class = "logo1-container">
-        <!--Need logo-->
-        <img src = "img/logo.png" alt = "Logo">
+        <img id="logoLight" src="img/logo-light.png" alt="CompareIt">
+        <img id="logoDark"  src="img/logo-dark.png"  alt="CompareIt">
     </div>
     
     <div class = "welcome-container">
