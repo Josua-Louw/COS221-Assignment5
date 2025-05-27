@@ -230,7 +230,7 @@
         const stars = "⭐".repeat(Math.round(avg));
 
         if (averageRatingElement) {
-            averageRatingElement.textContent = `${stars} ${avg} / 5`;
+            averageRatingElement.innerHTML = `${stars} ${avg} / 5 <span class="review-count">(${data.data.length} review${data.data.length !== 1 ? 's' : ''})</span>`;
         }
 
         // Render each review
