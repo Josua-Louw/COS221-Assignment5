@@ -377,3 +377,17 @@ footer {
     html.dark-theme .reset-filters {
       color: white;
     }
+
+
+    .Follow_products
+    {
+
+     padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-right: 10px;
+}
+
+.Follow_products option {
+    padding: 5px;
+}

@@ -43,7 +43,7 @@ function displayStores(stores) {
 
     const container = document.querySelector('.store-list');
     container.innerHTML = '';
-    console.log(stores);
+    // console.log(stores);
     stores.forEach(store => {
         const storeCard = document.createElement('div');
         storeCard.classList.add('store-card');

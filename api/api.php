@@ -1,42 +1,5 @@
 <?php
 
-/* The Null Pointers - COS221 Assignment 5
-
-    Progress:   [-1] - Unfinished
-                [0] - Untested
-                [1] - Main functionality tested
-                [2] - Edge cases tested
-                [3] - Edge cases tested + secure
-
-    Types Handled:
-
-    Login               [0]
-    Register            [0]
-    GetAllProducts      [1]
-    AddProduct          [0]
-    DeleteProduct       [0]
-    EditProduct         [0]
-    GetFilteredProducts [0]
-    SubmitRating        [0]
-    GetRatings          [0]
-    DeleteRating        [0]
-    EditRating          [0]
-    GetStores           [0]
-    GetUsersStores      [0]
-    Follow              [0]
-    GetFollowing        [0] *
-    Unfollow            [0]
-    RegisterStoreOwner  [0]
-    SavePreference      [0]
-    AddBrand            [-1]
-    RemoveBrand         [-1]
-    GetBrands           [0]
-
-*/
-
-//TODO:
-//  Test All Types
-
 
 require_once 'config.php';
 
@@ -150,10 +113,10 @@ if ($_POST['type'] == 'Login') {
             ]);
             exit();
         }
-
-       
-        session_start();
-
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         $_SESSION["apikey"] = $user['apikey'];
         
         http_response_code(200);
@@ -592,20 +555,6 @@ if ($_POST['type'] == 'EditProduct')
 
 if ($_POST['type'] == 'GetFilteredProducts')
 {
-    if (!isset($_POST['apikey'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required fields",
-            "Type Handler" => "GetFilteredProducts",
-            "API Line" => __LINE__
-        ]);
-        exit();
-    }
-
-    $apikey = $_POST['apikey'];
-    $user_id = authenticate($conn, $apikey);
-
     $brand_id = $_POST['brand_id'] ?? null;
     $category = $_POST['category'] ?? null;
     $min_price = $_POST['min_price'] ?? null;
@@ -717,6 +666,29 @@ if ($_POST['type'] == 'SubmitRating')
     $user_id = authenticate($conn, $apikey);
 
     try {
+        $stmt = $conn->prepare("SELECT * FROM ratings WHERE user_id_ratings = ? AND product_id = ?;");
+        $stmt->bind_param("ii", $user_id, $prod_id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+             http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "You have already rated this product.",
+                "Type Handler" => "SubmitRating",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SubmitRating", __LINE__);
+    } catch (Exception $e) {
+        catchError($conn, $e, "SubmitRating", __LINE__);
+    }
+
+    try {
         $conn->begin_transaction();
 
         $stmt = $conn->prepare("INSERT INTO ratings (rating, comment,product_id,user_id_ratings) VALUES (?, ?, ?, ?)");
@@ -752,7 +724,7 @@ if ($_POST['type'] === 'GetRatings') {
     $prod_id = (int)$_POST['prod_id'];
 
     $stmt = $conn->prepare("
-    SELECT r.rating, r.comment, u.name
+    SELECT r.rating, r.comment, u.name, u.user_id
     FROM ratings r
     JOIN users u ON r.user_id_ratings = u.user_id
     WHERE r.product_id = ?
@@ -817,7 +789,7 @@ if ($_POST['type'] == 'DeleteRating')
 //Edit Rating
 if ($_POST['type'] == 'EditRating')
 {
-    if (!isset($_POST['rating_id']) || !isset($_POST['apikey']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
+    if (!isset($_POST['prod_id']) || !isset($_POST['apikey']) || !isset($_POST['rating']) || !isset($_POST['comment'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -829,15 +801,15 @@ if ($_POST['type'] == 'EditRating')
     }
 
     $apikey = $_POST['apikey'];
-    $rating_id = $_POST['rating_id'];
+    $product_id = $_POST['prod_id'];
     $rating = $_POST['rating'];
     $comment = $_POST['comment'];
 
     $user_id = authenticate($conn, $apikey);
 
     try {
-        $checkStmt = $conn->prepare("SELECT * FROM ratings WHERE rating_id = ? AND user_id = ?");
-        $checkStmt->bind_param("ii", $rating_id, $user_id);
+        $checkStmt = $conn->prepare("SELECT * FROM ratings WHERE product_id = ? AND user_id_ratings = ?");
+        $checkStmt->bind_param("ii", $product_id, $user_id);
         $checkStmt->execute();
         $result = $checkStmt->get_result();
 
@@ -862,8 +834,8 @@ if ($_POST['type'] == 'EditRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE rating_id = ?");
-        $stmt->bind_param("isi", $rating, $comment, $rating_id);
+        $stmt = $conn->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE product_id = ? AND user_id_ratings = ?");
+        $stmt->bind_param("isii", $rating, $comment, $product_id, $user_id);
         $stmt->execute();
         $stmt->close();
         $conn->commit();
@@ -1534,7 +1506,7 @@ function catchErrorSQL($conn, $error, $type , $line , $rollback = false){
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database errorsssssffff",
+        "message" => "Database error",
         "Type Handler" => $type,
         "API Line" => $line
     ]);
@@ -1561,7 +1533,10 @@ function catchError($conn, $error, $type, $line, $rollback = false){
 if ($_POST['type'] == 'GetAllProducts')
 {
     try {
-        $stmt = $conn->prepare("SELECT * FROM products");
+        $stmt = $conn->prepare("SELECT p.*, AVG(r.rating) as average_rating 
+        FROM products p
+        LEFT JOIN ratings r ON p.product_id = r.product_id
+        GROUP BY p.product_id");
         $stmt->execute();
         $result = $stmt->get_result();
         $products = [];
@@ -1587,7 +1562,8 @@ if ($_POST['type'] == 'GetAllProducts')
                 'launch_date' => $row['launch_date'],
                 'thumbnail' => $row['thumbnail'],
                 'category' => $row['category'],
-                'brand_name' => $brand
+                'brand_name' => $brand,
+                'average_rating' => $row['average_rating']
             ];
         }
         $stmt->close();
