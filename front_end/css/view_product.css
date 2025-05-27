@@ -89,6 +89,21 @@ body{
     text-align: center;
 }
 
+.average-rating-container {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+#average-rating{
+    display: inline-block;
+    color: #ffc107; 
+}
+
+.dark-theme #average-rating{
+    color: #ffc107;
+}
+
 .description {
     font-size: 1rem;
     margin: 1rem 0;

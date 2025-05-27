@@ -24,8 +24,10 @@ require_once 'header.php';
                 <div id="thumbnail-container" class="thumbnail-row"></div>
             </div>
             <p id="product-price" class="price" class="middle">R0.00</p>
+            <div class="average-rating-container">
+                <p id="average-rating" class="rating">Loading average rating...</p>
+            </div>
             <p id="product-description" class="description"></p>
-            <!-- <div id="rating-stars" class="rating">Rating: -</div> -->
             <a id="external-link" href="#" target="_blank" class="external-link-btn" style="display: none;">View on Store Website</a>
         </div>
 

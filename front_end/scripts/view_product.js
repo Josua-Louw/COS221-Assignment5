@@ -199,7 +199,7 @@
 
 
   async function loadRatings(prod_id) {
-    const res = await fetch("http://localhost/COS221-Assignment5/api/api.php", {
+    const res = await fetch(apiUrl, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -212,14 +212,28 @@
 
     const data = await res.json();
 
+    const ratingsDiv = document.querySelector(".All_Rating");
+    const averageRatingElement = document.getElementById("average-rating");
+
     if (data.status === "success") {
-        const ratingsDiv = document.querySelector(".All_Rating");
-        ratingsDiv.innerHTML = "";
+        ratingsDiv.innerHTML = "<h3 class='All_Rating'>All the ratings of the product</h3>";
+
         if (data.data.length === 0) {
-            ratingsDiv.innerHTML = "<p>No ratings yet.</p>";
+            ratingsDiv.innerHTML += "<p>No ratings yet.</p>";
+            if (averageRatingElement) averageRatingElement.textContent = "No ratings yet.";
             return;
         }
 
+        // ⭐ Calculate average rating
+        const sum = data.data.reduce((total, r) => total + parseFloat(r.rating), 0);
+        const avg = (sum / data.data.length).toFixed(1);
+        const stars = "⭐".repeat(Math.round(avg));
+
+        if (averageRatingElement) {
+            averageRatingElement.textContent = `${stars} ${avg} / 5`;
+        }
+
+        // Render each review
         data.data.forEach(r => {
             const ratingValue = parseInt(r.rating);
             const stars = "⭐".repeat(ratingValue);
@@ -233,5 +247,6 @@
         console.error("Failed to fetch ratings:", data.message);
     }
 }
+
 
 
