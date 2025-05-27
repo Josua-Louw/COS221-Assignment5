@@ -235,7 +235,7 @@ html.dark-theme select {
 }
 
 
-.add-btn, .submit-btn, btn-edit-product, . {
+.add-btn, .submit-btn, btn-edit-product, btn-delete-product {
   border-radius: 4px !important;
   padding: 0.5rem 1.2rem !important;
   font-weight: 500 !important;
