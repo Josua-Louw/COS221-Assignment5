@@ -285,7 +285,6 @@ h1 {
 
 .pagination button:hover:not(:disabled) {
   background-color: var(--primary-color);
-  color: white;
 }
 
 .pagination button:disabled {
@@ -390,4 +389,35 @@ footer {
 
 .Follow_products option {
     padding: 5px;
+}
+
+html.dark-theme .rating-filter {
+  background-color: var(--bg-input, #222);
+  color: #fff;
+  border-color: #555;
+}
+
+html.dark-theme .rating-filter option {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+html.dark-theme .pagination button {
+  color: white;
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+html.dark-theme .pagination button.active {
+  background-color: var(--primary-color);
+  color: white;
+  cursor: default;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+html.light-theme .pagination button.active {
+  background-color: var(--primary-color);
+  color: var(--primary-color);
+  cursor: default;
+  box-shadow: 0 0 0 2px rgba(13, 17, 126, 0.799);
 }

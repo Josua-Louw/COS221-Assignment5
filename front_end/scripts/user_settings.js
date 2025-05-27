@@ -31,8 +31,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
     const [min, max] = priceRange.split('-').map(parseFloat);
     priceMin = min; priceMax = max;
   }
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+
 
   const payload = {
     type:             'SavePreferences',
@@ -65,8 +64,8 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
 
     payload.current_email    = currEmail;
     payload.current_password = currPassword;
-    payload.new_email        = newEmail;
-    payload.new_password     = newPassword;
+    payload.email        = newEmail;
+    payload.password     = newPassword;
   }
 
   localStorage.setItem('theme', theme);
@@ -77,7 +76,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
   document.documentElement.classList.toggle('dark-theme', theme === 'dark');
   
   try {
-    const data = await fetch('api/api.php', {
+    const data = await fetch('http://localhost/COS221-Assignment5/api/api.php', {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
       body: JSON.stringify(payload)

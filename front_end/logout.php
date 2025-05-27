@@ -13,6 +13,7 @@
   <title>Logging out…</title>
   <script>
     sessionStorage.clear();
+    localStorage.setItem('LoggedIn', 'false');
     window.location.replace('index.php');
   </script>
 </head>

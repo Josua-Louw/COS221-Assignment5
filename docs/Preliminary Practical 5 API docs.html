@@ -680,7 +680,7 @@ blockquote {
 	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
 }
 	
-</style></head><body><article id="1f5f9db8-e50d-8072-8f7c-ddf9f9cb7407" class="page sans"><header><h1 class="page-title">Practical 5 API docs</h1><p class="page-description"></p></header><div class="page-body"><h1 id="1f8f9db8-e50d-8049-8193-e8df67f790e7" class="">API Documentation</h1><h2 id="1f8f9db8-e50d-8022-89b7-e6b551908b74" class="">Users</h2><h3 id="1f9f9db8-e50d-802e-b7da-d994d1362de5" class="">Login</h3><p id="1f9f9db8-e50d-80b7-988b-c9eedf7305ed" class="">Request Type</p><ul id="1f9f9db8-e50d-804d-a98b-d0d3a2cca51b" class="bulleted-list"><li style="list-style-type:disc">Method: POST</li></ul><ul id="1f9f9db8-e50d-8037-8349-ea435b574df4" class="bulleted-list"><li style="list-style-type:disc">Content-Type: application/json</li></ul><p id="1f8f9db8-e50d-80be-bb7f-c465be105b93" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-8086-9cf3-e91d54a4dbe5" class="code"><code class="language-JSON">{
+</style></head><body><article id="1f5f9db8-e50d-8072-8f7c-ddf9f9cb7407" class="page sans"><header><h1 class="page-title">Practical 5 API docs</h1><p class="page-description"></p></header><div class="page-body"><h2 id="200f9db8-e50d-8053-b516-c2dfa60ab3e0" class="">Security Features in API</h2><ul id="200f9db8-e50d-80b0-8922-e6ec5145c39f" class="bulleted-list"><li style="list-style-type:disc">Password are salted and hashed</li></ul><ul id="200f9db8-e50d-8051-a8b7-c102d939cff0" class="bulleted-list"><li style="list-style-type:disc">All input received by the API is sanitized</li></ul><ul id="200f9db8-e50d-8047-bfcc-d1e9a44698d4" class="bulleted-list"><li style="list-style-type:disc">Avoided sensitive returns</li></ul><ul id="200f9db8-e50d-80b3-b8d7-d79792c193e7" class="bulleted-list"><li style="list-style-type:disc">Prepared statements used</li></ul><ul id="200f9db8-e50d-8057-9362-f4ed935e746a" class="bulleted-list"><li style="list-style-type:disc">Failed Login attempts are limited</li></ul><h1 id="1f8f9db8-e50d-8049-8193-e8df67f790e7" class="">API Documentation</h1><h2 id="1f8f9db8-e50d-8022-89b7-e6b551908b74" class="">Users</h2><h3 id="1f9f9db8-e50d-802e-b7da-d994d1362de5" class="">Login</h3><p id="1f9f9db8-e50d-80b7-988b-c9eedf7305ed" class="">Request Type</p><ul id="1f9f9db8-e50d-804d-a98b-d0d3a2cca51b" class="bulleted-list"><li style="list-style-type:disc">Method: POST</li></ul><ul id="1f9f9db8-e50d-8037-8349-ea435b574df4" class="bulleted-list"><li style="list-style-type:disc">Content-Type: application/json</li></ul><p id="1f8f9db8-e50d-80be-bb7f-c465be105b93" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-8086-9cf3-e91d54a4dbe5" class="code"><code class="language-JSON">{
 	type: &#x27;login&#x27;,
 	email: &#x27;email&#x27;,
 	password: &#x27;password&#x27;
@@ -699,18 +699,14 @@ blockquote {
 { //Error
 	status: &#x27;error&#x27;,
 	message: &#x27;Invalid email or password&#x27;
-}</code></pre><h3 id="1f9f9db8-e50d-80aa-a86d-e9d6a31d5143" class="">Registration</h3><p id="1f9f9db8-e50d-80c2-a203-dc4887b6f6a7" class="">Request Type</p><ul id="1f9f9db8-e50d-8098-98fd-f2b9436d7bf7" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1f9f9db8-e50d-8057-bbea-f68ac9ae7ea8" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1f8f9db8-e50d-80cf-b6c3-f589292abdbf" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-80f9-8e97-c71609bc43e7" class="code"><code class="language-JSON">{
+}</code></pre><h3 id="1fff9db8-e50d-80ac-99f7-ff54ee1fd7e5" class="">Register user</h3><p id="1f9f9db8-e50d-80c2-a203-dc4887b6f6a7" class="">Request Type</p><ul id="1f9f9db8-e50d-8098-98fd-f2b9436d7bf7" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1f9f9db8-e50d-8057-bbea-f68ac9ae7ea8" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1f8f9db8-e50d-80cf-b6c3-f589292abdbf" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-80f9-8e97-c71609bc43e7" class="code"><code class="language-JSON">{
 	type: &#x27;Register&#x27;,
 	email: &#x27;email&#x27;,
 	name: &#x27;name&#x27;,
-	password: &#x27;password&#x27;,
-	user_type: &#x27;customer/store owner&#x27;,
-	*registrationNo: &#x27;2025/123456/01&#x27;
-}</code></pre><p id="1f8f9db8-e50d-80f0-bb7d-d4cb35278bac" class="">*Only required if user is a store owner. Format of registration numbers found at <a href="https://www.inv24.co.za/za/blog/invoice_reg_nr/">https://www.inv24.co.za/za/blog/invoice_reg_nr/</a>.</p><p id="1f8f9db8-e50d-8060-bf38-cccd827e43ef" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-80fd-b36a-defb1040d8ad" class="code"><code class="language-JSON">{ //Success
+	password: &#x27;password&#x27;
+}</code></pre><p id="200f9db8-e50d-805c-867f-c1f153688bb7" class="">*When registering all users are customers</p><p id="1f8f9db8-e50d-8060-bf38-cccd827e43ef" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-80fd-b36a-defb1040d8ad" class="code"><code class="language-JSON">{ //Success
 	status: &#x27;success&#x27;,
-	name: &#x27;name&#x27;,
-	type: &#x27;type&#x27;,
-	apikey: &#x27;apikey&#x27;
+	message: &#x27;Registration successful&#x27;
 }
 
 { //Error
@@ -722,7 +718,11 @@ blockquote {
 	*theme: 0,
 	*min_price: 0.0,
 	*max_price: 1000.0,
-}</code></pre><p id="1f8f9db8-e50d-80dd-821a-cbe7e91ad417" class="">*at least one of the parameters is required</p><p id="1f8f9db8-e50d-8065-b23e-ca10b0ae0897" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-8086-8bde-cd56264004f7" class="code"><code class="language-JSON">{ //Success
+	**current_password: &#x27;current password&#x27;,
+	*new_password: &#x27;new password&#x27;,
+	*new_email: &#x27;new email&#x27;
+}</code></pre><p id="1f8f9db8-e50d-80dd-821a-cbe7e91ad417" class="">*at least one of the parameters is required</p><p id="1fff9db8-e50d-8042-8819-d7d787624278" class="">**Only required if password / email is being changed</p><p id="1fff9db8-e50d-8076-abc0-f781a8e02f55" class="">
+</p><p id="1f8f9db8-e50d-8065-b23e-ca10b0ae0897" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f8f9db8-e50d-8086-8bde-cd56264004f7" class="code"><code class="language-JSON">{ //Success
 	status: &#x27;success&#x27;,
 	message: &#x27;Updated user settings&#x27;
 }
@@ -730,14 +730,31 @@ blockquote {
 { //Error
 	status: &#x27;error&#x27;,
 	message: &#x27;Error updating the user settings&#x27;
-}</code></pre><h2 id="1f9f9db8-e50d-80a3-a3f9-d9ff1dbae762" class="">Product</h2><h3 id="1f9f9db8-e50d-804c-8370-c88496b9117d" class="">GetAllProducts</h3><p id="1f9f9db8-e50d-80fe-ad42-eabf83e03986" class="">Request Type</p><ul id="1f9f9db8-e50d-805b-bd03-ccc601bcdc1e" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1f9f9db8-e50d-8019-b246-f40bb9eb3680" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1f9f9db8-e50d-80b5-bcf7-cdd784806323" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-80df-a76e-f5fa537a3b70" class="code"><code class="language-JSON">{
+}</code></pre><h3 id="1fff9db8-e50d-809d-884d-c9735c071ad5" class="">Get user settings</h3><p id="1fff9db8-e50d-8018-988d-cd653a347616" class="">Request Type</p><ul id="1fff9db8-e50d-80ae-abce-d873319870f0" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1fff9db8-e50d-8073-921f-d0ee6da3e1bb" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1fff9db8-e50d-80a1-ad2b-e68f6d4d31d5" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fff9db8-e50d-8041-8528-d32a5f891a46" class="code"><code class="language-JSON">{
+	type: &#x27;GetPreferences&#x27;,
+	apikey: &#x27;apikey&#x27;
+}</code></pre><p id="1fff9db8-e50d-80d3-a565-d91336043e09" class="">*at least one of the parameters is required</p><p id="1fff9db8-e50d-8014-8c45-ec347e1724a6" class="">**Only required if password / email is being changed</p><p id="1fff9db8-e50d-80e6-bf50-ceeba8f2276c" class="">
+</p><p id="1fff9db8-e50d-80b5-86c0-e14340d532b2" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fff9db8-e50d-8003-8fc7-e1bd3a283f11" class="code"><code class="language-JSON">{ //Success
+	status: &#x27;success&#x27;,
+	message: &#x27;Preferences successfully retrieved&#x27;,
+	data: {
+		theme: &#x27;light/dark&#x27;,
+		min_price: 0.00,
+		max_price: 0.00
+	}
+}
+
+{ //Error
+	status: &#x27;error&#x27;,
+	message: &#x27;Error updating the user settings&#x27;
+}</code></pre><h2 id="1f9f9db8-e50d-80a3-a3f9-d9ff1dbae762" class="">Product</h2><h3 id="1f9f9db8-e50d-804c-8370-c88496b9117d" class="">Get All Products</h3><p id="1f9f9db8-e50d-80fe-ad42-eabf83e03986" class="">Request Type</p><ul id="1f9f9db8-e50d-805b-bd03-ccc601bcdc1e" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1f9f9db8-e50d-8019-b246-f40bb9eb3680" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1f9f9db8-e50d-80b5-bcf7-cdd784806323" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-80df-a76e-f5fa537a3b70" class="code"><code class="language-JSON">{
 	type: &#x27;GetAllProducts&#x27;
 }</code></pre><p id="1f9f9db8-e50d-8098-8e4f-db9da145f381" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-80a0-a7f3-f51315f1bd2e" class="code"><code class="language-JSON">{
 	status: &#x27;success&#x27;,
 	message: &#x27;Products fetched successfully&#x27;,
 	data: [
 		{
-			id: &#x27;id&#x27;,
+			product_id: 1,
 			title: &#x27;title&#x27;,
 			price: 50.00,
 			product_link: &#x27;link to products google shopping page&#x27;,
@@ -745,7 +762,8 @@ blockquote {
 			launch_date: &#x27;Date the product was added to our database&#x27;,
 			thumbnail: &#x27;link to load image of product&#x27;,
 			category: &#x27;category&#x27;,
-			brand_id: 1 //Should be fixed to return brand name
+			brand_name: &#x27;name of brand&#x27;,
+			average_rating: 3.2
 		},
 		{
 			...
@@ -758,16 +776,16 @@ blockquote {
 	price: 55.00,
 	product_link: &#x27;link to products google shopping page&#x27;,
 	description: &#x27;description&#x27;,
-	*launch_date: &#x27;Date the product was added to our database&#x27;, 
+	launch_date: &#x27;Date the product was added to our database&#x27;, 
 	thumbnail: &#x27;link to load image of product&#x27;,
 	category: &#x27;category&#x27;,
-	brand: &#x27;brand name&#x27;, //Name of brand
+	brand_name: &#x27;brand name&#x27;, //Name of brand
 	store_id: 1 //id of store
 	apikey: &#x27;apikey&#x27; //apikey of the user
-}</code></pre><p id="1f9f9db8-e50d-8053-b286-ee2fbaaaa94d" class="">*Maybe should be omitted and then the backend sets the date to today</p><p id="1f9f9db8-e50d-8022-b25b-d7f65e63b2ef" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-80fd-a21f-eb139d89c7b3" class="code"><code class="language-JSON">
+}</code></pre><p id="1f9f9db8-e50d-8022-b25b-d7f65e63b2ef" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-80fd-a21f-eb139d89c7b3" class="code"><code class="language-JSON">
 {
 	status: &#x27;success&#x27;,
-	message: &#x27;Product added successfully to the database.&#x27;
+	message: &#x27;Product successfully added to the database.&#x27;
 }
 
 {
@@ -790,14 +808,14 @@ blockquote {
 	type: &#x27;EditProduct&#x27;,
 	prod_id: 1, //id of the product you want to delete
 	store_id: 1, //id of the store in which the product is in
+	apikey: &#x27;apikey&#x27;,
 	*title: &#x27;new title&#x27;,
 	*price: &#x27;new price&#x27;,
 	*product_link: &#x27;new product_link&#x27;,
 	*description: &#x27;new description&#x27;,
-	*launch_date: &#x27;new launch_date&#x27;,
 	*thumbnail: &#x27;new thumbnail&#x27;,
 	*category: &#x27;new category&#x27;,
-	*brand: &#x27;new brand&#x27;
+	*brand_name: &#x27;new brand&#x27;
 }</code></pre><p id="1f9f9db8-e50d-80a1-9bb0-ef438a049ebd" class="">*at least one of the parameters is required</p><p id="1f9f9db8-e50d-80d2-9f2a-cdfe91aef9a5" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-805c-ae8b-f106911c8e57" class="code"><code class="language-JSON">{
 	status: &#x27;success&#x27;,
 	message: &#x27;Product updated successfully.&#x27;
@@ -808,16 +826,18 @@ blockquote {
 	message: &#x27;some error message&#x27;
 }</code></pre><h3 id="1f9f9db8-e50d-803c-b70e-e29beb6dd93a" class="">Filter Products</h3><p id="1f9f9db8-e50d-80b0-9c92-e4595e08cbef" class="">Request Type</p><ul id="1f9f9db8-e50d-8030-8c5a-c8fbd304db1e" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1f9f9db8-e50d-8063-9ef6-f2b53e44ace4" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1f9f9db8-e50d-802c-8c76-fda560567483" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-802f-88d6-f559d3413c8f" class="code"><code class="language-JSON">{
 	type: &#x27;GetFilteredProducts&#x27;,
-	*brand: &#x27;brand_id&#x27;,
+	*prod_id: 1, //id of a product
+	*brand_id: 1, //brand id
 	*category: &#x27;category&#x27;,
 	*min_price: &#x27;min_price&#x27;,
 	*max_price: &#x27;max_price&#x27;,
-	*search: &#x27;search&#x27;
+	*search: &#x27;search&#x27;,
+	*store_id: 1 //id of store that owns product
 }</code></pre><p id="1f9f9db8-e50d-8071-ac26-cfbb2666c528" class="">*at least one of the parameters is required</p><p id="1f9f9db8-e50d-8045-8953-e6fc410bddf1" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1f9f9db8-e50d-80cc-bf8c-f4bdde9e774a" class="code"><code class="language-JSON">{
 	status: &#x27;success&#x27;,
 	data: [
 		{
-			id: &#x27;id&#x27;,
+			product_id: 1,
 			title: &#x27;title&#x27;,
 			price: 50.00,
 			product_link: &#x27;link to products google shopping page&#x27;,
@@ -825,7 +845,8 @@ blockquote {
 			launch_date: &#x27;Date the product was added to our database&#x27;,
 			thumbnail: &#x27;link to load image of product&#x27;,
 			category: &#x27;category&#x27;,
-			brand_id: 1 //Should be fixed to return brand name
+			brand_name: &#x27;name of the brand&#x27;,
+			average_rating: 4.3
 		},
 		{
 			...
@@ -833,6 +854,47 @@ blockquote {
 		...
 	]
 }
+
+{
+	status: &#x27;error&#x27;,
+	message: &#x27;some error message&#x27;
+}</code></pre><h2 id="1fdf9db8-e50d-80ca-9a28-fed7ee74675d" class="">Brands</h2><h3 id="1fdf9db8-e50d-8059-ad12-f99e5e803bd1" class="">Get Brands</h3><p id="1fdf9db8-e50d-8066-95d2-cfe0a46b6584" class="">Request Type</p><ul id="1fdf9db8-e50d-8027-a022-d760be640b55" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1fdf9db8-e50d-8071-84a5-cc4da423bbbd" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1fdf9db8-e50d-80e5-b8a0-eff3a5e5b0e1" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-809e-a57a-c3c375d77698" class="code"><code class="language-JSON">{
+	type: &#x27;GetBrands&#x27;
+}</code></pre><p id="1fdf9db8-e50d-8040-a58d-e532ebcff13e" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-8087-a244-cf5e1150bf13" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	message: &#x27;Brands successfully retrieved&#x27;,
+	data: [
+		{
+			brand_id: 1,
+			name: &#x27;name&#x27;
+		},
+		{
+			...
+		}, 
+		...
+	]
+}</code></pre><h3 id="1fdf9db8-e50d-8085-81e6-df73c0eb936c" class="">Add Brands</h3><p id="1fdf9db8-e50d-80cc-bc68-d6fe08e85c5c" class="">Request Type</p><ul id="1fdf9db8-e50d-8048-a328-ce1f0b666a4a" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1fdf9db8-e50d-8039-8d75-ec75ebd55b67" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1fdf9db8-e50d-80af-a131-e2fd853dc6dc" class="">Can only be done by an admin account</p><p id="1fdf9db8-e50d-80f7-ba62-cc9930275331" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-80b1-8889-ef5267b6cc23" class="code"><code class="language-JSON">{
+	type: &#x27;AddBrand&#x27;,
+	apikey: &#x27;apikey&#x27;,
+	brand_name: &#x27;brand_name&#x27;
+}</code></pre><p id="1fdf9db8-e50d-802d-9946-cc4cd1cb0f0d" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-8079-974b-cb4b4e7f0bc6" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	message: &#x27;Brand successfully added&#x27;
+}
+
+
+{
+	status: &#x27;error&#x27;,
+	message: &#x27;some error message&#x27;
+}</code></pre><h3 id="1fdf9db8-e50d-8058-a819-e4d784ccdbdc" class="">Remove Brands</h3><p id="1fdf9db8-e50d-80f5-a784-dbe670dd29ec" class="">Request Type</p><ul id="1fdf9db8-e50d-805d-9897-cc5c36184e9a" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1fdf9db8-e50d-8033-be59-f365b7a4ccd2" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1fdf9db8-e50d-803f-a009-e7ffde01a674" class="">Can only be done by an admin account</p><p id="1fdf9db8-e50d-80b1-aeb7-e2d1e5fcedac" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-80ad-8d96-ec152b8bf1b7" class="code"><code class="language-JSON">{
+	type: &#x27;RemoveBrand&#x27;,
+	apikey: &#x27;apikey&#x27;,
+	brand_name: &#x27;brand_id&#x27;
+}</code></pre><p id="1fdf9db8-e50d-8013-bd3a-c2cf2d31a0a9" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-800f-8d0b-e57d91fd9e89" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	message: &#x27;Brand successfully removed&#x27;
+}
+
 
 {
 	status: &#x27;error&#x27;,
@@ -903,8 +965,9 @@ blockquote {
 	apikey: &#x27;apikey&#x27;,
 	store_name: &#x27;name of store&#x27;,
 	store_url: &#x27;url to store&#x27;s page&#x27;,
-	type: &#x27;type of store&#x27;
-}</code></pre><p id="1fbf9db8-e50d-8078-9240-f4e9f8e5430a" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fbf9db8-e50d-80ea-ad0d-f389048ee2fe" class="code"><code class="language-JSON">{
+	store_type: &#x27;type of store&#x27;,
+	*registrationNo: &#x27;2025/123456/01&#x27;
+}</code></pre><p id="1fdf9db8-e50d-8019-8640-db0c41183f6d" class="">*Format of registration numbers found at <a href="https://www.inv24.co.za/za/blog/invoice_reg_nr/">https://www.inv24.co.za/za/blog/invoice_reg_nr/</a>.</p><p id="1fbf9db8-e50d-8078-9240-f4e9f8e5430a" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fbf9db8-e50d-80ea-ad0d-f389048ee2fe" class="code"><code class="language-JSON">{
 	status: &#x27;success&#x27;,
 	message: &#x27;Successfully added store and assigned owner&#x27;
 }
@@ -929,6 +992,46 @@ blockquote {
 		},
 		...
 	]
+}
+
+{
+	status: &#x27;error&#x27;,
+	message: &#x27;some error message&#x27;
+}</code></pre><h3 id="1fdf9db8-e50d-8001-84a3-c12f77d98f43" class="">Get users Store</h3><p id="1fdf9db8-e50d-8089-b55e-dcb4ffb86bda" class="">Request Type</p><ul id="1fdf9db8-e50d-809d-a98b-c59c827412b0" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1fdf9db8-e50d-8095-a5b6-e48dc1740dd7" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1fdf9db8-e50d-808f-ba36-e8dcd5239b61" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-80f1-8d84-e94ac29f8cae" class="code"><code class="language-JSON">{
+	type: &#x27;GetUsersStores&#x27;,
+	apikey: &#x27;apikey&#x27;
+}</code></pre><p id="1fdf9db8-e50d-80cd-964c-e77ad9003dc2" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-80c4-b0e0-dc73433753ec" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	message: &#x27;All stores available, retrieved successfully.&#x27; or &#x27;There are currently no stores available&#x27;,
+	data: [
+		{
+			store_id: 1,
+			name: &#x27;name&#x27;,
+			type: &#x27;type&#x27;,
+			url: &#x27;link to store&#x27;s page&#x27;
+		},
+		{
+			...
+		},
+		...
+	]
+}
+
+{
+	status: &#x27;error&#x27;,
+	message: &#x27;some error message&#x27;
+}</code></pre><h3 id="1fdf9db8-e50d-8053-8e28-c29fe8566b4f" class="">Get Filtered Stores</h3><p id="1fdf9db8-e50d-80c8-8075-fc71cf0976fd" class="">Request Type</p><ul id="1fdf9db8-e50d-80de-b0d4-c4219f7bc5af" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="1fdf9db8-e50d-8003-b369-df913b5b7d0a" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="1fdf9db8-e50d-80ce-a672-d5832d350b05" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-80b9-8974-c69da23e37fe" class="code"><code class="language-JSON">{
+	type: &#x27;getFilteredStores&#x27;,
+	*store_id: 1, //id of the store
+	*name: &#x27;name of store&#x27;
+}</code></pre><p id="1fdf9db8-e50d-804a-a001-e2bfcc7439f3" class="">*at least one of the parameters is required</p><p id="1fdf9db8-e50d-801b-a8b2-f9b70a03807a" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1fdf9db8-e50d-808a-9bdb-d618f787fa3d" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	data:	{
+			store_id: 1,
+			name: &#x27;name&#x27;,
+			type: &#x27;type&#x27;,
+			url: &#x27;link to store&#x27;s page&#x27;
+	}
 }
 
 {
@@ -982,5 +1085,42 @@ blockquote {
 {
 	status: &#x27;error&#x27;,
 	message: &#x27;some error message&#x27;
-}</code></pre><p id="1f9f9db8-e50d-8061-b7e4-d528e3a153f7" class="">
+}</code></pre><h2 id="200f9db8-e50d-80cd-b06e-d6225d96d767" class="">Dashboard</h2><h3 id="200f9db8-e50d-802c-8f37-f903f201ceb6" class="">update stats</h3><p id="200f9db8-e50d-8098-bbba-efb4fee4777f" class="">Request Type</p><ul id="200f9db8-e50d-807a-b200-c9cda10d8f66" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="200f9db8-e50d-8093-9c5a-f30dec0835bb" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="200f9db8-e50d-8003-abd7-cae9668b0f1d" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="200f9db8-e50d-80fe-9ff4-f238c08d15eb" class="code"><code class="language-JSON">{
+	type: &#x27;UpdateStats&#x27;,
+	apikey: &#x27;apikey&#x27;,
+	product_id: 1 //id of the product being visited
+}</code></pre><p id="200f9db8-e50d-805f-b494-f0ce5548f7f7" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="200f9db8-e50d-80b7-a94c-c178eae18e78" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	message: &#x27;Stats successfully updated&#x27;
+}
+
+{
+	status: &#x27;error&#x27;,
+	message: &#x27;some error message&#x27;
+}</code></pre><h3 id="200f9db8-e50d-8085-92ea-e0f94be687a7" class="">Get stats</h3><p id="200f9db8-e50d-80b1-b3ac-ebae19f5b4c0" class="">Request Type</p><ul id="200f9db8-e50d-8080-a715-e5d546a98ecf" class="bulleted-list"><li style="list-style-type:disc"><strong>Method</strong>: POST</li></ul><ul id="200f9db8-e50d-80c3-b57e-e27b99c6bee4" class="bulleted-list"><li style="list-style-type:disc"><strong>Content-Type</strong>: application/json</li></ul><p id="200f9db8-e50d-80c8-8e47-ef91958bc900" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="200f9db8-e50d-8052-9db2-f3832f9cc7cd" class="code"><code class="language-JSON">{
+	type: &#x27;GetStats&#x27;,
+	apikey: &#x27;apikey&#x27;
+}</code></pre><p id="200f9db8-e50d-8092-837b-e2b22ab2edb6" class="">Return</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="200f9db8-e50d-8021-90f8-dd563104e6aa" class="code"><code class="language-JSON">{
+	status: &#x27;success&#x27;,
+	message: &#x27;Stats successfully retrieved&#x27;,
+	clicksData: [
+	{
+		category: &#x27;stationary&#x27;,
+		total_clicks: 20
+	},
+	{
+		...
+	}
+	...
+	],
+	date_registered: 2025/05/20,
+	name: &#x27;John Nathan&#x27;,
+	min_price: 0.0,
+	max_price: 0.0
+}
+
+{
+	status: &#x27;error&#x27;,
+	message: &#x27;some error message&#x27;
+}</code></pre><p id="200f9db8-e50d-80f5-b2e1-efbc59ab1e05" class="">
 </p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

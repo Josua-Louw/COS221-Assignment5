@@ -15,7 +15,7 @@ try {
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database errorsssss",
+        "message" => "Database error",
         "Type Handler" => "creating connection",
         "API Line" => __LINE__
     ]);
@@ -80,8 +80,8 @@ if ($_POST['type'] == 'Login') {
         exit();
     }
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = sanitizeInput($_POST['email']);
+    $password = sanitizeInput($_POST['password']);
 
     try {
         $userStmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -118,7 +118,8 @@ if ($_POST['type'] == 'Login') {
         }
         
         $_SESSION["apikey"] = $user['apikey'];
-        
+
+        unset($user['password'], $user['salt']);
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -135,7 +136,7 @@ if ($_POST['type'] == 'Login') {
 
 //registration
 if ($_POST['type'] == 'Register') {
-    $required = ['name', 'email', 'password', 'user_type'];
+    $required = ['name', 'email', 'password'];
     foreach ($required as $field) {
         if (!isset($_POST[$field])) {
             http_response_code(400);
@@ -147,20 +148,10 @@ if ($_POST['type'] == 'Register') {
         }
     }
 
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $user_type = strtolower(trim($_POST['user_type'])); // convert to lowercase for enum match
-    $registrationNo = $_POST['registrationNo'] ?? null;
-
-    if (!in_array($user_type, ['customer', 'store_owner', 'admin'])) {
-        http_response_code(400);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Invalid user type"
-        ]);
-        exit();
-    }
+    $name = sanitizeInput($_POST['name']);
+    $email = sanitizeInput($_POST['email']);
+    $password = sanitizeInput($_POST['password']);
+    $user_type = "customer";
 
     try {
         $check = $conn->prepare("SELECT email FROM users WHERE email = ?");
@@ -177,7 +168,7 @@ if ($_POST['type'] == 'Register') {
         }
         $check->close();
 
-        $salt = bin2hex(random_bytes(16)); // Required field
+        $salt = bin2hex(random_bytes(127)); // Required field
         $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
         $apikey = bin2hex(random_bytes(32));
         $date_registered = date("Y-m-d");
@@ -194,37 +185,23 @@ if ($_POST['type'] == 'Register') {
         $user_id = $stmt->insert_id;
         $stmt->close();
 
-        if ($user_type === 'customer') {
-            $stmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $stmt->close();
-        } else if ($user_type === 'store_owner') {
-            if (empty($registrationNo)) {
-                throw new Exception("Registration number required for store owners");
-            }
-            $stmt = $conn->prepare("INSERT INTO store_owner (user_id, registration_no) VALUES (?, ?)");
-            $stmt->bind_param("is", $user_id, $registrationNo);
-            $stmt->execute();
-            $stmt->close();
-        }
+        $stmt = $conn->prepare("INSERT INTO customers (user_id) VALUES (?)");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
 
         $conn->commit();
 
         http_response_code(201);
         echo json_encode([
             "status" => "success",
-            "message" => "Registration successful",
-            "user_id" => $user_id
+            "message" => "Registration successful"
         ]);
 
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "Register", __LINE__, true);
     } catch (Exception $e) {
-        $conn->rollback();
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Registration failed: " . $e->getMessage()
-        ]);
+        catchError($conn, $e, "Register", __LINE__, true);
     }
     exit();
 }
@@ -278,21 +255,21 @@ if ($_POST['type'] == 'AddProduct') {
         }
     }
 
-    $title = $_POST['title'];
-    $price = $_POST['price'];
-    $product_link = $_POST['product_link'];
-    $description = $_POST['description'];
-    $launch_date = $_POST['launch_date'];
-    $thumbnail = $_POST['thumbnail'];
-    $category = $_POST['category'];
-    $store_id = $_POST['store_id'];
-    $apikey = $_POST['apikey'];
+    $title = sanitizeInput($_POST['title']);
+    $price = sanitizeInput($_POST['price']);
+    $product_link = sanitizeInput($_POST['product_link']);
+    $description = sanitizeInput($_POST['description']);
+    $launch_date = sanitizeInput($_POST['launch_date']);
+    $thumbnail = sanitizeInput($_POST['thumbnail']);
+    $category = sanitizeInput($_POST['category']);
+    $store_id = sanitizeInput($_POST['store_id']);
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
 
     if (!isset($_POST['brand_name'])) {
-        $brand_name = $_POST['title'];
+        $brand_name = sanitizeInput($_POST['title']);
     } else {
-        $brand_name = $_POST['brand_name'];
+        $brand_name = sanitizeInput($_POST['brand_name']);
     }
 
     try {
@@ -382,9 +359,9 @@ if ($_POST['type'] == 'DeleteProduct')
         exit();
     }
 
-    $prod_id = $_POST['prod_id'];
-    $apikey = $_POST['apikey'];
-    $store_id = $_POST['store_id'];
+    $prod_id = sanitizeInput($_POST['prod_id']);
+    $apikey = sanitizeInput($_POST['apikey']);
+    $store_id = sanitizeInput($_POST['store_id']);
 
     $user_id = authenticate($conn, $apikey);
 
@@ -470,6 +447,11 @@ if ($_POST['type'] == 'EditProduct')
         ]);
         exit();
     }
+
+    $prod_id = sanitizeInput($_POST['prod_id']);
+    $apikey = sanitizeInput($_POST['apikey']);
+    $store_id = sanitizeInput($_POST['store_id']);
+
     $requiredFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category'];
     foreach ($requiredFields as $field) {
         if (!isset($_POST[$field])) {
@@ -563,14 +545,14 @@ if ($_POST['type'] == 'EditProduct')
         catchError($conn, $e,"EditProduct", __LINE__);
     }
 
-    $title = !isset($_POST['title']) ? $products['title'] : $_POST['title'];
-    $price = !isset($_POST['price']) ? $products['price'] : $_POST['price'];
-    $product_link = !isset($_POST['product_link']) ? $products['product_link'] : $_POST['product_link'];
-    $description = !isset($_POST['description']) ? $products['description'] : $_POST['description'];
-    $launch_date = !isset($_POST['launch_date']) ? $products['launch_date'] : $_POST['launch_date'];
-    $thumbnail = !isset($_POST['thumbnail']) ? $products['thumbnail'] : $_POST['thumbnail'];
-    $category = !isset($_POST['category']) ? $products['category'] : $_POST['category'];
-    // $brand_id = !isset($_POST['brand_id']) ? $products['brand_id'] : $_POST['brand_id'];
+    $title = !isset($_POST['title']) ? $products['title'] : sanitizeInput($_POST['title']);
+    $price = !isset($_POST['price']) ? $products['price'] : sanitizeInput($_POST['price']);
+    $product_link = !isset($_POST['product_link']) ? $products['product_link'] : sanitizeInput($_POST['product_link']);
+    $description = !isset($_POST['description']) ? $products['description'] : sanitizeInput($_POST['description']);
+    $launch_date = !isset($_POST['launch_date']) ? $products['launch_date'] : sanitizeInput($_POST['launch_date']);
+    $thumbnail = !isset($_POST['thumbnail']) ? $products['thumbnail'] : sanitizeInput($_POST['thumbnail']);
+    $category = !isset($_POST['category']) ? $products['category'] : sanitizeInput($_POST['category']);
+    //$brand_id = !isset($_POST['brand_id']) ? $products['brand_id'] : sanitizeInput($_POST['brand_id']);
 
     try {
         $conn->begin_transaction();
@@ -606,25 +588,16 @@ if ($_POST['type'] == 'GetFilteredProducts')
     $store_id = $_POST['store_id'] ?? null;
     $min_rating = $_POST['min_rating'] ?? null;
 
-    $sql = "SELECT p.* FROM products p WHERE 1=1";
-    $params = [];
-    $types = "";
-
-    if (!empty($min_rating)) {
-        $sql = "SELECT p.*, AVG(r.rating) as average_rating 
-                FROM products p
-                LEFT JOIN ratings r ON p.product_id = r.product_id
-                WHERE 1=1";
-    }
-    else {
-        $sql = "SELECT p.*, b.name AS brand_name 
-                FROM products p
-                LEFT JOIN brand b ON p.brand_id = b.brand_id
-                WHERE 1=1";
-    }
+    // Unified query selecting brand and rating info
+    $sql = "SELECT p.*, b.name AS brand_name, AVG(r.rating) AS average_rating
+            FROM products p
+            LEFT JOIN brand b ON p.brand_id = b.brand_id
+            LEFT JOIN ratings r ON p.product_id = r.product_id
+            WHERE 1=1";
 
     $params = [];
     $types = "";
+
     if (!empty($brand_id)) {
         $sql .= " AND p.brand_id = ?";
         $params[] = $brand_id;
@@ -661,11 +634,15 @@ if ($_POST['type'] == 'GetFilteredProducts')
         $types .= "i";
     }
 
+    $sql .= " GROUP BY p.product_id";
+
     if (!empty($min_rating)) {
-        $sql .= " GROUP BY p.product_id HAVING average_rating >= ?";
+        $sql .= " HAVING average_rating >= ?";
         $params[] = $min_rating;
         $types .= "d";
     }
+
+    $sql .= " ORDER BY average_rating ASC";
 
     try {
         $stmt = $conn->prepare($sql);
@@ -680,6 +657,7 @@ if ($_POST['type'] == 'GetFilteredProducts')
         while ($row = $result->fetch_assoc()) {
             $products[] = $row;
         }
+
         $stmt->close();
         http_response_code(200);
         echo json_encode([
@@ -710,11 +688,12 @@ if ($_POST['type'] == 'SubmitRating')
         exit();
     }
 
-    $apikey = $_POST['apikey'];
-    $prod_id = $_POST['prod_id'];
-    $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
+    $apikey = sanitizeInput($_POST['apikey']);
+    $prod_id = sanitizeInput($_POST['prod_id']);
+    $rating = sanitizeInput($_POST['rating']);
+    $comment = sanitizeInput($_POST['comment']);
     $user_id = authenticate($conn, $apikey);
+    $date = date("Y-m-d");
 
     try {
         $stmt = $conn->prepare("SELECT * FROM ratings WHERE user_id_ratings = ? AND product_id = ?;");
@@ -742,8 +721,8 @@ if ($_POST['type'] == 'SubmitRating')
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("INSERT INTO ratings (rating, comment,product_id,user_id_ratings) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isii", $rating, $comment,$prod_id,$user_id);
+        $stmt = $conn->prepare("INSERT INTO ratings (rating, comment,product_id,user_id_ratings, date) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("isiis", $rating, $comment,$prod_id,$user_id, $date);
         $stmt->execute();
         $stmt->close();
         $conn->commit();
@@ -772,10 +751,10 @@ if ($_POST['type'] === 'GetRatings') {
         exit();
     }
 
-    $prod_id = (int)$_POST['prod_id'];
+    $prod_id = (int)sanitizeInput($_POST['prod_id']);
 
     $stmt = $conn->prepare("
-    SELECT r.rating, r.comment, u.name, u.user_id
+    SELECT r.rating_id, r.rating, r.comment, u.name, u.user_id
     FROM ratings r
     JOIN users u ON r.user_id_ratings = u.user_id
     WHERE r.product_id = ?
@@ -811,8 +790,8 @@ if ($_POST['type'] == 'DeleteRating')
         exit();
     }
 
-    $apikey = $_POST['apikey'];
-    $rating_id = $_POST['rating_id'];
+    $apikey = sanitizeInput($_POST['apikey']);
+    $rating_id = sanitizeInput($_POST['rating_id']);
 
     $user_id = authenticate($conn, $apikey);
 
@@ -823,6 +802,8 @@ if ($_POST['type'] == 'DeleteRating')
         $stmt->bind_param("i", $rating_id);
         $stmt->execute();
         $stmt->close();
+
+        $conn->commit();
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -851,10 +832,10 @@ if ($_POST['type'] == 'EditRating')
         exit();
     }
 
-    $apikey = $_POST['apikey'];
-    $product_id = $_POST['prod_id'];
-    $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
+    $apikey = sanitizeInput($_POST['apikey']);
+    $product_id = sanitizeInput($_POST['prod_id']);
+    $rating = sanitizeInput($_POST['rating']);
+    $comment = sanitizeInput($_POST['comment']);
 
     $user_id = authenticate($conn, $apikey);
 
@@ -957,7 +938,7 @@ if ($_POST['type'] == "GetUsersStore"){
         exit();
     }
 
-    $apikey = $_POST['apikey'];
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
 
     try {
@@ -1021,8 +1002,8 @@ if ($_POST['type'] == 'Follow')
         exit();
     }
 
-    $store_id = $_POST['store_id'];
-    $apikey = $_POST['apikey'];
+    $store_id = sanitizeInput($_POST['store_id']);
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
 
     try {
@@ -1084,7 +1065,7 @@ if ($_POST['type'] == 'GetFollowing') {
         exit();
     }
 
-    $apikey = $_POST['apikey'];
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
 
 
@@ -1110,7 +1091,6 @@ if ($_POST['type'] == 'GetFollowing') {
             exit();
         }
 
-        //******************* Check if this code is fine ***********************//
         $placeholders = implode(',', array_fill(0, count($followedStoreIds), '?'));
         $types = str_repeat('i', count($followedStoreIds));
 
@@ -1150,8 +1130,8 @@ if ($_POST['type'] == 'Unfollow') {
         exit();
     }
 
-    $store_id = $_POST['store_id'];
-    $apikey = $_POST['apikey'];
+    $store_id = sanitizeInput($_POST['store_id']);
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
 
 
@@ -1193,11 +1173,11 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
         exit();
     }
 
-    $store_name = $_POST['store_name'];
-    $store_url = $_POST['store_url'];
-    $apikey = $_POST['apikey'];
-    $type = $_POST['store_type'];
-    $registrationNo = $_POST['registrationNo'];
+    $store_name = sanitizeInput($_POST['store_name']);
+    $store_url = sanitizeInput($_POST['store_url']);
+    $apikey = sanitizeInput($_POST['apikey']);
+    $type = sanitizeInput($_POST['store_type']);
+    $registrationNo = sanitizeInput($_POST['registrationNo']);
     $user_id = authenticate($conn, $apikey);
     if (!$user_id) {
     http_response_code(400);
@@ -1207,7 +1187,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
     ]);
     exit();
 }
-    //Check to see if user alreadt has a store
+    //Check to see if user already has a store
     $checkStmt = $conn->prepare("SELECT COUNT(*) FROM store_owner WHERE user_id = ?");
     $checkStmt->bind_param("i", $user_id);
     $checkStmt->execute();
@@ -1244,7 +1224,7 @@ if ($_POST['type'] == 'RegisterStoreOwner') {
 
     try {
         $ownerStmt = $conn->prepare("Insert into store_owner (user_id, store_id, registration_no) VALUES (?, ?, ?)");
-        $ownerStmt->bind_param("iii", $user_id, $store_id, $registrationNo);;
+        $ownerStmt->bind_param("iis", $user_id, $store_id, $registrationNo);
         $ownerStmt->execute();
         $ownerStmt->close();
 
@@ -1281,7 +1261,7 @@ if ($_POST['type'] == 'getFilteredStores')
         exit();
     }
 
-    $store_id = $_POST['store_id'];
+    $store_id = sanitizeInput($_POST['store_id']);
 
     $stmt = $conn->prepare("SELECT * FROM stores WHERE store_id = ?");
     $stmt->bind_param("i", $store_id);
@@ -1316,10 +1296,9 @@ if ($_POST['type'] == 'AddBrand'){
         exit();
     }
 
-    $apikey = $_POST['apikey'];
-    $brand_name = $_POST['brand_name'];
+    $apikey = sanitizeInput($_POST['apikey']);
+    $brand_name = sanitizeInput($_POST['brand_name']);
     $user_id = authenticate($conn, $apikey);
-    //************************************** admin ************************************//
 
     try {
         $conn->begin_transaction();
@@ -1354,10 +1333,9 @@ if ($_POST['type'] == 'RemoveBrand'){
         exit();
     }
 
-    $apikey = $_POST['apikey'];
-    $brand_id = $_POST['brand_id'];
+    $apikey = sanitizeInput($_POST['apikey']);
+    $brand_id = sanitizeInput($_POST['brand_id']);
     $user_id = authenticate($conn, $apikey);
-    //************************************* Admin **********************************//
 
     try {
         $conn->begin_transaction();
@@ -1430,7 +1408,7 @@ if ($_POST['type'] == 'GetStats'){
         exit();
     }
 
-    $apikey = $_POST['apikey'];
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
     $stats = [];
 
@@ -1494,9 +1472,9 @@ if ($_POST['type'] == 'UpdateStats'){
         exit();
     }
 
-    $apikey = $_POST['apikey'];
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
-    $product_id = $_POST['product_id'];
+    $product_id = sanitizeInput($_POST['product_id']);
 
     try {
         $conn->begin_transaction();
@@ -1584,10 +1562,10 @@ function catchError($conn, $error, $type, $line, $rollback = false){
 if ($_POST['type'] == 'GetAllProducts')
 {
     try {
-        $stmt = $conn->prepare("SELECT p.*, AVG(r.rating) as average_rating 
-        FROM products p
-        LEFT JOIN ratings r ON p.product_id = r.product_id
-        GROUP BY p.product_id");
+        $stmt = $conn->prepare("SELECT p.*, average_rating 
+        FROM products AS p
+        LEFT JOIN (SELECT AVG(r.rating) AS average_rating, product_id FROM ratings AS r GROUP BY r.product_id) AS r ON p.product_id = r.product_id
+        ORDER BY average_rating DESC;");
         $stmt->execute();
         $result = $stmt->get_result();
         $products = [];
@@ -1635,7 +1613,7 @@ if ($_POST['type'] == 'GetAllProducts')
 if ($_POST['type'] == 'SavePreferences')
 {
 
-    if (!isset($_POST['theme']) || !isset($_POST['min_price']) || !isset($_POST['max_price']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password'])){
+    if (!isset($_POST['theme']) || !isset($_POST['apikey']) || !isset($_POST['email']) || !isset($_POST['password']) || !isset($_POST['current_email']) || !isset($_POST['current_password'])) {
         http_response_code(400);
         echo json_encode([
             "status" => "error",
@@ -1644,20 +1622,63 @@ if ($_POST['type'] == 'SavePreferences')
         exit();
     }
 
-    $theme = $_POST['theme'];
+    $theme = sanitizeInput($_POST['theme']);
     $min_price = $_POST['min_price'];
     $max_price = $_POST['max_price'];
-    $apikey = $_POST['apikey'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $apikey = sanitizeInput($_POST['apikey']);
+    $email = sanitizeInput($_POST['email']);
+    $password = sanitizeInput($_POST['password']);
+    $current_email = sanitizeInput($_POST['current_email']);
+    $current_password = sanitizeInput($_POST['current_password']);
 
     $user_id = authenticate($conn, $apikey);
+
+    try {
+        $getUserStmt = $conn->prepare("SELECT * FROM users WHERE apikey = ?");
+        $getUserStmt->bind_param("s", $apikey);
+        $getUserStmt->execute();
+        $result = $getUserStmt->get_result();
+        $user = $result->fetch_assoc();
+
+        if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Invalid API key",
+                "Type Handler" => "SubmitPreferences",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $salt = $user['salt'];
+        $currentHashed = hash_pbkdf2("sha256", $current_password, $salt, 10000, 127);
+
+        if ($currentHashed !== $user['password'] || $current_email !== $user['email']) {
+            http_response_code(401);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Incorrect credentials",
+                "Type Handler" => "SubmitPreferences",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+
+        $getUserStmt->close();
+    } catch (mysqli_sql_exception $e) {
+        catchErrorSQL($conn, $e, "SavePreferences", __LINE__);
+    } catch (Exception $e) {
+        catchErrorSQL($conn, $e, "SavePreferences", __LINE__);
+    }
+
+    $hashedPassword = hash_pbkdf2("sha256", $password, $salt, 10000, 127);
 
     try {
         $conn->begin_transaction();
 
         $stmt = $conn->prepare("UPDATE users SET theme = ?, min_price = ? , max_price = ?, email = ?, password = ? WHERE apikey = ?");
-        $stmt->bind_param("sddsss", $theme, $min_price, $max_price, $email, $password, $apikey);
+        $stmt->bind_param("sddsss", $theme, $min_price, $max_price, $email, $hashedPassword, $apikey);
         $stmt->execute();
         $stmt->close();
 
@@ -1689,7 +1710,7 @@ if ($_POST['type'] == 'GetPreferences')
         exit();
     }
 
-    $apikey = $_POST['apikey'];
+    $apikey = sanitizeInput($_POST['apikey']);
     $user_id = authenticate($conn, $apikey);
 
     try {
@@ -1772,6 +1793,10 @@ function authenticate($conn, $apikey) {
     } catch (Exception $e) {
         catchError($conn, $e, __LINE__, "authentication", false);
     }
+}
+
+function sanitizeInput($input) {
+    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
 ?>

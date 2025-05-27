@@ -202,7 +202,7 @@ function displayStores(stores) {
                 <p>Explore a wide range of Stores at ${store.name}.</p>
                 <div class="store-actions">
                     <a href="${store.url}" target="_blank" class="btn btn-visit">Visit Store</a>
-                    <button class="btn btn-follow" data-store-id="${store.store_id}" style="background-color: ${isFollowing ? '#e0e0e0' : ''}">
+                    <button class="btn btn-follow ${isFollowing ? 'unfollow' : ''}" data-store-id="${store.store_id}">
                         ${isFollowing ? 'Unfollow' : 'Follow'}
                     </button>
                 </div>
@@ -276,12 +276,12 @@ function attachFollowListeners() {
 
                     if (isFollowing) {
                         this.textContent = 'Follow';
-                        this.style.backgroundColor = '';
+                        this.classList.remove('unfollow');
                         followedStoreIds = followedStoreIds.filter(id => id != storeId);
                         console.log('Unfollowed store:', storeId);
                     } else {
                         this.textContent = 'Unfollow';
-                        this.style.backgroundColor = '#e0e0e0';
+                        this.classList.add('unfollow');
                         followedStoreIds.push(parseInt(storeId));
                         console.log('Followed store:', storeId);
                     }
