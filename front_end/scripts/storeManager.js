@@ -314,6 +314,7 @@ function displayStores(stores) {
                                     <input type="text" name="description" value="${product.description}" required>
                                     <input type="text" name="thumbnail" value="${product.thumbnail || ''}">
                                     <input type="text" name="category" value="${product.category || ''}">
+                                    <input type="text" name="brand_name" value="${product.brand_name || ''}" placeholder="Brand Name">
                                     <input type="date" name="launch_date" value="${product.launch_date ? product.launch_date.split('T')[0] : ''}" required>
                                     <div class="button-group">
                                         <button type="submit" class="submit-btn">Save</button>

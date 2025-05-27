@@ -470,7 +470,44 @@ if ($_POST['type'] == 'EditProduct')
         ]);
         exit();
     }
-
+    $requiredFields = ['title', 'price', 'product_link', 'description', 'launch_date', 'thumbnail', 'category'];
+    foreach ($requiredFields as $field) {
+        if (!isset($_POST[$field])) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Missing required field: $field",
+                "Type Handler" => "EditProduct",
+                "API Line" => __LINE__
+            ]);
+            exit();
+        }
+    }
+    if (isset($_POST['brand_id'])) {
+    $brand_id = $_POST['brand_id'];
+} elseif (isset($_POST['brand_name'])) {
+    
+    $brand_name = $_POST['brand_name'];
+    $brandStmt = $conn->prepare("SELECT brand_id FROM brand WHERE name = ?");
+    $brandStmt->bind_param("s", $brand_name);
+    $brandStmt->execute();
+    $brandResult = $brandStmt->get_result();
+    if ($brandResult->num_rows > 0) {
+        $brand_id = $brandResult->fetch_assoc()['brand_id'];
+    } else {
+        $brand_id = createBrand($conn, $brand_name, false);
+    }
+    $brandStmt->close();
+} else {
+    http_response_code(400);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Missing required field: brand_id or brand_name",
+        "Type Handler" => "EditProduct",
+        "API Line" => __LINE__
+    ]);
+    exit();
+}
     $prod_id = $_POST['prod_id'];
     $apikey = $_POST['apikey'];
     $store_id = $_POST['store_id'];
@@ -533,7 +570,7 @@ if ($_POST['type'] == 'EditProduct')
     $launch_date = !isset($_POST['launch_date']) ? $products['launch_date'] : $_POST['launch_date'];
     $thumbnail = !isset($_POST['thumbnail']) ? $products['thumbnail'] : $_POST['thumbnail'];
     $category = !isset($_POST['category']) ? $products['category'] : $_POST['category'];
-    $brand_id = !isset($_POST['brand_id']) ? $products['brand_id'] : $_POST['brand_id'];
+    // $brand_id = !isset($_POST['brand_id']) ? $products['brand_id'] : $_POST['brand_id'];
 
     try {
         $conn->begin_transaction();
