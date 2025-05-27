@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 26, 2025 at 09:33 PM
+-- Generation Time: May 27, 2025 at 09:16 PM
 -- Server version: 10.3.39-MariaDB-0+deb10u2
 -- PHP Version: 7.3.31-1~deb10u7
 
@@ -32,6 +32,24 @@ CREATE TABLE `brand` (
   `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `brand`
+--
+
+INSERT INTO `brand` (`brand_id`, `name`) VALUES
+(1, 'Crayola'),
+(2, 'Ticonderoga'),
+(3, 'Paper Mate'),
+(4, 'Pilot'),
+(5, 'Pentel'),
+(6, 'a'),
+(7, 'ag'),
+(8, 'no name'),
+(9, 'test'),
+(10, '123'),
+(11, '1'),
+(12, 'a23');
+
 -- --------------------------------------------------------
 
 --
@@ -49,7 +67,24 @@ CREATE TABLE `clicks` (
 --
 
 INSERT INTO `clicks` (`user_id`, `product_id`, `amount`) VALUES
-(1, 2, 1);
+(1, 2, 5),
+(1, 3, 6),
+(1, 4, 4),
+(1, 5, 4),
+(1, 9, 1),
+(1, 416, 1),
+(1, 477, 3),
+(1, 488, 1),
+(2, 2, 1),
+(2, 3, 1),
+(2, 4, 1),
+(6, 3, 19),
+(6, 5, 2),
+(6, 6, 1),
+(6, 9, 2),
+(6, 488, 1),
+(19, 4, 1),
+(22, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -71,7 +106,13 @@ INSERT INTO `customers` (`user_id`) VALUES
 (3),
 (4),
 (5),
-(6);
+(6),
+(18),
+(19),
+(20),
+(21),
+(22),
+(23);
 
 -- --------------------------------------------------------
 
@@ -80,8 +121,8 @@ INSERT INTO `customers` (`user_id`) VALUES
 --
 
 CREATE TABLE `follows` (
-  `user_id` int(11) DEFAULT NULL,
-  `store_id` int(11) DEFAULT NULL
+  `user_id` int(11) NOT NULL,
+  `store_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -89,7 +130,15 @@ CREATE TABLE `follows` (
 --
 
 INSERT INTO `follows` (`user_id`, `store_id`) VALUES
-(1, 16);
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 16),
+(1, 85),
+(2, 7),
+(18, 79),
+(22, 1);
 
 -- --------------------------------------------------------
 
@@ -115,31 +164,31 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`product_id`, `title`, `thumbnail`, `launch_date`, `product_link`, `price`, `description`, `category`, `store_id`, `brand_id`) VALUES
-(2, 'To-Daisies A6 Notepad', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3061ba65dc1453a1eefe635b3d87a1df74e.webp', '2025-05-20', 'https://www.google.com/shopping/product/16577154852900363281?gl=za', '55.00', NULL, 'stationery', 4, NULL),
-(3, 'Stationery Essentials Premium Mystery Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306b5bcc998321af599e3614de2757a9d32.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:10573723084953798893', '700.00', NULL, 'stationery', 1, NULL),
-(4, 'Staedtler Small Stationery Kit', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3067cea55d352795120a183ad30d6522bbb.webp', '2025-05-20', 'https://www.google.com/shopping/product/4520565260507008483?gl=za', '59.99', NULL, 'stationery', 1, NULL),
-(5, 'Butterfly Designer Paper Pad', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3064a8089ef27668a170f78cc02b0e74478.webp', '2025-05-20', 'https://www.google.com/shopping/product/4396065576255016771?gl=za', '60.00', NULL, 'stationery', 5, NULL),
-(6, 'Geoffrey Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306875bd2d96785da624f7988ef08dfbd21.webp', '2025-05-20', 'https://www.google.com/shopping/product/6701479725055872028?gl=za', '89.90', NULL, 'stationery', 2, NULL),
-(7, 'Floral Rustic Wood Stationery Paper Cute Letter Writing Paper for Home', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306bdaf34360554b5347332e37aa5a4eb29.webp', '2025-05-20', 'https://www.google.com/shopping/product/17073104132709988103?gl=za', '399.00', NULL, 'stationery', 3, NULL),
-(8, 'Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306dbbee3e68b67d9a0a0aa526e825732c8.webp', '2025-05-20', 'https://www.google.com/shopping/product/18227012151234946958?gl=za', '69.99', NULL, 'stationery', 4, NULL),
-(9, 'Atlas Bear A5 Notepads Giraffe NP', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30643a9ec37546cdd18ec2d36320222ebe5.webp', '2025-05-20', 'https://www.google.com/shopping/product/17927754399778684734?gl=za', '49.00', NULL, 'stationery', 8, NULL),
-(10, 'Okiyo Kinben Sustainable Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306a2ff38959d1cd818a247dfe8fa435031.webp', '2025-05-20', 'https://www.google.com/shopping/product/11514920409282653866?gl=za', '38.55', NULL, 'stationery', 1, NULL),
-(11, 'Blue Clouds Stationery Paper Aesthetic Letter Writing Paper for Home', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3066b5ef7bac8a86251fe9151425ae5bd20.webp', '2025-05-20', 'https://www.google.com/shopping/product/4644063450758979491?gl=za', '399.00', NULL, 'stationery', 3, NULL),
-(12, 'Field Notes Expedition', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e6e233b20337855db7af0ace3d4a45ba.webp', '2025-05-20', 'https://www.google.com/shopping/product/134377391279113764?gl=za', '272.30', NULL, 'stationery', 11, NULL),
-(13, 'DOMS Water Coulours Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30689d631b0b4af90a38dd80a3036a46eee.webp', '2025-05-20', 'https://www.google.com/shopping/product/9378541808124621475?gl=za', '139.00', NULL, 'stationery', 4, NULL),
-(14, 'La Dolce Vita Jam Packed Stationery Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306688d13a105cb33613eae34d59e403cde.webp', '2025-05-20', 'https://www.google.com/shopping/product/17970168067865123053?gl=za', '607.50', NULL, 'stationery', 9, NULL),
-(15, 'Stationery Set Kb-608 Pink', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e7ebb47fa9124d70f578883860b111b4.webp', '2025-05-20', 'https://www.google.com/shopping/product/11167506482101792677?gl=za', '8.00', NULL, 'stationery', 7, NULL),
-(16, 'Leather Stationary Combo', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306cc0dbe978f69996081e9ea75b2f640fd.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:12191753065119491611', '990.00', NULL, 'stationery', 3, NULL),
-(17, 'TOG Back to School Stationery Pack', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306d6f8550648158aa3cd52449f7c8924f4.webp', '2025-05-20', 'https://www.google.com/shopping/product/16588391824677952144?gl=za', '275.57', NULL, 'stationery', 10, NULL),
-(18, 'Boxed Stationery Set Butterflies by Inc Peter Pauper Press', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306ddcb200eea03d92605446e180d2679f5.webp', '2025-05-20', 'https://www.google.com/shopping/product/14716014187280079153?gl=za', '882.00', NULL, 'stationery', 14, NULL),
-(19, 'Maps Letter Wrting Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30679583fc8becc7af965410b180e3fb3c1.webp', '2025-05-20', 'https://www.google.com/shopping/product/8415966100578890430?gl=za', '538.03', NULL, 'stationery', 16, NULL),
-(20, 'Aurora Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3066ef494b5881981130d14e66c56c25f84.webp', '2025-05-20', 'https://www.google.com/shopping/product/8880519458850486525?gl=za', '425.00', NULL, 'stationery', 12, NULL),
-(21, '\'Bloom with Positivity\' Blue Floral Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306610f109f807fcbaf2bcccf3003825b25.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:9796993870758443324', '500.00', NULL, 'stationery', 3, NULL),
-(22, 'Furbish Stationery Set of 12 Bold Floral', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306b861e69139666bb15ec746db177f2fef.webp', '2025-05-20', 'https://www.google.com/shopping/product/4501821251846457949?gl=za', '364.10', NULL, 'stationery', 13, NULL),
-(23, 'Bea Valint - Poppy and Pear Collection - Stationery Pack', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e76eb063db51a07a496c82fbbd1d81a2.webp', '2025-05-20', 'https://www.google.com/shopping/product/1511588905485146742?gl=za', '180.00', NULL, 'stationery', 15, NULL),
-(24, 'Cute stationery', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3068cc94d6b1f7e1ecc3d79789b24a87912.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:4174465050998376011', '130.00', NULL, 'stationery', 3, NULL),
-(25, 'Office Stationery | Pastel note paper | Shop Online Now', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e28e3b344d39a7ab0c63637b1c926185.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:11257015667188515963', '79.00', NULL, 'stationery', 17, NULL),
-(26, 'Jam Packed Stationery Gift Box for Women - A Fresh Start Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306c06f0a55f6040c04b1a77db12e55e76c.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:14946682899480401295', '675.00', NULL, 'stationery', 18, NULL),
+(2, 'To-Daisies A6 Notepad', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3061ba65dc1453a1eefe635b3d87a1df74e.webp', '2025-05-20', 'https://www.google.com/shopping/product/16577154852900363281?gl=za', '55.00', NULL, 'stationery', 4, 1),
+(3, 'Stationery Essentials Premium Mystery Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306b5bcc998321af599e3614de2757a9d32.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:10573723084953798893', '700.00', NULL, 'stationery', 1, 2),
+(4, 'Staedtler Small Stationery Kit', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3067cea55d352795120a183ad30d6522bbb.webp', '2025-05-20', 'https://www.google.com/shopping/product/4520565260507008483?gl=za', '59.99', NULL, 'stationery', 1, 3),
+(5, 'Butterfly Designer Paper Pad', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3064a8089ef27668a170f78cc02b0e74478.webp', '2025-05-20', 'https://www.google.com/shopping/product/4396065576255016771?gl=za', '60.00', NULL, 'stationery', 5, 4),
+(6, 'Geoffrey Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306875bd2d96785da624f7988ef08dfbd21.webp', '2025-05-20', 'https://www.google.com/shopping/product/6701479725055872028?gl=za', '89.90', NULL, 'stationery', 2, 5),
+(7, 'Floral Rustic Wood Stationery Paper Cute Letter Writing Paper for Home', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306bdaf34360554b5347332e37aa5a4eb29.webp', '2025-05-20', 'https://www.google.com/shopping/product/17073104132709988103?gl=za', '399.00', NULL, 'stationery', 3, 5),
+(8, 'Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306dbbee3e68b67d9a0a0aa526e825732c8.webp', '2025-05-20', 'https://www.google.com/shopping/product/18227012151234946958?gl=za', '69.99', NULL, 'stationery', 4, 4),
+(9, 'Atlas Bear A5 Notepads Giraffe NP', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30643a9ec37546cdd18ec2d36320222ebe5.webp', '2025-05-20', 'https://www.google.com/shopping/product/17927754399778684734?gl=za', '49.00', NULL, 'stationery', 8, 3),
+(10, 'Okiyo Kinben Sustainable Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306a2ff38959d1cd818a247dfe8fa435031.webp', '2025-05-20', 'https://www.google.com/shopping/product/11514920409282653866?gl=za', '38.55', NULL, 'stationery', 1, 2),
+(11, 'Blue Clouds Stationery Paper Aesthetic Letter Writing Paper for Home', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3066b5ef7bac8a86251fe9151425ae5bd20.webp', '2025-05-20', 'https://www.google.com/shopping/product/4644063450758979491?gl=za', '399.00', NULL, 'stationery', 3, 1),
+(12, 'Field Notes Expedition', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e6e233b20337855db7af0ace3d4a45ba.webp', '2025-05-20', 'https://www.google.com/shopping/product/134377391279113764?gl=za', '272.30', NULL, 'stationery', 11, 1),
+(13, 'DOMS Water Coulours Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30689d631b0b4af90a38dd80a3036a46eee.webp', '2025-05-20', 'https://www.google.com/shopping/product/9378541808124621475?gl=za', '139.00', NULL, 'stationery', 4, 5),
+(14, 'La Dolce Vita Jam Packed Stationery Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306688d13a105cb33613eae34d59e403cde.webp', '2025-05-20', 'https://www.google.com/shopping/product/17970168067865123053?gl=za', '607.50', NULL, 'stationery', 9, 2),
+(15, 'Stationery Set Kb-608 Pink', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e7ebb47fa9124d70f578883860b111b4.webp', '2025-05-20', 'https://www.google.com/shopping/product/11167506482101792677?gl=za', '8.00', NULL, 'stationery', 7, 4),
+(16, 'Leather Stationary Combo', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306cc0dbe978f69996081e9ea75b2f640fd.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:12191753065119491611', '990.00', NULL, 'stationery', 3, 3),
+(17, 'TOG Back to School Stationery Pack', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306d6f8550648158aa3cd52449f7c8924f4.webp', '2025-05-20', 'https://www.google.com/shopping/product/16588391824677952144?gl=za', '275.57', NULL, 'stationery', 10, 1),
+(18, 'Boxed Stationery Set Butterflies by Inc Peter Pauper Press', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306ddcb200eea03d92605446e180d2679f5.webp', '2025-05-20', 'https://www.google.com/shopping/product/14716014187280079153?gl=za', '882.00', NULL, 'stationery', 14, 1),
+(19, 'Maps Letter Wrting Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30679583fc8becc7af965410b180e3fb3c1.webp', '2025-05-20', 'https://www.google.com/shopping/product/8415966100578890430?gl=za', '538.03', NULL, 'stationery', 16, 5),
+(20, 'Aurora Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3066ef494b5881981130d14e66c56c25f84.webp', '2025-05-20', 'https://www.google.com/shopping/product/8880519458850486525?gl=za', '425.00', NULL, 'stationery', 12, 5),
+(21, '\'Bloom with Positivity\' Blue Floral Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306610f109f807fcbaf2bcccf3003825b25.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:9796993870758443324', '500.00', NULL, 'stationery', 3, 2),
+(22, 'Furbish Stationery Set of 12 Bold Floral', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306b861e69139666bb15ec746db177f2fef.webp', '2025-05-20', 'https://www.google.com/shopping/product/4501821251846457949?gl=za', '364.10', NULL, 'stationery', 13, 2),
+(23, 'Bea Valint - Poppy and Pear Collection - Stationery Pack', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e76eb063db51a07a496c82fbbd1d81a2.webp', '2025-05-20', 'https://www.google.com/shopping/product/1511588905485146742?gl=za', '180.00', NULL, 'stationery', 15, 4),
+(24, 'Cute stationery', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3068cc94d6b1f7e1ecc3d79789b24a87912.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:4174465050998376011', '130.00', NULL, 'stationery', 3, 4),
+(25, 'Office Stationery | Pastel note paper | Shop Online Now', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306e28e3b344d39a7ab0c63637b1c926185.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:11257015667188515963', '79.00', NULL, 'stationery', 17, 3),
+(26, 'Jam Packed Stationery Gift Box for Women - A Fresh Start Box', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306c06f0a55f6040c04b1a77db12e55e76c.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:14946682899480401295', '675.00', NULL, 'stationery', 18, 3),
 (27, 'Okiyo Minna Paper Stationery Set', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c306a22c723999ba754f30d37c41c556b5b9.webp', '2025-05-20', 'https://www.google.com/shopping/product/5382738557524588100?gl=za', '110.39', NULL, 'stationery', 22, NULL),
 (28, 'Stationery Pack', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c30689e4c096b86745e54aa538022a79c009.webp', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:7913382098121323742', '185.00', NULL, 'stationery', 11, NULL),
 (29, 'Field Notes Pitch Black Notebook', 'https://serpapi.com/searches/682044acb24c5d30db20b3d3/images/bf413405209d3af587674c442cd8c3061a1a4b2e921c9a08b23af9bfbc007c1a.webp', '2025-05-20', 'https://www.google.com/shopping/product/11599516987502864044?gl=za', '308.73', NULL, 'stationery', 19, NULL),
@@ -395,7 +444,10 @@ INSERT INTO `products` (`product_id`, `title`, `thumbnail`, `launch_date`, `prod
 (478, 'Sony SRS-XB100 Compact Portable Wireless Bluetooth Speaker', 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTCuV30NDJyUfZktGwXB-rrfNbsEuUrOIjAZwyoVhUblJR1E7CGHPub3Hg8nefQa7nQZE3IvIX1k8cfipWEl3dMJMHHwyulD5TSiI9lHVUQ', '2025-05-20', 'https://www.google.com/shopping/product/17771267724638999705?gl=za', '524.85', NULL, 'electronics', 68, NULL),
 (479, 'LEXAR 256GB LNS100 SATA PORTABLE SSD', 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTAbHj3jT_NIH59Pc3EvoXQz4cg6yCxLd8NBzXTCUMehK6UdcvTZSED1qIgw_JlXCUWqFUUte8BhbmLz9PkSbjoXG7x0z7hScn5BEeCWANZbIGUriAZbUC7', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:3583037195527863708', '599.00', NULL, 'electronics', 76, NULL),
 (480, 'Hoco DS55 Falcon RGB Light BT Speaker Black', 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQ9OlJoRre7P3wf3WMA6Qi52jB-H7YLONz1Ch5x7trcwyQfJ6kr_LN-96xgMVJ9llC_9nkF4p6h3L9nyqGYzjhBfALhu4xamC7xWaiXomn8464wVo9g3BUM', '2025-05-20', 'https://www.google.com/shopping/product/6093842587078662684?gl=za', '398.00', NULL, 'electronics', 3, NULL),
-(481, 'SparkFun Electronics 15583 TEENSY 4.0', 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTCjWbebYepRb5NalWTgmhvq_KRS7JFbBGNzM5zicQyUAvomXu6uiuCAlHqJ17G4F31ResMl4lyEOShFJijiWpcWdNCHw7jMNsUS5YyjaMjjN2M4s-NLaC5tQ', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:4592733958526635513', '442.68', NULL, 'electronics', 64, NULL);
+(481, 'SparkFun Electronics 15583 TEENSY 4.0', 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTCjWbebYepRb5NalWTgmhvq_KRS7JFbBGNzM5zicQyUAvomXu6uiuCAlHqJ17G4F31ResMl4lyEOShFJijiWpcWdNCHw7jMNsUS5YyjaMjjN2M4s-NLaC5tQ', '2025-05-20', 'https://www.google.com/shopping/product/1?gl=za&prds=pid:4592733958526635513', '442.68', NULL, 'electronics', 64, NULL),
+(486, 'a', 'aaa', '2025-05-02', 'Pentel', '1.00', 'Pentel', 'ass', 84, 12),
+(487, 'a123', 'a', '2025-05-03', 'a', '3.00', 'a', 'a', 84, 6),
+(488, 'PnP UHT Full Cream Milk 6 x 1L', 'https://cdn-prd-02.pnp.co.za/sys-master/images/hc2/hbc/11126258532382/silo-product-image-v2-16Mar2023-184819-6001007164294-Straight_on-102613-11023_515Wx515H', '2025-05-27', 'https://www.pnp.co.za/pnp-uht-full-cream-milk-6-x-1l/p/000000000000349246_CS', '94.00', 'MILK', 'cereal', 85, 8);
 
 -- --------------------------------------------------------
 
@@ -417,24 +469,19 @@ CREATE TABLE `ratings` (
 --
 
 INSERT INTO `ratings` (`rating_id`, `rating`, `date`, `comment`, `product_id`, `user_id_ratings`) VALUES
-(1, '5.0', NULL, 'Excellent product!', 3, 1),
-(2, '4.0', NULL, 'Good', 3, 2),
 (3, '4.0', NULL, 'Good', 3, 2),
-(4, '1.0', NULL, 'yes', 3, 1),
-(5, '1.0', NULL, 'yes', 3, 1),
-(6, '4.0', NULL, 'ssss', 3, 2),
-(7, '1.0', NULL, 'sssssd', 3, 2),
-(8, '5.0', NULL, 'sike, this product is not good ', 3, 2),
 (9, '3.0', NULL, 'Hello Hello', 3, 3),
 (10, '3.0', NULL, 'testing', 5, 4),
 (11, '2.0', NULL, 'testing', 4, 5),
-(12, '2.0', NULL, 'Abdul is testing', 3, 1),
-(13, '3.0', NULL, 'John test ', 3, 1),
-(14, '1.0', NULL, 'Poor ratings', 3, 1),
-(15, '5.0', NULL, '5 good ratings', 3, 1),
-(16, '3.0', NULL, '3 goods ', 5, 1),
-(17, '2.0', NULL, 'ffgg', 3, 1),
-(18, '5.0', NULL, 'Pauluaaaa', 3, 1);
+(25, '5.0', NULL, 'excllentssss', 5, 1),
+(29, '3.0', NULL, 'good pencil', 4, 19),
+(30, '5.0', NULL, 'amazing product', 9, 6),
+(31, '5.0', NULL, 'Tasty', 488, 1),
+(33, '5.0', NULL, 'Essential', 3, 1),
+(34, '2.0', NULL, 'Paper quality is poor for the price', 2, 2),
+(35, '5.0', NULL, 'Amazing Product!!!', 3, 6),
+(36, '4.0', NULL, 'Doesn\'t even need to be sharpened', 4, 1),
+(37, '4.0', NULL, 'Great value for money.', 6, 6);
 
 -- --------------------------------------------------------
 
@@ -528,7 +575,10 @@ INSERT INTO `store` (`store_id`, `name`, `type`, `url`) VALUES
 (73, 'Rse Electronics', 'Electronics Components', 'https://www.rseelectronics.co.za/'),
 (74, 'Digicape', 'Apple Reseller', 'https://www.digicape.co.za/'),
 (75, 'Cash Converters', 'Second-hand Goods & Electronics', 'https://www.cashconverters.co.za/'),
-(76, 'Masons', 'Furniture & Electronics', 'https://www.masons.co.za/');
+(76, 'Masons', 'Furniture & Electronics', 'https://www.masons.co.za/'),
+(79, 'a', 'a', 'All'),
+(84, 'aa', 'Wholesale', 'aaa'),
+(85, 'Pick n Pay', 'Omnichannel', 'https://www.pnp.co.za/');
 
 -- --------------------------------------------------------
 
@@ -538,9 +588,18 @@ INSERT INTO `store` (`store_id`, `name`, `type`, `url`) VALUES
 
 CREATE TABLE `store_owner` (
   `user_id` int(11) NOT NULL,
-  `registration_no` varchar(255) DEFAULT NULL,
+  `registration_no` int(11) DEFAULT NULL,
   `store_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `store_owner`
+--
+
+INSERT INTO `store_owner` (`user_id`, `registration_no`, `store_id`) VALUES
+(1, 1968, 85),
+(18, 0, 79),
+(22, 0, 84);
 
 -- --------------------------------------------------------
 
@@ -567,12 +626,18 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `name`, `password`, `salt`, `email`, `theme`, `min_price`, `max_price`, `apikey`, `user_type`, `date_registered`) VALUES
-(1, 'John Nathan', '5766c9fd4b34aec7a9a7cd84a5e42ab0510d244c1176a99520d822cef60ef187518984281e20b8d9552de7608d2a89a7cfdac73545242a7829ad01c27ced191', '48088c4dbe281c415db5bf2bc72117dcaeb99c289b2ac66c926e1334cc02b88078c44db679176d04dd9e22cb7f491e422bd6b7e6d89cd8c904abc0fb10b3de857c090e54e3969754c3f9e2c98273626b4263ca55ba2f6919b0c6dc332608cdae654867ca6e48b44ee3b445c8f8e9ee432b940959b4ced09aa34f353d62dbae', 'johnnathan@gmail.com', 'dark', '120.00', '200.00', '36cf8d0b74a40ef80d4dad5817770faf', 'customer', '2025-05-20'),
+(1, 'John Nathan', '5766c9fd4b34aec7a9a7cd84a5e42ab0510d244c1176a99520d822cef60ef187518984281e20b8d9552de7608d2a89a7cfdac73545242a7829ad01c27ced191', '48088c4dbe281c415db5bf2bc72117dcaeb99c289b2ac66c926e1334cc02b88078c44db679176d04dd9e22cb7f491e422bd6b7e6d89cd8c904abc0fb10b3de857c090e54e3969754c3f9e2c98273626b4263ca55ba2f6919b0c6dc332608cdae654867ca6e48b44ee3b445c8f8e9ee432b940959b4ced09aa34f353d62dbae', 'johnnathan@gmail.com', 'dark', '0.00', '40.00', '36cf8d0b74a40ef80d4dad5817770faf', 'store_owner', '2025-05-20'),
 (2, 'Defualt', '148281df02341a0a3eaa698cfe399801dc209e820d9fbfcc0d34c44faedfb3f35433c9b42165be26bc12abf459eb33753f174e9c27114735bc522ee0e00b249', '21cd20dde568c897b01f8ea6aad158c63f87e53a65e75c4fc1ac98ff7637a5c2aec8e56f1ff12b4c09754382122ac4437d251a86ce99616f2459e22630028b2554a06872cf3d71225c4685cfa50eedbe7cf714e67dc269141da3edffa6b8157973a66983d87ae611acd59818e92e767b3fbfc6c84abe51d43c6ebe4876bd97', 'mydefualtuser@gmail.com', 'light', NULL, NULL, '718e17922f8bdb863430a8695062ce34', 'customer', '2025-05-21'),
 (3, 'DariusTest', 'f47a8cfbb49ee5ef4f3beb92480f6c3fbe07187a8dc13ac8541b6d8490cf7a0012856b72f2af7ecc246b9abe794d862ed972fe48f82ac3648a689e7a6263170', 'aadafbb6e98fbe56d77e2dfb03646573607dc684293c6bb5ec08d4134fcc7f83c46d6b75eaf8a56a314f7bc02c7aaa6ea53cd33eb1926af28a67ce2a4b8a4a7094a855ed59c291e0f369155550497035d062afa9ba9a3e11448ab97fa74715f6d9184009c40f805d98ec95d010e520b14ebd4e204b75bd8d858d6b6cbe9a93', 'DarTest@gmail.com', 'light', NULL, NULL, 'e34da69ab572ef8d2391c8a992bd5e0e', 'customer', '2025-05-25'),
-(4, 'test', '3eb523b97e08eeaa7252d0b9191ec05f9cb94671bfbc9887eb90835b0d903c144037ed3bbe60b77868e6ecaf106db52bd3ec7f0b3d0c575202837fb4834130e', '6b4e1be56857ffc6a0e5f0b21814703bed2067870bbe16ae2f44d9c99d4332506149e51a96b9cb820137ce10871df743d36cec6635de054823bbdd48db5fc36e5c0ffad17657c69307fde96f2b6789c0e4d549440655be6c9cad2a8c348a4d873d82d37605c92dddc9820d3610d89c79c178c18ca8835dc457553fa7e138c4', 'test@test.com', 'light', '600.00', '1000.00', 'ed1aac15ad816068ea021e2e0899f02b', 'customer', '2025-05-25'),
+(4, 'test', '3eb523b97e08eeaa7252d0b9191ec05f9cb94671bfbc9887eb90835b0d903c144037ed3bbe60b77868e6ecaf106db52bd3ec7f0b3d0c575202837fb4834130e', '6b4e1be56857ffc6a0e5f0b21814703bed2067870bbe16ae2f44d9c99d4332506149e51a96b9cb820137ce10871df743d36cec6635de054823bbdd48db5fc36e5c0ffad17657c69307fde96f2b6789c0e4d549440655be6c9cad2a8c348a4d873d82d37605c92dddc9820d3610d89c79c178c18ca8835dc457553fa7e138c4', 'test@test.com', 'light', '80.00', '120.00', 'ed1aac15ad816068ea021e2e0899f02b', 'customer', '2025-05-25'),
 (5, 'bob', '203682de23fe665bba800f6746478c8363f15017fb902ccefd721e1e2fc0beeeb19239c772e4e2456c6cd17180b099fa55750ab433e76e392f9293c2641b85a', 'ee5f82aecb0dd04d1d7e9d6836251b83281947bcacdaece6843364b9a397677d25fc74cb3ea63e0767c85f86b25e3764b73fbc9aef78ee6e90ca07a4bdd77ab4dc02646845e7d84919dbc35e095732e91b55140d245343b2287ccff2f42c203622d44bb1e68a5ed2f3eb4b82754ff236ee1b0e80a3913c334fe034c1523e4f', 'bob@bob.com', 'light', NULL, NULL, '705a1533935187f09462ad0ac6355ad7', 'customer', '2025-05-25'),
-(6, 'Nico', 'a23f095bb94936ad4f0b7fc9816ca60d7ffb76cf109ff4de94491eafe9b9705d52a82d89ac09018d0bd91180ccb080a4886a5ad59a8a89e9543b8fe86ad824d', '080f7b99f3c9aa01d57b486a88a8bf1cf798c78369b52b124701c91904ed37af9615b96eb5ffce482742f9584b45f54f08f4f2506e72ee1564b6ac8c38dbe7bff06c98dfb018be61992e48f549a11e1775c69d2cd72ab68041bc0aa62ce574af02a9faf6921b5dfab0c5f30fdf524b03a3ed8fdd18fbb87286cf3e2bed21c6', 'theron.nico2@gmail.com', 'light', NULL, NULL, '10aec8409e2cb0bfccf463df0ff6e51f', 'customer', '2025-05-25');
+(6, 'Nico', 'a23f095bb94936ad4f0b7fc9816ca60d7ffb76cf109ff4de94491eafe9b9705d52a82d89ac09018d0bd91180ccb080a4886a5ad59a8a89e9543b8fe86ad824d', '080f7b99f3c9aa01d57b486a88a8bf1cf798c78369b52b124701c91904ed37af9615b96eb5ffce482742f9584b45f54f08f4f2506e72ee1564b6ac8c38dbe7bff06c98dfb018be61992e48f549a11e1775c69d2cd72ab68041bc0aa62ce574af02a9faf6921b5dfab0c5f30fdf524b03a3ed8fdd18fbb87286cf3e2bed21c6', 'theron.nico2@gmail.com', 'light', NULL, NULL, '10aec8409e2cb0bfccf463df0ff6e51f', 'customer', '2025-05-25'),
+(18, 'antyony', 'a5aa6521f7fb2b2c68a80666cac6e3b8945b735d03e64c3203b04f9fe3ad7025563bf651ab0013fe3f0b28e0cd187830764a6eb6b1aaddf157ef8f5f509b5ee', '60a64815ec3b29ce1f8a68f9ecaf3832', 'antTest@gmail.com', 'light', NULL, NULL, 'c4bc2a4b28f904f7f7085af4436858faef090fccdf40f373f02ce43e59334fd0', 'store_owner', '2025-05-27'),
+(19, 'Sam donald', 'a703704f5c0a342a8edd945da6306ff7a0574b4d7de09a40f6ce235e118f1c7373d576ca721a61338785b3ef15c52e9d2ea082d2eab20daf0dcda491ce503f8', '76417fab807dac016fe6bb4eaab947a4', 'samdonald@gmail.com', 'light', NULL, NULL, '05855b2923106ada9a5e378c1a8d7a150a03814b32eccc406331256d725afe6f', 'customer', '2025-05-27'),
+(20, 'antony', '37dad736f7fe8fd5a6b4768eb27abbeb528cbf40f8456937737bfa3cee10fe6f2898268d64e2af71b0414f5f0bb1c13be17f5b234b6444dc4b051385f4c9f3d', '147874eb09b5d752002826dd72f76760', 'avsTest2@gmail.com', 'light', NULL, NULL, 'fbb41a4e1bfae3bce997a5e5b5e8907549c4b32a212296ee8794b25d1ab91a0c', 'customer', '2025-05-27'),
+(21, 'avsTest3', '1c1e95a30dbe7bbe8da3f7fbdd9d61456c0b749f729d0f162406babfcbcf9d509a41d31198557b561ccf3250a34401e64e88336df912820609e4df70af2c652', '2bb0841a9240b6935939c1c637286c3b', 'avsTest3@gmail.com', 'light', NULL, NULL, '41e3118c0856333daa56bd0d2d4d10a9f37ef8d54c227047748eb3eb9f59f2eb', 'customer', '2025-05-27'),
+(22, 'finalTestAnt', 'b7ed74e89ada8398cf8755bf8219a8cf3f5c495257edf1d5a70624a5b17a8fb6209529f11db17abe1ab5a33f4f8d3b081dc95b81abdb5da30cccae1c9ad2397', '146c8f73f7945d9f3b2bf774e5887faa', 'antLast@gmail.com', 'light', NULL, NULL, '9dbc88281e49435a7a441c5fefc6150c0cfbb6d56c8df0d4ae37153679d6719b', 'store_owner', '2025-05-27'),
+(23, 'josh', '1cd93a97dc58a9058132f8e237ab93927539f3db633c78504d185c66467264e2aa8c79c24f474a500f1f41903181effa4c9ff6a033a2ce3e3bed4f85871ea89', 'fc31c613bdf3012ed6f8aae30a477532', 'heath@heath.com', 'light', NULL, NULL, '947ecce452d055fb7da651e72c6f183c624f4bc35fc39ee055d02247b361ba34', 'customer', '2025-05-27');
 
 --
 -- Indexes for dumped tables
@@ -588,7 +653,8 @@ ALTER TABLE `brand`
 -- Indexes for table `clicks`
 --
 ALTER TABLE `clicks`
-  ADD PRIMARY KEY (`user_id`, `product_id`);
+  ADD PRIMARY KEY (`user_id`,`product_id`),
+  ADD KEY `clicks_ibfk_2` (`product_id`);
 
 --
 -- Indexes for table `customers`
@@ -600,7 +666,7 @@ ALTER TABLE `customers`
 -- Indexes for table `follows`
 --
 ALTER TABLE `follows`
-  ADD PRIMARY KEY (`user_id`, `store_id`),
+  ADD PRIMARY KEY (`user_id`,`store_id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `store_id` (`store_id`);
 
@@ -608,7 +674,9 @@ ALTER TABLE `follows`
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
-  ADD PRIMARY KEY (`product_id`);
+  ADD PRIMARY KEY (`product_id`),
+  ADD KEY `products_ibfk_1` (`store_id`),
+  ADD KEY `products_ibfk_2` (`brand_id`);
 
 --
 -- Indexes for table `ratings`
@@ -627,6 +695,7 @@ ALTER TABLE `store`
 -- Indexes for table `store_owner`
 --
 ALTER TABLE `store_owner`
+  ADD PRIMARY KEY (`user_id`),
   ADD KEY `user_id` (`user_id`);
 
 --
@@ -644,31 +713,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `brand`
 --
 ALTER TABLE `brand`
-  MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=482;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=490;
 
 --
 -- AUTO_INCREMENT for table `ratings`
 --
 ALTER TABLE `ratings`
-  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `store`
 --
 ALTER TABLE `store`
-  MODIFY `store_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `store_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- Constraints for dumped tables
