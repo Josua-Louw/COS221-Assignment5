@@ -1,6 +1,5 @@
 
-
-const apiKey = sessionStorage.getItem('apiKey');
+const apiKey = sessionStorage.getItem('apikey');
 //Pop up functionality
  function openPopup() {
             document.getElementById("popup").style.display = "flex";
