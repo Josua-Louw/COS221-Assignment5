@@ -41,7 +41,7 @@ async function getStores() {
 function displayStores(stores) {
     const container = document.querySelector('.store-list');
     container.innerHTML = '';
-    console.log(stores);
+    // console.log(stores);
     stores.forEach(store => {
         const storeCard = document.createElement('div');
         storeCard.classList.add('store-card');
@@ -69,7 +69,7 @@ function attachFollowListeners() {
         button.addEventListener('click', async function () {
             const storeId = this.getAttribute('data-store-id');
             if (this.textContent === 'Follow') {
-                console.log('Following store:', storeId);
+                // console.log('Following store:', storeId);
                 try {
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -83,17 +83,17 @@ function attachFollowListeners() {
                         })
                     });
                     if(!response.ok){
-                        console.log("Request error");
+                        // console.log("Request error");
                     } else {
                         this.textContent = 'Unfollow';
                         this.style.backgroundColor = '#e0e0e0';
                     }
                 } catch (error) {
-                    console.log(error);
+                    // console.log(error);
                 }
 
             } else {
-                console.log('Unfollowing store:', storeId);
+                // console.log('Unfollowing store:', storeId);
                 try {
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -107,13 +107,13 @@ function attachFollowListeners() {
                         })
                     });
                     if(!response.ok){
-                        console.log("Request error");
+                        // console.log("Request error");
                     } else {
                         this.textContent = 'Follow';
                         this.style.backgroundColor = '';
                     }
                 } catch (error) {
-                    console.log(error);
+                    // console.log(error);
                 }
             }
         });
