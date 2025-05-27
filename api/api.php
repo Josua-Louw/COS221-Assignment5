@@ -15,7 +15,7 @@ try {
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Database errorsssss",
+        "message" => "Database error",
         "Type Handler" => "creating connection",
         "API Line" => __LINE__
     ]);
