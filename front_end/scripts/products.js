@@ -132,22 +132,25 @@ async function fetchProductsWithFilters() {
             }
 
             const response = await getFilteredProducts(
-            undefined,
-            undefined, 
-            filters.category,
-            filters.min_price,
-            filters.max_price,
-            filters.search,
-            undefined,
-            filters.min_rating,
-            filters.follow 
-        );
-            
-            if (response.status === 'success') {
-                processProductData(response.data);
-            } else {
-                throw new Error(response.message || 'Failed to load filtered products');
-            }
+                undefined,
+                undefined, 
+                filters.category,
+                filters.min_price,
+                filters.max_price,
+                filters.search,
+                undefined,
+                filters.min_rating,
+                filters.follow 
+            ).then((response) => {
+                    setTimeout(() => {
+                        if (response.status === 'success') {
+                            processProductData(response.data);
+                        } else {
+                            throw new Error(response.message || 'Failed to load filtered products');
+                        }
+                    }, 100);
+                }
+            );
         } catch (error) {
             console.error('Filter fetch error:', error);
             showError(error.message);
@@ -369,22 +372,23 @@ function generateStarRating(rating) {
 
     async function getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store_id, min_rating, follow) {
         if (follow !== undefined && follow === 1) {
-            return await filterProductsOnStoresUserFollows(prod_id, brand, category, min_price, max_price, search, min_rating)
+            return await filterProductsOnStoresUserFollows(prod_id, brand, category, min_price, max_price, search, min_rating);
+        } else {
+            const body = {
+                type: 'GetFilteredProducts'
+            };
+
+            if (prod_id !== undefined) body.prod_id = prod_id;
+            if (brand !== undefined) body.brand_id = brand;
+            if (category !== undefined) body.category = category;
+            if (min_price !== undefined) body.min_price = min_price;
+            if (max_price !== undefined) body.max_price = max_price;
+            if (search !== undefined) body.search = search;
+            if (store_id !== undefined) body.store_id = store_id;
+            if (min_rating !== undefined) body.min_rating = min_rating;
+
+            return await sendRequest(body);
         }
-        const body = {
-            type: 'GetFilteredProducts'
-        };
-
-        if (prod_id !== undefined) body.prod_id = prod_id;
-        if (brand !== undefined) body.brand_id = brand;
-        if (category !== undefined) body.category = category;
-        if (min_price !== undefined) body.min_price = min_price;
-        if (max_price !== undefined) body.max_price = max_price;
-        if (search !== undefined) body.search = search;
-        if (store_id !== undefined) body.store_id = store_id;
-        if (min_rating !== undefined) body.min_rating = min_rating;
-
-        return await sendRequest(body);
     }
 
     //this function is a special function which uses multiple api requests to get all the products from all the stores that the user follows
@@ -398,24 +402,27 @@ function generateStarRating(rating) {
         if (stores.status !== 'success') {   
             return stores;
         }
-        console.log('getting filters');
+
         const storesData = stores.data;
+        var dataForReturning = [];
+        
+        storesData.forEach(async store => {
+            const requestData = await getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store.store_id, min_rating).then(
+                (requestData) => {
+                    if (requestData.status != 'success') {
+                        return data;
+                    }
+                    const data = requestData.data;
+                    dataForReturning.push(...data);
+                }
+            );
+        });
+        
         const returnData = {
             status: 'success',
-            data: []
+            data: dataForReturning
         }
-        await storesData.forEach(async store => {
-            const requestData = await getFilteredProducts(prod_id, brand, category, min_price, max_price, search, store.store_id, min_rating);
-            if (requestData.status != 'success') {
-                return data;
-            }
-            const data = requestData.data;
-            data.forEach(product => {
-                returnData.data.push(product);
-            });
-        });
-
-        return returnData;
+        return returnData; 
     }
 });
 
