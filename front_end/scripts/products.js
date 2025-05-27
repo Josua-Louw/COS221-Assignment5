@@ -372,8 +372,7 @@ function generateStarRating(rating) {
             return filterProductsOnStoresUserFollows(prod_id, brand, category, min_price, max_price, search, min_rating)
         }
         const body = {
-            type: 'GetFilteredProducts',
-            apikey: apiKey
+            type: 'GetFilteredProducts'
         };
 
         if (prod_id !== undefined) body.prod_id = prod_id;
@@ -393,7 +392,7 @@ function generateStarRating(rating) {
     async function filterProductsOnStoresUserFollows(prod_id, brand, category, min_price, max_price, search, min_rating) {
         const body = {
             type: 'GetFollowing',
-            apikey: apikey
+            apikey: sessionStorage.getItem('apikey')
         }
         const stores = sendRequest(body);
         if (stores.status != 'success') {
